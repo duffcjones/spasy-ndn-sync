@@ -1,0 +1,4 @@
+# Pyinstaller build artifacts
+dist/
+build/
+spec/

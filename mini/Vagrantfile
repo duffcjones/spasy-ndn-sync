@@ -1,0 +1,15 @@
+# Built with Ubuntu 20.04 basebox from bento
+
+Vagrant.configure("2") do |config|
+    config.vm.box = "sdulal/mini-ndn"
+    config.vm.provider "virtualbox" do |vb|
+        vb.gui = true
+        vb.memory = "4096"
+        vb.cpus = "4"
+        vb.name = "spatial-sync-minindn"
+    config.vm.synced_folder ".", "/spatialsync/mini"
+    config.vm.synced_folder "../client", "/spatialsync/client"
+    config.ssh.password = "vagrant"
+#     config.vm.network "forwarded_port", guest: 8008, host: 8008
+  end
+end
