@@ -7,15 +7,11 @@ class Node:
     """
 
     def __init__(self, merkle: str, 
-                 geocode: set,
-                 child_node_1: Optional[Self]=None, 
-                 child_node_2: Optional[Self]=None, 
-                 child_node_3: Optional[Self]=None, 
-                 child_node_4: Optional[Self]=None) -> None:
+                 geocode: list=[]) -> None:
         """
         Args:
             merkle (str): the node's Merkle hash
-            geocode (set): a set containing the geospatial index/indices 
+            geocode (list): a list containing the geospatial index/indices 
                            associated with the Node
             child_node_1 (Optional[Self], optional): contains a geospatial index 
                                                      one level deeper than 
@@ -33,7 +29,7 @@ class Node:
         self._merkle = merkle
         self._geocode = geocode
         # TODO 
-        self._children = {}
+        self._children = dict()
         self._data = list()
 
     ######### ACCESSORS #########
@@ -43,8 +39,8 @@ class Node:
         return self._merkle
 
     @property
-    def geocode(self) -> set:
-        """Get or set the set of geospatial indices."""
+    def geocode(self) -> list:
+        """Get or set the list of geospatial indices."""
         return self._geocode
     
     @property
@@ -92,12 +88,13 @@ class Node:
         self._merkle = hash
 
     @geocode.setter
-    def geocode(self, geocode: set) -> None:
+    def geocode(self, geocode: list) -> None:
         self._geocode = geocode
 
     def add_geocode(self, geocode: str) -> None:
         """Add a geocode to the set of geocodes associated with this node."""
-        self._geocode.add(geocode)
+        if geocode not in self._geocode:
+            self._geocode.append(geocode)
 
     def delete_data(self, named_data: str) -> None:
         """Delete a piece of named data from the node."""
@@ -174,6 +171,10 @@ class Node:
         Turns the node into a leaf node.
         """
         self._children = {}
+
+    def remove_child(self, child_to_remove: str) -> None:
+
+        del self._children[child_to_remove]
 
     ######### COMPARISONS #########
     def __eq__(self, node: Self) -> bool:
