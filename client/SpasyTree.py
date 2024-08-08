@@ -38,7 +38,7 @@ class SpasyTree:
         of a piece of named data within the tree.
 
         Args:
-            node (Node): The root node.
+            node (Node): The node being searched.
             named_data (str): The data being sought.
             geocode_list (list): A list of geocodes in which the data is located.
                                  Defaults to being empty.
@@ -48,14 +48,15 @@ class SpasyTree:
         """
         # TODO: right now, this is built for Geohash, so it will return a set of geocodes,
         # as the data is associated with that set right now, not a specific geocode
+        
         if node is not None:
-            if named_data in node.data:
+            if node.in_data(named_data):
                 # because we are using buckets, we will add each possible geocode individually
                 for code in node.geocode:
                     if code not in geocode_list:
                         geocode_list.append(code)
             else:
-                for child in node.get_children():
+                for child in node.children.values():
                     self.find_data(child, named_data, geocode_list)
 
         return geocode_list
@@ -80,16 +81,15 @@ class SpasyTree:
 
         # CASE 1: Trivial case - the data to be deleted isn't in the tree
         if delete_geocode not in self.find_data(node, data_to_delete):
-            print(f'Sorry, but {data_to_delete} is not in the tree.')
+            print(f"Sorry, but '{data_to_delete}' associated with the geocode '{delete_geocode}' is not in the tree.")
             return False
-        
-        current_node = node
-        siblings = current_node.number_children()
-        print(f"The current node, {current_node.geocode}, has {siblings} child(ren).")
 
-        for i, child in enumerate(current_node.get_children()):
+        print(f'THIS IS THE NODE: {node}')
+        siblings = node.number_children()
+        print(f"The current node, {node.geocode}, has {siblings} child(ren).")
+
+        for child in node.children.values():
             # the child node has the right geocode, but it has siblings, so we can't delete its parent node
-            print(f'The current deletion geocode {delete_geocode[0:current_position]}')
             if child is not None and delete_geocode in child.geocode:
                 print(f'The child geocode, {child.geocode}, contains the deletion geocode, {delete_geocode}')
                 child.delete_data(data_to_delete)
@@ -97,37 +97,29 @@ class SpasyTree:
                 # if the child has no data, we set it to None, but we return True if there is no sibling, False otherwise
                 if not child.data and siblings > 1:
                     print(f'Delete just the child.')
-                    child = None
+                    print(f'THE CHILD: {child}')
+                    del(child)
                     return False
                 elif not child.data:
                     print('Delete the whole node.')
-                    current_node.get_children()[i].insert_data('SOMETHING')
-                    filler = 'filler'
-                    current_node = None
+                    print(f'THE CURRENT NODE: {node}')
+                    del(node)
                     return True
   
             # the next position stores the next geocode in the path to the geocode that holds the data
-            elif child is not None and delete_geocode[0:current_position]:
-                print('GOT HERE!')
+            elif child is not None:
                 print(f'Child: {child.geocode}, current position: {current_position}')
                 safe_to_delete = self.delete(child, data_to_delete, delete_geocode, current_position + 1) 
                 
                 if safe_to_delete:
-                    current_node = None
+                    print(f'SAFE TO DELETE: {node.geocode}')
+                    del(child)
                     return True
                 else:
                     return False
             
-            
-        
-            
-        
-        # safe_to_delete = self.delete(current_node, data_to_delete, delete_geocode, current_node.length_geocode() + 1)
-
-        # if safe_to_delete:
-        #     return True
-        # else:
-        #     return False
+            else:
+                return True
 
 
     # TODO
@@ -181,7 +173,7 @@ class SpasyTree:
         while current_depth < self._max_depth:
             found = False
             child_count = 0
-            for child in current_node.get_children():
+            for child in current_node.children.values():
                 child_count += 1
                 if not found and child is not None:
                     for code in child.geocode:
@@ -210,29 +202,29 @@ class SpasyTree:
 
                 # TODO: these conditions are currently hardcoded to Geohash and will have to be made generic
                 if current_character in '01234567':
-                    if current_node.child_node_1:
-                        current_node.child_node_1.add_geocode(geocode_to_add)
+                    if 'child1' in current_node.children:
+                        current_node.children['child1'].add_geocode(geocode_to_add)
                     else:
-                        current_node.child_node_1 = node_to_insert
-                    current_node = current_node.child_node_1
+                        current_node.children['child1'] = node_to_insert
+                    current_node = current_node.children['child1']
                 elif current_character in '89BCDEFG':
-                    if current_node.child_node_2:
-                        current_node.child_node_2.add_geocode(geocode_to_add)
+                    if 'child2' in current_node.children:
+                        current_node.children['child2'].add_geocode(geocode_to_add)
                     else:
-                        current_node.child_node_2 = node_to_insert
-                    current_node = current_node.child_node_2
+                        current_node.children['child2'] = node_to_insert
+                    current_node = current_node.children['child2']
                 elif current_character in 'HJKMNPQR':
-                    if current_node.child_node_3:
-                        current_node.child_node_3.add_geocode(geocode_to_add)
+                    if 'child3' in current_node.children:
+                        current_node.children['child3'].add_geocode(geocode_to_add)
                     else:
-                        current_node.child_node_3 = node_to_insert
-                    current_node = current_node.child_node_3
+                        current_node.children['child3'] = node_to_insert
+                    current_node = current_node.children['child3']
                 elif current_character in 'STUVWXYZ':
-                    if current_node.child_node_4:
-                        current_node.child_node_4.add_geocode(geocode_to_add)
+                    if 'child4' in current_node.children:
+                        current_node.children['child4'].add_geocode(geocode_to_add)
                     else:
-                        current_node.child_node_4 = node_to_insert
-                    current_node = current_node.child_node_4
+                        current_node.children['child4'] = node_to_insert
+                    current_node = current_node.children['child4']
                 else:
                     print("That is not a valid geocode.")
 
@@ -288,10 +280,10 @@ if __name__ == '__main__':
 
     print(f'\n######### Test a SpasyTree with a Geohash #########\n')
     node = Node('root_hash', {'DPWHWTS'})
-    node.child_node_1 = Node('level_1_child_1_hash', {'DPWHWTS0',})
-    node.child_node_2 = Node('level_1_child_2_hash', {'DPWHWTS8'})
-    node.child_node_3 = Node('level_1_child_3_hash', {'DPWHWTSH'})
-    node.child_node_4 = Node('level_1_child_4_hash', {'DPWHWTSS'})
+    node.children['child1'] = Node('level_1_child_1_hash', {'DPWHWTS0',})
+    node.children['child2'] = Node('level_1_child_2_hash', {'DPWHWTS8'})
+    node.children['child3'] = Node('level_1_child_3_hash', {'DPWHWTSH'})
+    node.children['child4'] = Node('level_1_child_4_hash', {'DPWHWTSS'})
     geohash_tree = SpasyTree(4, node)
     geohash_tree.insert('DPWHWTSH000', '/data/to/add')
     geohash_tree.insert('DPWHWTSB1XQ', '/some/data')
@@ -300,15 +292,15 @@ if __name__ == '__main__':
     geohash_tree.insert('DPWHWTS89C3', '/some/data')
     geohash_tree.insert('DPWHWTSH000', '/a/second/piece/of/data')
     print(f'\n######### SpasyTree root data #########\n')
-    print(geohash_tree.root.child_node_3.child_node_1.child_node_1.child_node_1.data)
-    print(geohash_tree.root.child_node_2.child_node_1.child_node_4.child_node_2.data)
-    print(geohash_tree.root.child_node_2.child_node_1.child_node_4.child_node_3.data)
-    print(geohash_tree.root.child_node_2.child_node_2.child_node_2.child_node_1.data)
-    print(f"Should be ['DPWHTSB1XQ...'] {geohash_tree.find_data(geohash_tree.root, '/some/data', [])}")
+    print(geohash_tree.root.children['child3'].children['child1'].children['child1'].children['child1'].data)
+    print(geohash_tree.root.children['child2'].children['child1'].children['child4'].children['child3'].data)
+    print(geohash_tree.root.children['child2'].children['child2'].children['child2'].children['child1'].data)
+    # even though '/some/data' is only stored twice, it will show three geocodes, as the XQ and XR geocodes are in the same node
+    print(f"Should be ['DPWHWTSB1XQ', 'DPWHWTSB1XR','DPWHWTS89C3'] {geohash_tree.find_data(geohash_tree.root, '/some/data', [])}")
     print(geohash_tree.root)
-    # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTS89C3', geohash_tree.root.length_geocode)
+    geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTS89C3', geohash_tree.root.length_geocode())
 
-    # print(f'\n######### Test a SpasyTree with short geocodes #########\n')
+    print(f'\n######### Test a SpasyTree with short geocodes #########\n')
     # node_short = Node('root', {'A'})
     # short_tree = SpasyTree(2, node_short)
     # short_tree.insert('ABC', '/find/test')
@@ -332,12 +324,12 @@ if __name__ == '__main__':
     # find_node = Node('root', {'A'})
     # find_tree = SpasyTree(2, find_node)
     # find_tree.insert('ABC', '/find/test')
-    # print(f'The data is: {find_tree.root.child_node_2.child_node_2.data}')
-    # print(f'The geocode length is: {find_tree.root.child_node_2.child_node_2.length_geocode()}')
-    # print(f"Should be []: {find_tree.find_data(find_tree.root, '/not/in/tree', [])}")
-    # print(f"Should be ['ABC']: {find_tree.find_data(find_tree.root, '/find/test', [])}")
-    # #print(f"Should be False: {find_tree.delete(find_tree.root, '/find/test', 'ABD', find_tree.root.length_geocode())}")
+    # print(f'The data is: {find_tree.root.children['child2'].children['child2'].data}')
+    # print(f'The geocode length is: {find_tree.root.children['child2'].children['child2'].length_geocode()}')
+    # print(f"Should be []: {find_tree.find_data(find_tree.root, '/not/in/tree')}")
+    # print(f"Should be ['ABC']: {find_tree.find_data(find_tree.root, '/find/test')}")
+    # print(f"Should be False: {find_tree.delete(find_tree.root, '/find/test', 'ABD', find_tree.root.length_geocode())}")
     # print(f"Should be True: {find_tree.delete(find_tree.root, '/find/test', 'ABC', find_tree.root.length_geocode())}")
-    # #print(f"After being removed, the data is: {find_tree.root.child_node_2.child_node_2.data}")
+    # print(f"After being removed, the data is: {find_tree.root.children['child2'].children['child2'].data}")
     # print(f"\n######### The resulting tree #########\n")
     # print(find_tree.root)
