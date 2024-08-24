@@ -1,4 +1,5 @@
-from typing import Self, Optional
+from typing import Self
+from hashlib import sha256
 
 class Node:
     """
@@ -6,37 +7,33 @@ class Node:
     Merkle hash indicate changes in the data stored in that Node.
     """
 
-    def __init__(self, merkle: str, 
-                 geocode: list=[]) -> None:
+    def __init__(self, geocode: list=[]) -> None:
         """
         Args:
             merkle (str): the node's Merkle hash
             geocode (list): a list containing the geospatial index/indices 
                            associated with the Node
-            child_node_1 (Optional[Self], optional): contains a geospatial index 
-                                                     one level deeper than 
-                                                     the current Node. Defaults to None.
-            child_node_2 (Optional[Self], optional): contains a geospatial index 
-                                                     one level deeper than 
-                                                     the current Node. Defaults to None.
-            child_node_3 (Optional[Self], optional): contains a geospatial index 
-                                                     one level deeper than 
-                                                     the current Node. Defaults to None.
-            child_node_4 (Optional[Self], optional): contains a geospatial index 
-                                                     one level deeper than 
-                                                     the current Node. Defaults to None.
         """
-        self._merkle = merkle
-        self._geocode = geocode
+        self._hashcode = sha256().hexdigest() # Note: since it is on the empty string, it'll always be the same hash
+        if isinstance(geocode, str):
+            self._geocode = [geocode]
+        else:
+            self._geocode = geocode
         # TODO 
-        self._children = dict()
+        self._children = [None, None, None, None]
         self._data = list()
+        self._parent = None
 
     ######### ACCESSORS #########
     @property
-    def merkle(self) -> str:
+    def hashcode(self) -> str:
         """Get or set the current Merkle hash."""
-        return self._merkle
+        return self._hashcode
+    
+    @property
+    def parent(self) -> Self:
+        """Get or set the parent of the current Node."""
+        return self._parent
 
     @property
     def geocode(self) -> list:
@@ -55,7 +52,11 @@ class Node:
     
     def number_children(self) -> int:
         """Determine how many children hold data."""
-        return len(self._children)
+        number = 0
+        for child in self._children:
+            if child is not None:
+                number += 1
+        return number
     
     def in_data(self, named_data: str) -> bool:
         """
@@ -66,30 +67,30 @@ class Node:
             bool: True if the data is in the node's data list;
                   False otherwise
         """
+        #print(f'LOOKING FOR: {named_data}')
         for element in self._data:
+            #print(f'ELEMENT: {element}')
             if element == named_data.lower():
                 return True
-        
+        #print(f'RETURNING FALSE')
         return False
     
-
     # TODO: grab element [0] instead
     def length_geocode(self) -> int:
         length = 0
         if self._geocode:
-            for element in self._geocode:
-                length = len(element) 
-                break
+            # if it isn't empty, all geocodes have the same length
+            length = len(self._geocode[0])
         return length
     
     ######### MUTATORS #########
-    @merkle.setter
-    def merkle(self, hash: str) -> None:
-        self._merkle = hash
-
-    @geocode.setter
-    def geocode(self, geocode: list) -> None:
-        self._geocode = geocode
+    # @hashcode.setter
+    # def hashcode(self) -> None:
+    #     self._hashcode = sha256().hexdigest
+    
+    @parent.setter
+    def parent(self, parent_node: Self) -> None:
+        self._parent = parent_node
 
     def add_geocode(self, geocode: str) -> None:
         """Add a geocode to the set of geocodes associated with this node."""
@@ -101,6 +102,57 @@ class Node:
         
         if named_data.lower() in self._data:
             self._data.remove(named_data)
+            self.generate_hash()
+
+    def add_child(self, node_to_add: Self) -> int:
+        """
+        Adds a child Node to the list of children.
+
+        Args:
+            node_to_add (Self): the child being added
+
+        Returns:
+            int: the index where the child Node was 
+                 inserted in the children list
+        """
+        geocode_to_add = node_to_add.geocode[0]
+        geocode_char = geocode_to_add[-1]
+        #print(f'GEOCODE CHAR: {geocode_char}')
+        index = None
+        if geocode_char in '01234567':
+            index = 0
+            if self._children[0] is None:
+                node_to_add.parent = self
+                self._children[0] = node_to_add
+            else:
+                self._children[0].add_geocode(geocode_to_add)
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[0]}')
+        elif geocode_char in '89BCDEFG':
+            index = 1
+            if self._children[1] is None:
+                node_to_add.parent = self
+                self._children[1] = node_to_add
+            else:
+                self._children[1].add_geocode(geocode_to_add)
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[1]}')
+        elif geocode_char in 'HJKMNPQR':
+            index = 2
+            if self._children[2] is None:
+                node_to_add.parent = self
+                self._children[2] = node_to_add
+            else:
+                self._children[2].add_geocode(geocode_to_add)
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[2]}')
+        elif geocode_char in 'STUVWXYZ':
+            index = 3
+            if self._children[3] is None:
+                node_to_add.parent = self
+                self._children[3] = node_to_add
+            else:
+                self._children[3].add_geocode(geocode_to_add)
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[3]}')
+
+        return index
 
     def insert_data(self, named_data: str) -> None:
         """
@@ -119,6 +171,9 @@ class Node:
         # if the list is empty, we can safely insert the data
         if len(existing_data) == 0:
             self._data.append(named_data)
+            # print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode}')
+            # print(f'THE DATA IS STORED: {self._data} in {self.geocode}')
+            self.generate_hash()
         else:
             # split the string to be inserted; get a version number if there is one
             split_data = named_data.split('/')
@@ -150,19 +205,48 @@ class Node:
                             # the current version is older than the one to be inserted
                             if current_version < insert_version:
                                 self._data[i] = named_data
+                                #print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
+                                self.generate_hash()
                                 return
                             elif current_version >= insert_version:
                                 return
                         # current version must be older, as it didn't have a version number
                         elif current_version is None:
                             self._data[i] = named_data
+                            #print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
+                            self.generate_hash()
                             return
                     # the current version is already up-to-date   
                     elif current_version is not None:
                         return
                     
             # the data is new and should be added
+            #print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
             self._data.append(named_data)
+            self.generate_hash()
+
+
+    def generate_hash(self) -> None:
+        """Uses the Node's list of data to generate a hashcode for the Node."""
+        # leaf nodes store data, so we generate hashes on the data
+        hash_value = sha256()
+        if self._data:
+            for named_data in self._data:
+                #print(f'GENERATING DATA HASH for {self._geocode}')
+                hash_value.update(named_data.encode())
+
+        # internal nodes don't store data, so their hash is a combination of child hashes
+        else:
+            #print(f'GENERATING PARENT HASH...')
+            for child in self._children:
+                if child is not None:
+                    #print(f'THE CHILD HASH: {child.hashcode}')
+                    hash_value.update(child.hashcode.encode())
+                    #print(f'HASH WHILE CALCULATING: {hash_value.hexdigest()}')
+        
+        self._hashcode = hash_value.hexdigest()
+        #print(f'THE GENERATED HASH... {hash_value.hexdigest()} for {self._geocode}')
+
 
     ######### DELETERS #########
     def remove_children(self) -> None:
@@ -170,59 +254,78 @@ class Node:
         Remove all children from the node. 
         Turns the node into a leaf node.
         """
-        self._children = {}
+        self._children = [None, None, None, None]
 
-    def remove_child(self, child_to_remove: str) -> None:
+    def remove_child(self, child_to_remove: int) -> None:
+        """
+        Remove the child stored at the index passed.
 
-        del self._children[child_to_remove]
-
+        Args:
+            child_to_remove (int): the index of the removed child
+        """
+        self._children[child_to_remove] = None
+    
     ######### COMPARISONS #########
     def __eq__(self, node: Self) -> bool:
         """Check if another Node has the same Merkle hash as this Node."""
-        return self._merkle == node.merkle
+        return self._merkle == node.hashcode
 
     ######### STRINGS #########
     def __str__(self) -> str:
-        return f'\nNode hash: {self.merkle}\nNode geocode: {self.geocode}' +\
-              ''.join(f'\nChild: {child}' for child in self._children.values())
+        return f'\nNode hash: {self._hashcode}\nNode geocode: {self._geocode}' +\
+              ''.join(f'\nChild: {child}' for child in self._children)
         
 # TESTING
 if __name__ == '__main__':
     print(f'Testing Node class...\n')
-    node = Node('678e749011f8a911f011e105c618db898a71f8759929cc9a9ebcfe7b125870ee', {'ABCD', '1234'})
+    node = Node(['ABCD'])
     print(f'\n######### After construction #########\n {node}')
-    node.children['child1'] = Node('some_hash', 'EFGH')
-    node.children['child2'] = Node('some_other_hash', 'IJKL')
-    node.children['child3'] = Node('more hashing', 'MNOP')
+    node.add_child(Node('EFGH'))
+    node.add_child(Node('IJKL'))
+    node.add_child(Node('MNOP'))
     print(f'\n######### After adding children #########\n {node}')
-    node.children.pop('child3')
+    node.remove_child(3)
     print(f'\n######### After deleting the front_left child #########\n {node}')
     node.remove_children()
-    node.children['child3'] = Node('last_hash', 'QRST')
+    node.add_child(Node('QRST'))
     print(f'\n######### After removing all children and adding' 
           f' a child: #########\n {node}')
-    node.children['child2'] = Node('last_hash', 'EFGH')
-    node.children['child4'] = Node('some_hash', 'EFGH')
+    node.add_child(Node('EFGH'))
+    node.add_child(Node('0128'))
     print(f'\n######### Comparison tests #########\n')
-    print(f'Child 3 and Child 4 have the same Merkle hash? {node.children['child3'].merkle == node.children['child4'].merkle}')
-    print(f'Child 3 and Child 2 have the same Merkle hash? {node.children['child3'].merkle == node.children['child2'].merkle}')
+    print(f'Child 2 and Child 3 have the same Merkle hash? {node.children[2].hashcode == node.children[3].hashcode}')
+    print(f'Child 1 and Child 2 have the same Merkle hash? {node.children[1].hashcode == node.children[2].hashcode}')
     print(f'\n######### Geocode Test #########\n')
-    for child in node.children:
-        print(f'The child: {child}')
-        if child is not None:
-            print(f"The Node's geocode is: {node.children[child].geocode}")
+    for i in range(len(node.children)):
+        print(f'The child: {node.children[i]}')
+        if node.children[i] is not None:
+            print(f"The Node's geocode is: {node.children[i].geocode}")
         else:
             print(f"The Node is empty.")
     print(f'\n######### Testing data insertion #########\n')
-    node.children['child2'].insert_data('/Name/to/add/to/list')
-    node.children['child2'].insert_data('/name/To/add/to/list')
-    node.children['child2'].insert_data('/name/to/Add/to/list/again/2')
-    node.children['child2'].insert_data('/some/new/Name/001')
-    node.children['child2'].insert_data('/some/NeW/name/002')
-    node.children['child2'].insert_data('/name/to/Add/to/list/2')
-    node.children['child2'].insert_data('/name/to/add/to/list/1')
-    node.children['child2'].insert_data('/some/new/name')
-    print(f'Data stored in Child 2: {node.children['child2'].data}')
-    node.children['child2'].delete_data('/some/new/name/002')
-    print(f"Data stored in Child 2 after deletion of '/some/new/name/002': {node.children['child2'].data}")
-    print(f'Geocode: {node.geocode}')
+    print(f'MERKLE HASH before first insertion of data: {node.children[2].hashcode}')
+    node.children[2].insert_data('/Name/to/add/to/list')
+    print(f'MERKLE HASH after first insertion of data: {node.children[2].hashcode}')
+    node.children[2].insert_data('/name/To/add/to/list')
+    print(f'MERKLE HASH after the same data inserted (should match previous hash): {node.children[2].hashcode}')
+    node.children[2].insert_data('/name/to/Add/to/list/again/2')
+    print(f'MERKLE HASH after new data (should NOT match previous hash): {node.children[2].hashcode}')
+    node.children[2].insert_data('/some/new/Name/001')
+    node.children[2].insert_data('/some/NeW/name/002')
+    node.children[2].insert_data('/name/to/Add/to/list/2')
+    node.children[2].insert_data('/name/to/add/to/list/1')
+    node.children[2].insert_data('/some/new/name')
+    print(f'Data stored in Child 2: {node.children[2].data}')
+    print(f'MERKLE HASH after all data entered: {node.children[2].hashcode}')
+    node.children[2].delete_data('/some/new/name/002')
+    print(f"Data stored in Child 2 after deletion of '/some/new/name/002': {node.children[2].data}")
+    print(f'MERKLE HASH after deletion: {node.children[2].hashcode}')
+    print(f'Geocode: {type(node.geocode)}')
+    print(f'PARENT MERKLE HASH before generating one: {node.hashcode}')
+    node.generate_hash()
+    print(f'PARENT MERKLE HASH after generating: {node.hashcode}')
+    print(f'CHILD 3 HASH before insertion of data: {node.children[3].hashcode}')
+    node.children[3].insert_data('/testing/hashing')
+    print(f'CHILD 3 DATA: {node.children[3].data}')
+    print(f'CHILD 3 HASH after insertion of data: {node.children[3].hashcode}')
+ 
