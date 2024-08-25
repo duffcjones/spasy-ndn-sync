@@ -88,6 +88,14 @@ class Spasy:
         return self._tree.find_data(self._tree.root, data_to_find)
     
     def gather_all_data(self) -> dict:
+        """
+        Takes all of the data from the SpasyTree and organizes it by
+        namespace.
+
+        Returns:
+            dict: a dictionary containing all of the data in the tree
+                  organized into namespaces  
+        """
         return self._tree.find_data_by_namespace(self._tree.root)
 
 
