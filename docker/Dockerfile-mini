@@ -1,0 +1,31 @@
+FROM ubuntu:20.04
+LABEL authors="Andrew"
+
+# Change /NDNSync to /SpatialSync
+
+USER root
+
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y git software-properties-common ca-certificates curl git mawk sudo
+#RUN DEBIAN_FRONTEND=noninteractive apt install -y software-properties-common
+#RUN apt install --no-install-recommends -y ca-certificates curl git mawk sudo
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt install -y python3.12 python3.12-venv
+#RUN apt install -y python3.12-pip
+RUN #apt install -y python3.12-venv
+
+RUN mkdir /NDNSync
+WORKDIR /NDNSync
+RUN python3.12 -m venv venv
+# RUN python3.12 -m pip install
+
+RUN git clone https://github.com/named-data/mini-ndn.git
+SHELL ["/bin/bash", "-c"]
+WORKDIR /NDNSync/mini-ndn
+RUN source /NDNSync/venv/bin/activate && python -m pip install --upgrade pip setuptools six numpy matplotlib
+RUN source /NDNSync/venv/bin/activate && python -m pip install -r requirements.txt
+RUN source /NDNSync/venv/bin/activate && ./install.sh -y --source --dummy-keychain
+
+EXPOSE 6633 6653 6640
+
+#RUN apt install -y openvswitch-switch dnsutils ifupdown iputils-ping

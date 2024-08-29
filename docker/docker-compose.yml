@@ -1,0 +1,9 @@
+version: '3'
+services:
+  minindn:
+    image: minindn
+    tty: true
+    privileged: true
+    network_mode: "host"
+#    volumes:
+#     - /lib/modules:/lib/modules

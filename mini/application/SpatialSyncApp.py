@@ -3,17 +3,17 @@ from mininet.log import info
 
 
 class SpatialSyncApp(Application):
-    def __init__(self, node, source, target):
-        self.cmd = "/spatialsync/client/dist/SpatialSync"
-        self.cmd += " " + source
-        self.cmd += " --target " + target
-
+    def __init__(self, node, config_file, actions_file):
         self.logfileName = "log"
-        self.source = source
-        self.target = target
+        self.setup_file = config_file
+        self.actions_file = actions_file
+
+        self.cmd = "/spatialsync/client/dist/SpatialSync"
+        self.cmd += " " + config_file
+        self.cmd += " --actions " + actions_file
 
         Application.__init__(self, node)
 
     def start(self):
-        info("Starting spatial sync app on node {} with prefix {}\n".format(self.node.name, self.source))
+        info("Starting spatial sync app on node {}\n".format(self.node.name))
         Application.start(self, self.cmd, self.logfileName)
