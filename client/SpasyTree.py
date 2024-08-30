@@ -1,5 +1,6 @@
 from Node import *
 from collections import deque
+import time
 
 
 class SpasyTree:
@@ -42,26 +43,60 @@ class SpasyTree:
         """
         return self._max_depth
     
-    def find_data(self, node: Node, named_data: str, geocode_list: list | None = None) -> list:
+    def find_data(self, named_data: str) -> bool:
+        """
+        Determine if an element of named data is in the tree.
+
+        Args:
+            named_data (str): the full hierarchical data name (with geocode).
+
+        Returns:
+            bool: True if in the tree
+                  False otherwise
+        """
+        
+        current_node = self._root
+        geocode = named_data.split('/')[-1]
+        current_level = current_node.length_geocode()
+        #print(f'MAX DEPTH: {self._max_depth}')
+        while current_level <= self._max_depth + 1:
+            #print(f'CURRENT LEVEL: {current_level} and CURRENT CODE: {geocode[:current_level]}')
+            for child in current_node.children:
+                if child is not None:
+                    if geocode[:current_level] in child.geocode:
+                        # we found the child
+                        #print(f'GEOCODE: {child.geocode}')
+                        if named_data in child.data:
+                            #print(f'WE FOUND IT IN {child}')
+                            return True
+                        else:
+                            current_node = child
+                            #print(f'THE CURRENT NODE: {current_node.geocode}')
+                            break
+            current_level += 1
+        return False
+    
+    def find_data_without_geocode(self, node: Node, named_data_without_geocode: str,
+                                  geocode_list: list | None = None) -> list:
         """
         A traversal that returns the geocodes of all instances 
-        of a piece of named data within the tree.
+        of a piece of named data (regardless of geocode) within the tree.
 
         Args:
             node (Node): The node being searched.
-            named_data (str): The data being sought.
+            named_data_without_geocode (str): The data being sought. This has no geocode attached to it.
             geocode_list (list | None, optional): a list of geocodes in which the data is located. 
                                                   Defaults to None, which becomes an empty list.
 
         Returns:
-            list: A list of geocodes identifying where the data is located.
+            list: A list of geocodes identifying where the data (regardless of geocode) is located.
         """
         if geocode_list is None:
             geocode_list = []
 
         if node is not None:
             #print(f'NODE {node.geocode} IS NOT NONE')
-            if node.in_data(named_data):
+            if node.in_data(named_data_without_geocode):
                 # because we are using buckets, we will add each possible geocode individually
                 for code in node.geocode:
                     if code not in geocode_list:
@@ -69,11 +104,59 @@ class SpasyTree:
                         geocode_list.append(code)
             else:
                 for child in node.children:
-                    self.find_data(child, named_data, geocode_list)
+                    self.find_data_without_geocode(child, named_data_without_geocode, geocode_list)
 
         #print(f'GEOCODE LIST: {geocode_list}')
         return geocode_list
-        
+
+    # TODO: may want to clean up the way this is represented in the dictionary so that it is a cleaner tuple
+    # with a named data string and a list of geocodes
+    def find_data_by_namespace(self, node: Node, data_by_namespace: dict | None = None) -> dict:
+        """
+        Traverses the tree to gather all of the namespaces and their data. 
+        This can be used by applications to allow a user to filter the namespaces they want.
+
+        Returns:
+            dict: A dictionary of tuples containing names and geocodes.
+        """
+        if data_by_namespace is None:
+            data_by_namespace = dict()
+
+        current_node = node
+
+        # recursion will stop once all nodes have been considered
+        for child in current_node.children:
+            # if there is a child that stores data
+            if child is not None:
+                if child.data:
+                    for name in child.data:
+                        string_split = name.split('/')
+                        namespace = string_split[1]
+                        geocodes_to_add = child.geocode
+                        data_to_add = (name, geocodes_to_add)
+                        # if already in the dictionary
+                        if namespace in data_by_namespace:
+                            # check if name is already present
+                            found = False
+                            for code in data_by_namespace.values():
+                                # if name already present, append to list rather than building a new one
+                                for element in code:
+                                    if name == element[0]:
+                                        element[1].append(geocodes_to_add)
+                                        found = True
+                            # if name not found, append the name and the geocode
+                            if not found:            
+                                data_by_namespace[namespace].append(data_to_add)
+                        
+                        # if the namespace doesn't exist in the dictionary, create it, and add the data
+                        else:
+                            data_by_namespace[namespace] = [data_to_add]
+                # recurse
+                else:
+                    current_node = child
+                    self.find_data_by_namespace(child, data_by_namespace)
+    
+        return data_by_namespace
     
     def delete(self, node: Node, data_to_delete: str, delete_geocode: str, current_position: int) -> bool:
         """
@@ -91,7 +174,7 @@ class SpasyTree:
         # print(f'-------------RECURSING--------------')
         # print(f'Arguments passed: Node (geocode): {node.geocode}, current_position: {current_position}')
         # CASE 1: Trivial case - the data to be deleted isn't in the tree
-        if delete_geocode not in self.find_data(node, data_to_delete):
+        if delete_geocode not in self.find_data_without_geocode(node, data_to_delete):
             print(f"Sorry, but '{data_to_delete}' associated with the geocode '{delete_geocode}' is not in the tree.")
             return False
 
@@ -157,57 +240,6 @@ class SpasyTree:
             else:
                 return True
 
-
-
-    # TODO: may want to clean up the way this is represented in the dictionary so that it is a cleaner tuple
-    # with a named data string and a list of geocodes
-    def find_data_by_namespace(self, node: Node, data_by_namespace: dict | None = None) -> dict:
-        """
-        Traverses the tree to gather all of the namespaces and their data. 
-        This can be used by applications to allow a user to filter the namespaces they want.
-
-        Returns:
-            dict: A dictionary of tuples containing names and geocodes.
-        """
-        if data_by_namespace is None:
-            data_by_namespace = dict()
-
-        current_node = node
-
-        # recursion will stop once all nodes have been considered
-        for child in current_node.children:
-            # if there is a child that stores data
-            if child is not None:
-                if child.data:
-                    for name in child.data:
-                        string_split = name.split('/')
-                        namespace = string_split[1]
-                        geocodes_to_add = child.geocode
-                        data_to_add = (name, geocodes_to_add)
-                        # if already in the dictionary
-                        if namespace in data_by_namespace:
-                            # check if name is already present
-                            found = False
-                            for code in data_by_namespace.values():
-                                # if name already present, append to list rather than building a new one
-                                for element in code:
-                                    if name == element[0]:
-                                        element[1].append(geocodes_to_add)
-                                        found = True
-                            # if name not found, append the name and the geocode
-                            if not found:            
-                                data_by_namespace[namespace].append(data_to_add)
-                        
-                        # if the namespace doesn't exist in the dictionary, create it, and add the data
-                        else:
-                            data_by_namespace[namespace] = [data_to_add]
-                # recurse
-                else:
-                    current_node = child
-                    self.find_data_by_namespace(child, data_by_namespace)
-    
-        return data_by_namespace
-
     ######### MUTATORS #########
     @root.setter
     def root(self, new_root: Node):
@@ -224,7 +256,7 @@ class SpasyTree:
             self._recent_hashes.append(new_hashcode)
         
     
-    def insert(self, insert_geocode: str, named_data: str) -> None:
+    def insert(self, named_data: str) -> None:
         """
         Add a node to the quadtree at the maximum depth of the tree.
 
@@ -235,9 +267,11 @@ class SpasyTree:
         """
         current_node = self._root
         current_level = self._root.length_geocode()
-        #print(f'CURRENT DEPTH: {current_level}')
+        insert_geocode = named_data.split('/')[-1].lower()
+        print(f'CURRENT DEPTH: {current_level}')
         start_level = current_level
-        #print(f'START LEVEL: {start_level}')
+        print(f'START LEVEL: {start_level}')
+        print(f'INSERT GEOCODE: {insert_geocode}')
 
         # because all data is at leaf level, the geocode must match the height of the tree
         if self._max_depth != len(insert_geocode) - 1:
@@ -285,7 +319,7 @@ class SpasyTree:
                 geocode_to_add = insert_geocode[0:current_level]
                 
                 node_to_insert = Node([geocode_to_add])  # the node to be added to the tree
-                #print(f'ADDING CHILD: {node_to_insert.geocode} in NODE {current_node.geocode} at LEVEL {current_level} and DEPTH {current_level}')
+                print(f'ADDING CHILD: {node_to_insert.geocode} in NODE {current_node.geocode} at LEVEL {current_level} and DEPTH {current_level}')
                 index = current_node.add_child(node_to_insert)
                 current_node = current_node.children[index]
                 
@@ -503,19 +537,27 @@ if __name__ == '__main__':
     # hash_value = sha256(AB_hash.encode()).hexdigest()
     # print(f'{root_hash == hash_value}')
 
-    # geohash_tree = SpasyTree(10, Node('DPWHWT'))
-    # geohash_tree.insert('DPWHWTSH000', '/extra/data/to/add')
-    # geohash_tree.insert('DPWHWTSH001', '/some/data')
-    # geohash_tree.insert('DPWHWTSH009', '/some/more/data')
-    # geohash_tree.insert('DPWHWTSH00H', '/some/testing/data')
-    # geohash_tree.insert('DPWHWTSH00S', '/some/data')
-    # geohash_tree.insert('DPWHWTSH000', '/second/piece/of/data')
-    # geohash_tree.insert('DPWHWTZH000', '/extra/data')
-    # geohash_tree.insert('DPWHWTB0214', '/some/data')
+    # geohash_tree = SpasyTree(10, Node('dpwhwts'))
+    # geohash_tree.insert('/extra/data/to/add/dpwhwtsh000')
+    # geohash_tree.insert('/some/data/DPWHWTSH001')
+    # print('###########STOP HERE###################')
+    # print(f'DATA: {geohash_tree.root.children[2].children[0].children[0].children[0].data}')
+    # geohash_tree.insert('/some/more/data/dpwhwtsh009')
+    # geohash_tree.insert('/some/testing/data/DPWHWTSH00H')
+    # geohash_tree.insert('/some/data/DPWHWTSH00S')
+    # geohash_tree.insert('/second/piece/of/data/DPWHWTSH00Z')
+    # geohash_tree.insert('/extra/data/DPWHWTSZH00')
+    # geohash_tree.insert('/some/data/DPWHWTSB214')
+    # geohash_tree.insert('another/data/piece/dpwhwts0202')
+    # geohash_tree.insert('/more/data/dpwhwts1020')
+    # geohash_tree.insert('/data/dpwhwtsmzp9')
     # print(f'\n######### FIND DATA BY NAMESPACE #########\n')
     # print(geohash_tree.find_data_by_namespace(geohash_tree.root))
-    # print(f"FOUND '/some/data'(should include ['DPWHWTZH000', 'DPWHWTSH000', 'DPWHWTSH001', 'DPWHWTSH00S', 'DPWHWTB0214']):"\
-    #       f" {geohash_tree.find_data(geohash_tree.root, '/some/data')}")
+    # print(geohash_tree.root)
+    # print(f"FOUND '/some/data'(should include ['dpwhwtsb214', 'dpwhwtsh000', 'dpwhwtsh001', 'dpwhwtsh00s', 'dpwhwtsh00z']):"\
+    #        f" {geohash_tree.find_data_without_geocode(geohash_tree.root, '/some/data')}")
+    # print(f"FOUND /some/data/dpwhwtsh00z (should be False): {geohash_tree.find_data('/some/data/dpwhwtsh00z')}")
+    # print(f"FOUND /some/data/dpwhwtsh001 (should be True): {geohash_tree.find_data('/some/data/dpwhwtsh001')}")
     # print(f"FOUND '/extra/data' (should include ['DPWHWTZH000', 'DPWHWTSH000', 'DPWHWTSH001']): {geohash_tree.find_data(geohash_tree.root, '/extra/data')}")
     # geohash_tree.delete(geohash_tree.root, '/extra/data/to/add', 'DPWHWTSH000', geohash_tree.root.length_geocode())
     # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTSH001', geohash_tree.root.length_geocode())
@@ -533,6 +575,8 @@ if __name__ == '__main__':
     # print(geohash_tree.recent_hashes)
     # print(f'\n######### FIND DATA BY NAMESPACE #########\n')
     # print(geohash_tree.find_data_by_namespace(geohash_tree.root))
+    # print(f'\n######### THE TREE #########\n')
+    # print(geohash_tree.root)
 
 
 

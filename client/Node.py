@@ -70,7 +70,10 @@ class Node:
         #print(f'LOOKING FOR: {named_data}')
         for element in self._data:
             #print(f'ELEMENT: {element}')
-            if element == named_data.lower():
+            data_string = element.split('/')
+            data_without_geocode = '/'.join(data_string[:-1])
+            #print(f'DATA WITHOUT GEOCODE: {data_without_geocode}')
+            if data_without_geocode == named_data.lower():
                 return True
         #print(f'RETURNING FALSE')
         return False
@@ -111,8 +114,8 @@ class Node:
                  inserted in the children list
         """
         geocode_to_add = node_to_add.geocode[0]
-        geocode_char = geocode_to_add[-1]
-        #print(f'GEOCODE CHAR: {geocode_char}')
+        geocode_char = geocode_to_add[-1].lower()
+        print(f'GEOCODE CHAR: {geocode_char}')
         index = None
         if geocode_char in '01234567':
             index = 0
@@ -121,31 +124,33 @@ class Node:
                 self._children[0] = node_to_add
             else:
                 self._children[0].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[0]}')
-        elif geocode_char in '89BCDEFG':
+                print(f'IT EXISTS, SO APPENDING to: {self._children[0]}')
+        elif geocode_char in '89bcdefg':
             index = 1
             if self._children[1] is None:
                 node_to_add.parent = self
                 self._children[1] = node_to_add
             else:
                 self._children[1].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[1]}')
-        elif geocode_char in 'HJKMNPQR':
+                print(f'IT EXISTS, SO APPENDING to: {self._children[1]}')
+        elif geocode_char in 'hjkmnpqr':
             index = 2
             if self._children[2] is None:
                 node_to_add.parent = self
                 self._children[2] = node_to_add
             else:
                 self._children[2].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[2]}')
-        elif geocode_char in 'STUVWXYZ':
+                print(f'IT EXISTS, SO APPENDING to: {self._children[2]}')
+        elif geocode_char in 'stuvwxyz':
             index = 3
             if self._children[3] is None:
                 node_to_add.parent = self
                 self._children[3] = node_to_add
             else:
                 self._children[3].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[3]}')
+                print(f'IT EXISTS, SO APPENDING to: {self._children[3]}')
+        else:
+            print(f'NO INDEX ADDED...')
 
         return index
 
@@ -327,4 +332,13 @@ if __name__ == '__main__':
     # node.children[3].insert_data('/testing/hashing')
     # print(f'CHILD 3 DATA: {node.children[3].data}')
     # print(f'CHILD 3 HASH after insertion of data: {node.children[3].hashcode}')
+
+    name = '/some/data/dpwhwtsh000'
+    code = name.split('/')[-1]
+    print(code)
+    #code = 'DPWHWTSH000'
+    current_level = 7
+    leaf_level = 11
+    value = code[current_level:leaf_level]
+    print(value)
  
