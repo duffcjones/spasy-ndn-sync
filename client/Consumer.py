@@ -5,6 +5,11 @@ from ndn.types import InterestNack, InterestTimeout, InterestCanceled, Validatio
 import logging
 import argparse
 
+import time
+from ndn.app_support.segment_fetcher import segment_fetcher
+import pickle
+
+
 logging.basicConfig(
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
@@ -13,16 +18,36 @@ logging.basicConfig(
 
 
 async def main(prefix):
+    time.sleep(1)
+    # try:
+    #     name = Name.from_str(prefix)
+    #     logging.info(f'Sending Interest {Name.to_str(name)}, {InterestParam(must_be_fresh=True, lifetime=6000)}')
+    #     data_name, meta_info, content = await app.express_interest(
+    #         prefix, must_be_fresh=True, can_be_prefix=False, lifetime=6000)
+    #
+    #     logging.info(f'Received Data Name: {Name.to_str(data_name)}')
+    #     logging.info(meta_info)
+    #     logging.info(bytes(content) if content else None)
+    #
+    # except InterestNack as e:
+    #     logging.info(f'Nacked with reason={e.reason}')
+    # except InterestTimeout:
+    #     logging.info(f'Timeout')
+    # except InterestCanceled:
+    #     logging.info(f'Canceled')
+    # except ValidationFailure:
+    #     logging.info(f'Data failed to validate')
+    # finally:
+    #     app.shutdown()
+
     try:
-        name = Name.from_str(prefix)
-        logging.info(f'Sending Interest {Name.to_str(name)}, {InterestParam(must_be_fresh=True, lifetime=6000)}')
-        data_name, meta_info, content = await app.express_interest(
-            prefix, must_be_fresh=True, can_be_prefix=False, lifetime=6000)
-
-        logging.info(f'Received Data Name: {Name.to_str(data_name)}')
-        logging.info(meta_info)
-        logging.info(bytes(content) if content else None)
-
+        cnt = 0
+        data = b''
+        async for seg in segment_fetcher(app, prefix):
+            data += bytes(seg)
+            cnt += 1
+        logging.info(pickle.loads(data))
+        logging.info(f'\n{cnt} segments fetched.')
     except InterestNack as e:
         logging.info(f'Nacked with reason={e.reason}')
     except InterestTimeout:
