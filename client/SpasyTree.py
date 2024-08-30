@@ -21,8 +21,7 @@ class SpasyTree:
         self._root = node 
         self._max_depth = max_depth
         self._recent_hashes = deque(maxlen=10)
-        # add the root hash to the list of recent hashes
-        self._recent_hashes.append(self._root.hashcode)
+        self._recent_hashes.append(self._root.hashcode)  # add the root hash to the list of recent hashes
  
     ######### ACCESSORS #########
     @property
@@ -32,6 +31,7 @@ class SpasyTree:
     
     @property
     def recent_hashes(self) -> deque:
+        """Get a deque of recently used root hashes."""
         return self._recent_hashes
     
     @property
@@ -111,15 +111,18 @@ class SpasyTree:
         #print(f'GEOCODE LIST: {geocode_list}')
         return geocode_list
 
-    # TODO: may want to clean up the way this is represented in the dictionary so that it is a cleaner tuple
-    # with a named data string and a list of geocodes
+    # TODO: it is possible it makes more sense for this to be part of Spasy
     def find_data_by_namespace(self, node: Node, data_by_namespace: dict | None = None) -> dict:
         """
         Traverses the tree to gather all of the namespaces and their data. 
         This can be used by applications to allow a user to filter the namespaces they want.
 
+        Args:
+            node (Node): _description_
+            data_by_namespace (dict | None, optional): _description_. Defaults to None.
+
         Returns:
-            dict: A dictionary of tuples containing names and geocodes.
+            dict: the dictionary representation of the SpasyTree with namespaces as keys.
         """
         if data_by_namespace is None:
             data_by_namespace = dict()
@@ -134,31 +137,62 @@ class SpasyTree:
                     for name in child.data:
                         string_split = name.split('/')
                         namespace = string_split[1]
-                        geocodes_to_add = child.geocode
-                        data_to_add = (name, geocodes_to_add)
+                        data_to_add = name
                         # if already in the dictionary
                         if namespace in data_by_namespace:
-                            # check if name is already present
-                            found = False
-                            for code in data_by_namespace.values():
-                                # if name already present, append to list rather than building a new one
-                                for element in code:
-                                    if name == element[0]:
-                                        element[1].append(geocodes_to_add)
-                                        found = True
-                            # if name not found, append the name and the geocode
-                            if not found:            
-                                data_by_namespace[namespace].append(data_to_add)
+                            data_by_namespace[namespace].add(data_to_add)
                         
                         # if the namespace doesn't exist in the dictionary, create it, and add the data
                         else:
-                            data_by_namespace[namespace] = [data_to_add]
+                            data_by_namespace[namespace] = {data_to_add}
                 # recurse
                 else:
                     current_node = child
                     self.find_data_by_namespace(child, data_by_namespace)
     
         return data_by_namespace
+    
+    # TODO: it is possible it makes more sense for this to be part of Spasy
+    def find_data_by_geocode(self, node: Node, data_by_geocode: dict | None = None) -> dict:
+        """
+        Reorganize the SpasyTree into a dictionary using geocodes.
+
+        Args:
+            node (Node): the root of the tree.
+            data_by_geocode (dict | None, optional): a dictionary whose keys are geocodes and
+                                                     values are named data. Defaults to None.
+
+        Returns:
+            dict: the dictionary representation of the SpasyTree with geocodes as keys.
+        """
+        
+        if data_by_geocode is None:
+            data_by_geocode = dict()
+
+        current_node = node
+
+        # recursion will stop once all nodes have been considered
+        for child in current_node.children:
+            # if there is a child that stores data
+            if child is not None:
+                if child.data:
+                    for name in child.data:
+                        string_split = name.split('/')
+                        geocode = string_split[-1]
+                        data_to_add = name
+                        # if already in the dictionary
+                        if geocode in data_by_geocode:
+                            data_by_geocode[geocode].add(data_to_add)
+                        
+                        # if the geocode doesn't exist in the dictionary, create it, and add the data
+                        else:
+                            data_by_geocode[geocode] = {data_to_add}
+                # recurse
+                else:
+                    current_node = child
+                    self.find_data_by_geocode(child, data_by_geocode)
+    
+        return data_by_geocode
     
     def delete(self, node: Node, data_to_delete: str, current_position: int) -> bool:
         """
@@ -239,7 +273,6 @@ class SpasyTree:
                             return True
                         else:
                             return False
-                        
             else:
                 return True
 
@@ -257,7 +290,6 @@ class SpasyTree:
         """
         if new_hashcode not in self._recent_hashes:
             self._recent_hashes.append(new_hashcode)
-        
     
     def insert(self, named_data: str) -> None:
         """
@@ -323,7 +355,7 @@ class SpasyTree:
                 geocode_to_add = insert_geocode[0:current_level]
                 
                 node_to_insert = Node(geocode_to_add)  # the node to be added to the tree
-                print(f'ADDING CHILD: {node_to_insert.geocode} in NODE {current_node.geocode} at LEVEL {current_level} and DEPTH {current_level}')
+                #print(f'ADDING CHILD: {node_to_insert.geocode} in NODE {current_node.geocode} at LEVEL {current_level} and DEPTH {current_level}')
                 index = current_node.add_child(node_to_insert)
                 current_node = current_node.children[index]
                 
@@ -368,155 +400,108 @@ class SpasyTree:
         self.add_hash(self._root.hashcode)
         #print(f"RECENT HASHES: {self._recent_hashes} AND ITS LENGTH {len(self._recent_hashes)}")
 
-
     ######### STRINGS #########
     def __str__(self) -> str:
         return f"Root: {self.root.geocode}"
     
-
     ######### BUILT-INS #########
     def __eq__(self, node_hashcode: Self) -> bool:
         return self._root.hashcode == node_hashcode
-
 
 # Testing
 if __name__ == '__main__':
     print('\nTesting SpasyTree...\n')
 
-    # print(f'\n######### Test a SpasyTree with a Geohash #########\n')
-    # geohash_tree = SpasyTree(10, Node('DPWHWT'))
-    # geohash_tree.insert('DPWHWTSH000', '/data/to/add')
-    # geohash_tree.insert('DPWHWTSB1XQ', '/some/data')
-    # geohash_tree.insert('DPWHWTSB1XR', '/test/data')
-    # geohash_tree.insert('DPWHWTSB1XC', '/testing/more/data')
-    # geohash_tree.insert('DPWHWTS89C3', '/some/data')
-    # geohash_tree.insert('DPWHWTSH000', '/a/second/piece/of/data')
-    # geohash_tree.insert('DPWHWTS8RZ1', '/extra/data')
-    # geohash_tree.insert('DPWHWTS0214', '/some/data')
-    # print(geohash_tree.find_data(geohash_tree.root, '/some/data'))
-
-    # print(f'\n######### THE TREE: #########\n')
-    # #print(geohash_tree.root)
-
-    # print(f'\n######### SpasyTree ROOT DATA #########\n')
-    # print(geohash_tree.root.children[3].children[2].children[0].children[0].children[0].data)
-    # print(geohash_tree.root.children[3].children[1].children[0].children[3].children[2].data)
-    # print(geohash_tree.root.children[3].children[1].children[1].children[1].children[0].data)
-    # print(f'THE PARENT: {geohash_tree.root.children[3].children[1].children[0].children[3].children[2].parent.geocode}')
-
-    # # even though '/some/data' is only stored three times, but it will show four geocodes, as the XQ and XR geocodes are in the same node
-    # print(f"FOUND '/some/data' ['DPWHWTS0214', 'DPWHWTSB1XQ','DPWHWTSB1XR','DPWHWTS89C3']:"
-    #       f" {geohash_tree.find_data(geohash_tree.root, '/some/data', [])}")
-    # #print(geohash_tree.root)
-    # print(f'Before removal: {geohash_tree.root.children[3].children[1].children[1].children[1].children[0].data}')
-    
-    # print(f'\n######### DELETING #########\n')
-    # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTS89C3', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTSB1XQ', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/test/data', 'DPWHWTSB1XR', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/testing/more/data', 'DPWHWTSB1XC', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/data/to/add', 'DPWHWTSH000', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/a/second/piece/of/data', 'DPWHWTSH000', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/extra/data', 'DPWHWTS8RZ1', geohash_tree.root.length_geocode())
-
-    # print(f'\n######### THE TREE BEFORE THE FINAL DELETE #########\n')
-    # print(geohash_tree.root)
-
-    # print(f'\n######### THE TREE #########\n')
-    # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTS0214', geohash_tree.root.length_geocode())
-    # print(geohash_tree.root)
- 
-
     # hashing tests
-    print(f'\n######### TESTING MERKLE HASHING #########\n')
-    merkle_tree = SpasyTree(2, Node('a'))
+    # print(f'\n######### TESTING MERKLE HASHING #########\n')
+    # merkle_tree = SpasyTree(2, Node('a'))
 
-    # just the root
-    print(f'\n######### THE MERKLE TREE BEFORE ADDING DATA: #########\n')
-    print(merkle_tree.root)
-    merkle_tree.insert('/some/data/abc')
-    print(f'\n######### THE MERKLE TREE AFTER ADDING DATA: #########\n')
+    # # just the root
+    # print(f'\n######### THE MERKLE TREE BEFORE ADDING DATA: #########\n')
+    # print(merkle_tree.root)
+    # merkle_tree.insert('/some/data/abc')
+    # print(f'\n######### THE MERKLE TREE AFTER ADDING DATA: #########\n')
   
-    # add data
-    print(f'\n######### ADDING DATA #########\n')
-    merkle_tree.insert('/more/data/ab0')
-    merkle_tree.insert('/data/added/for/deletion/ab0')
-    print(f'\n######### THE TREE #########\n')
-    print(merkle_tree.root)
+    # # add data
+    # print(f'\n######### ADDING DATA #########\n')
+    # merkle_tree.insert('/more/data/ab0')
+    # merkle_tree.insert('/data/added/for/deletion/ab0')
+    # print(f'\n######### THE TREE #########\n')
+    # print(merkle_tree.root)
     
-    # find test
-    print(f'\n######### FIND DATA TESTING #########\n')
-    print(f'SEARCHING FOR DATA /data/added/for/deletion/ab0: {merkle_tree.find_data('/data/added/for/deletion/ab0')}')
-    print(f'THE ROOT CHILDREN: {merkle_tree.root.children}')
-    print(f'THEIR CHILDREN: {merkle_tree.root.children[1].children}')
-    print(f'SHOWING ALL AB0 DATA: {merkle_tree.root.children[1].children[0].data}')
+    # # find test
+    # print(f'\n######### FIND DATA TESTING #########\n')
+    # print(f'SEARCHING FOR DATA /data/added/for/deletion/ab0: {merkle_tree.find_data('/data/added/for/deletion/ab0')}')
+    # print(f'THE ROOT CHILDREN: {merkle_tree.root.children}')
+    # print(f'THEIR CHILDREN: {merkle_tree.root.children[1].children}')
+    # print(f'SHOWING ALL AB0 DATA: {merkle_tree.root.children[1].children[0].data}')
     
-    # hashing after adding data
-    print(f'\n######### CHECKING HASHES AFTER NEW DATA #########\n')
-    root_hash = merkle_tree.root.hashcode
-    internal_hash = merkle_tree.root.children[1].hashcode
-    AB0_hash = merkle_tree.root.children[1].children[0].hashcode
-    ABC_hash = merkle_tree.root.children[1].children[1].hashcode
-    print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {root_hash}')
-    print(f'THE CURRENT INTERNAL HASH for geocode {merkle_tree.root.children[1].geocode}: {internal_hash}')
-    print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[0].geocode}: {AB0_hash}')
-    print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[1].geocode}: {ABC_hash}')
+    # # hashing after adding data
+    # print(f'\n######### CHECKING HASHES AFTER NEW DATA #########\n')
+    # root_hash = merkle_tree.root.hashcode
+    # internal_hash = merkle_tree.root.children[1].hashcode
+    # AB0_hash = merkle_tree.root.children[1].children[0].hashcode
+    # ABC_hash = merkle_tree.root.children[1].children[1].hashcode
+    # print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {root_hash}')
+    # print(f'THE CURRENT INTERNAL HASH for geocode {merkle_tree.root.children[1].geocode}: {internal_hash}')
+    # print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[0].geocode}: {AB0_hash}')
+    # print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[1].geocode}: {ABC_hash}')
 
-    # hashing after deletion
-    print(f'\n ######### HASHING WITH DELETION #########\n')
-    merkle_tree.delete(merkle_tree.root, '/data/added/for/deletion/ab0', merkle_tree.root.length_geocode())
-    print(merkle_tree.root)
+    # # hashing after deletion
+    # print(f'\n ######### HASHING WITH DELETION #########\n')
+    # merkle_tree.delete(merkle_tree.root, '/data/added/for/deletion/ab0', merkle_tree.root.length_geocode())
+    # print(merkle_tree.root)
 
-    # data after deleting one element
-    print(f'SHOWING ALL AB0 DATA AFTER DELETION OF /data/added/for/deletion: {merkle_tree.root.children[1].children[0].data}')
-    merkle_tree.delete(merkle_tree.root, '/data/added/for/deletion/ab0', merkle_tree.root.length_geocode())
+    # # data after deleting one element
+    # print(f'SHOWING ALL AB0 DATA AFTER DELETION OF /data/added/for/deletion: {merkle_tree.root.children[1].children[0].data}')
+    # merkle_tree.delete(merkle_tree.root, '/data/added/for/deletion/ab0', merkle_tree.root.length_geocode())
 
-    #checking hashes after deleting some AB0 data
-    print(f'\n######### CHECKING HASHES AFTER DELETING DATA #########\n')
-    new_root_hash = merkle_tree.root.hashcode
-    new_internal_hash = merkle_tree.root.children[1].hashcode
-    new_AB0_hash = merkle_tree.root.children[1].children[0].hashcode
-    new_ABC_hash = merkle_tree.root.children[1].children[1].hashcode
-    print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {new_root_hash}')
-    print(f'THE CURRENT INTERNAL HASH for geocode {merkle_tree.root.children[1].geocode}: {new_internal_hash}')
-    print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[0].geocode}: {new_AB0_hash}')
-    print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[1].geocode}: {new_ABC_hash}')
-    print(f'\n######### CHECKING THAT HASHES HAVE CHANGED #########\n')
-    print(f'THE ROOT HASH HAS CHANGED (should be True): {root_hash != new_root_hash}')
-    print(f'THE INTERNAL NODE HASH HAS CHANGED (should be True): {internal_hash != new_internal_hash}')
-    print(f'THE AB0 HASH HAS CHANGED (should be True): {AB0_hash != new_AB0_hash}')
-    print(f'THE ABC HASH HAS CHANGED (should be False): {ABC_hash != new_ABC_hash}')
+    # #checking hashes after deleting some AB0 data
+    # print(f'\n######### CHECKING HASHES AFTER DELETING DATA #########\n')
+    # new_root_hash = merkle_tree.root.hashcode
+    # new_internal_hash = merkle_tree.root.children[1].hashcode
+    # new_AB0_hash = merkle_tree.root.children[1].children[0].hashcode
+    # new_ABC_hash = merkle_tree.root.children[1].children[1].hashcode
+    # print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {new_root_hash}')
+    # print(f'THE CURRENT INTERNAL HASH for geocode {merkle_tree.root.children[1].geocode}: {new_internal_hash}')
+    # print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[0].geocode}: {new_AB0_hash}')
+    # print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[1].geocode}: {new_ABC_hash}')
+    # print(f'\n######### CHECKING THAT HASHES HAVE CHANGED #########\n')
+    # print(f'THE ROOT HASH HAS CHANGED (should be True): {root_hash != new_root_hash}')
+    # print(f'THE INTERNAL NODE HASH HAS CHANGED (should be True): {internal_hash != new_internal_hash}')
+    # print(f'THE AB0 HASH HAS CHANGED (should be True): {AB0_hash != new_AB0_hash}')
+    # print(f'THE ABC HASH HAS CHANGED (should be False): {ABC_hash != new_ABC_hash}')
 
-    # check after deleting all AB0 data
-    print(f'\n######### CHECKING HASHES AFTER DELETING ALL AB0 DATA #########\n')
-    merkle_tree.delete(merkle_tree.root, '/more/data/AB0', merkle_tree.root.length_geocode())
-    new_root_hash = merkle_tree.root.hashcode
-    new_internal_hash = merkle_tree.root.children[1].hashcode
-    new_ABC_hash = merkle_tree.root.children[1].children[1].hashcode
-    print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {new_root_hash}')
-    print(f'THE CURRENT INTERNAL HASH for geocode {merkle_tree.root.children[1].geocode}: {new_internal_hash}')
-    print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[1].geocode}: {new_ABC_hash}')
+    # # check after deleting all AB0 data
+    # print(f'\n######### CHECKING HASHES AFTER DELETING ALL AB0 DATA #########\n')
+    # merkle_tree.delete(merkle_tree.root, '/more/data/AB0', merkle_tree.root.length_geocode())
+    # new_root_hash = merkle_tree.root.hashcode
+    # new_internal_hash = merkle_tree.root.children[1].hashcode
+    # new_ABC_hash = merkle_tree.root.children[1].children[1].hashcode
+    # print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {new_root_hash}')
+    # print(f'THE CURRENT INTERNAL HASH for geocode {merkle_tree.root.children[1].geocode}: {new_internal_hash}')
+    # print(f'THE CURRENT LEAF HASH for geocode {merkle_tree.root.children[1].children[1].geocode}: {new_ABC_hash}')
 
-    # make sure hashes have changed
-    print(f'\n######### CHECKING THAT HASHES HAVE CHANGED #########\n')
-    print(f'THE ROOT HASH HAS CHANGED (should be True): {root_hash != new_root_hash}')
-    print(f'THE INTERNAL NODE HASH HAS CHANGED (should be True): {internal_hash != new_internal_hash}')
-    print(f'THE ABC HASH HAS CHANGED (should be False): {ABC_hash != new_ABC_hash}')
+    # # make sure hashes have changed
+    # print(f'\n######### CHECKING THAT HASHES HAVE CHANGED #########\n')
+    # print(f'THE ROOT HASH HAS CHANGED (should be True): {root_hash != new_root_hash}')
+    # print(f'THE INTERNAL NODE HASH HAS CHANGED (should be True): {internal_hash != new_internal_hash}')
+    # print(f'THE ABC HASH HAS CHANGED (should be False): {ABC_hash != new_ABC_hash}')
 
-    # check after all data deleted (just the root left)
-    print(f'\n######### CHECKING HASHES AFTER DELETING ALL DATA #########\n')
-    merkle_tree.delete(merkle_tree.root, '/some/data/abc', merkle_tree.root.length_geocode())
-    last_root_hash = merkle_tree.root.hashcode
-    print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {last_root_hash}')
+    # # check after all data deleted (just the root left)
+    # print(f'\n######### CHECKING HASHES AFTER DELETING ALL DATA #########\n')
+    # merkle_tree.delete(merkle_tree.root, '/some/data/abc', merkle_tree.root.length_geocode())
+    # last_root_hash = merkle_tree.root.hashcode
+    # print(f'THE CURRENT ROOT HASH for geocode {merkle_tree.root.geocode}: {last_root_hash}')
 
-    # should just have one hash left
-    print(f'\n######### CHECKING THAT HASHES HAVE CHANGED #########\n')
-    print(f'THE ROOT HASH HAS CHANGED (should be True): {new_root_hash != last_root_hash}')
-    print(f'THE ROOT HASH: {last_root_hash}')
+    # # should just have one hash left
+    # print(f'\n######### CHECKING THAT HASHES HAVE CHANGED #########\n')
+    # print(f'THE ROOT HASH HAS CHANGED (should be True): {new_root_hash != last_root_hash}')
+    # print(f'THE ROOT HASH: {last_root_hash}')
 
-    # just the root left
-    print(f'\n######### THE REMAINING TREE #########\n')
-    print(merkle_tree.root)
+    # # just the root left
+    # print(f'\n######### THE REMAINING TREE #########\n')
+    # print(merkle_tree.root)
 
   
     # # testing hashes manually
@@ -541,6 +526,8 @@ if __name__ == '__main__':
     # hash_value = sha256(AB_hash.encode()).hexdigest()
     # print(f'{root_hash == hash_value}')
 
+
+    # # SpasyTree Tests
     # geohash_tree = SpasyTree(10, Node('dpwhwts'))
     # geohash_tree.insert('/extra/data/to/add/dpwhwtsh000')
     # geohash_tree.insert('/some/data/DPWHWTSH001')
@@ -570,15 +557,15 @@ if __name__ == '__main__':
     # geohash_tree.delete(geohash_tree.root, '/extra/data/DPWHWTSZH00', geohash_tree.root.length_geocode())
     
     # print(f"FOUND '/extra/data' (should be []): {geohash_tree.find_data_without_geocode(geohash_tree.root, '/extra/data')}")
-    # geohash_tree.insert('/extra/data/dpwhwtsh001')
+    # geohash_tree.insert('/extra/data/dpwhwtsqp01')
     # print(f"FOUND '/extra/data' (should include ['dpwhwtsh001']):"
     #       f" {geohash_tree.find_data_without_geocode(geohash_tree.root, '/extra/data')}")
-    # #print(geohash_tree.root)
-    # #print(geohash_tree.recent_hashes)
+    # print(geohash_tree.root)
+    # print(geohash_tree.recent_hashes)
     # print(f'\n######### FIND DATA BY NAMESPACE #########\n')
     # print(geohash_tree.find_data_by_namespace(geohash_tree.root))
     # print(f'\n######### THE TREE #########\n')
-    # #print(geohash_tree.root)
+    # print(geohash_tree.root)
 
 
 

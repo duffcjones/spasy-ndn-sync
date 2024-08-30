@@ -81,6 +81,7 @@ class Node:
         return False
     
     def length_geocode(self) -> int:
+        """Returns the length of any geocode associated with this Node."""
         length = 0
         if self._geocode:
             # if it isn't empty, all geocodes have the same length
@@ -117,7 +118,7 @@ class Node:
 
         geocode_to_add = list(node_to_add.geocode)[0]
         geocode_char = geocode_to_add[-1].lower()
-        print(f'GEOCODE CHAR: {geocode_char}')
+        #print(f'GEOCODE CHAR: {geocode_char}')
         index = None
         if geocode_char in '01234567':
             index = 0
@@ -126,7 +127,7 @@ class Node:
                 self._children[0] = node_to_add
             else:
                 self._children[0].add_geocode(geocode_to_add)
-                print(f'IT EXISTS, SO APPENDING to: {self._children[0]}')
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[0]}')
         elif geocode_char in '89bcdefg':
             index = 1
             if self._children[1] is None:
@@ -134,7 +135,7 @@ class Node:
                 self._children[1] = node_to_add
             else:
                 self._children[1].add_geocode(geocode_to_add)
-                print(f'IT EXISTS, SO APPENDING to: {self._children[1]}')
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[1]}')
         elif geocode_char in 'hjkmnpqr':
             index = 2
             if self._children[2] is None:
@@ -142,7 +143,7 @@ class Node:
                 self._children[2] = node_to_add
             else:
                 self._children[2].add_geocode(geocode_to_add)
-                print(f'IT EXISTS, SO APPENDING to: {self._children[2]}')
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[2]}')
         elif geocode_char in 'stuvwxyz':
             index = 3
             if self._children[3] is None:
@@ -150,9 +151,7 @@ class Node:
                 self._children[3] = node_to_add
             else:
                 self._children[3].add_geocode(geocode_to_add)
-                print(f'IT EXISTS, SO APPENDING to: {self._children[3]}')
-        else:
-            print(f'NO INDEX ADDED...')
+                #print(f'IT EXISTS, SO APPENDING to: {self._children[3]}')
 
         return index
 
@@ -278,12 +277,12 @@ class Node:
 # TESTING
 if __name__ == '__main__':
     print(f'\nTesting Node...\n')
-    node = Node('ABCD')
+    # node = Node('ABCD')
 
-    print(f'\n######### After construction #########\n {node}')
-    node.add_child(Node('EFGH'))
-    node.add_child(Node('IJKL'))
-    node.add_child(Node('MNOP'))
+    # print(f'\n######### After construction #########\n {node}')
+    # node.add_child(Node('EFGH'))
+    # node.add_child(Node('IJKL'))
+    # node.add_child(Node('MNOP'))
 
     # print(f'\n######### After adding children #########\n {node}')
     # node.remove_child(3)
