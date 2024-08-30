@@ -8,7 +8,7 @@ class Node:
     Merkle hash indicate changes in the data stored in that Node.
     """
 
-    def __init__(self, geocode: list = []) -> None:
+    def __init__(self, geocode: set = set()) -> None:
         """
         Args:
             merkle (str): the node's Merkle hash
@@ -17,9 +17,11 @@ class Node:
         """
         self._hashcode = sha256().hexdigest() # Note: since it is on the empty string, it'll always be the same hash
         if isinstance(geocode, str):
-            self._geocode = [geocode]
+            self._geocode = {geocode}
         else:
             self._geocode = geocode
+        print(self._geocode)
+        print(f'TYPE FOR GEOCODE: {type(self._geocode)}')
         self._children = [None, None, None, None]
         self._data = list()
         self._parent = None
@@ -36,8 +38,8 @@ class Node:
         return self._parent
 
     @property
-    def geocode(self) -> list:
-        """Get or set the list of geospatial indices."""
+    def geocode(self) -> set:
+        """Get or set the set of geospatial indices."""
         return self._geocode
     
     @property
@@ -82,7 +84,7 @@ class Node:
         length = 0
         if self._geocode:
             # if it isn't empty, all geocodes have the same length
-            length = len(self._geocode[0])
+            length = len(list((self._geocode))[0])
         return length
     
     ######### MUTATORS #########
@@ -92,8 +94,7 @@ class Node:
 
     def add_geocode(self, geocode: str) -> None:
         """Add a geocode to the set of geocodes associated with this node."""
-        if geocode not in self._geocode:
-            self._geocode.append(geocode)
+        self._geocode.add(geocode)
 
     def delete_data(self, named_data: str) -> None:
         """Delete a piece of named data from the node."""
@@ -113,7 +114,8 @@ class Node:
             int: the index where the child Node was 
                  inserted in the children list
         """
-        geocode_to_add = node_to_add.geocode[0]
+
+        geocode_to_add = list(node_to_add.geocode)[0]
         geocode_char = geocode_to_add[-1].lower()
         print(f'GEOCODE CHAR: {geocode_char}')
         index = None
@@ -276,12 +278,12 @@ class Node:
 # TESTING
 if __name__ == '__main__':
     print(f'\nTesting Node...\n')
-    # node = Node(['ABCD'])
+    node = Node('ABCD')
 
-    # print(f'\n######### After construction #########\n {node}')
-    # node.add_child(Node('EFGH'))
-    # node.add_child(Node('IJKL'))
-    # node.add_child(Node('MNOP'))
+    print(f'\n######### After construction #########\n {node}')
+    node.add_child(Node('EFGH'))
+    node.add_child(Node('IJKL'))
+    node.add_child(Node('MNOP'))
 
     # print(f'\n######### After adding children #########\n {node}')
     # node.remove_child(3)
@@ -332,4 +334,5 @@ if __name__ == '__main__':
     # node.children[3].insert_data('/testing/hashing')
     # print(f'CHILD 3 DATA: {node.children[3].data}')
     # print(f'CHILD 3 HASH after insertion of data: {node.children[3].hashcode}')
+
  

@@ -322,7 +322,7 @@ class SpasyTree:
                 current_level += 1  # we need to move down the tree         
                 geocode_to_add = insert_geocode[0:current_level]
                 
-                node_to_insert = Node([geocode_to_add])  # the node to be added to the tree
+                node_to_insert = Node(geocode_to_add)  # the node to be added to the tree
                 print(f'ADDING CHILD: {node_to_insert.geocode} in NODE {current_node.geocode} at LEVEL {current_level} and DEPTH {current_level}')
                 index = current_node.add_child(node_to_insert)
                 current_node = current_node.children[index]
@@ -551,7 +551,7 @@ if __name__ == '__main__':
     # geohash_tree.insert('/second/piece/of/data/DPWHWTSH00Z')
     # geohash_tree.insert('/extra/data/DPWHWTSZH00')
     # geohash_tree.insert('/some/data/DPWHWTSB214')
-    # geohash_tree.insert('another/data/piece/dpwhwts0202')
+    # geohash_tree.insert('/another/data/piece/dpwhwts0202')
     # geohash_tree.insert('/more/data/dpwhwts1020')
     # geohash_tree.insert('/data/dpwhwtsmzp9')
     # print(f'\n######### FIND DATA BY NAMESPACE #########\n')
@@ -561,25 +561,24 @@ if __name__ == '__main__':
     #        f" {geohash_tree.find_data_without_geocode(geohash_tree.root, '/some/data')}")
     # print(f"FOUND /some/data/dpwhwtsh00z (should be False): {geohash_tree.find_data('/some/data/dpwhwtsh00z')}")
     # print(f"FOUND /some/data/dpwhwtsh001 (should be True): {geohash_tree.find_data('/some/data/dpwhwtsh001')}")
-    # print(f"FOUND '/extra/data' (should include ['DPWHWTZH000', 'DPWHWTSH000', 'DPWHWTSH001']): {geohash_tree.find_data(geohash_tree.root, '/extra/data')}")
-    # geohash_tree.delete(geohash_tree.root, '/extra/data/to/add', 'DPWHWTSH000', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTSH001', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/some/more/data', 'DPWHWTSH009', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/some/testing/data', 'DPWHWTSH00H', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTSH00S', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/second/piece/of/data', 'DPWHWTSH000', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/extra/data', 'DPWHWTZH000', geohash_tree.root.length_geocode())
-    # geohash_tree.delete(geohash_tree.root, '/some/data', 'DPWHWTB0214', geohash_tree.root.length_geocode())
+    # geohash_tree.delete(geohash_tree.root, '/extra/data/to/add/dpwhwtsh000', geohash_tree.root.length_geocode())
+    # geohash_tree.delete(geohash_tree.root, '/some/data/DPWHWTSH001', geohash_tree.root.length_geocode())
+    # geohash_tree.delete(geohash_tree.root, '/some/more/data/DPWHWTSH009', geohash_tree.root.length_geocode())
+    # geohash_tree.delete(geohash_tree.root, '/some/testing/data/DPWHWTSH00H', geohash_tree.root.length_geocode())
+    # geohash_tree.delete(geohash_tree.root, '/some/data/DPWHWTSH00S', geohash_tree.root.length_geocode())
+    # geohash_tree.delete(geohash_tree.root, '/second/piece/of/data/DPWHWTSH00Z', geohash_tree.root.length_geocode())
+    # geohash_tree.delete(geohash_tree.root, '/extra/data/DPWHWTSZH00', geohash_tree.root.length_geocode())
     
-    # print(f"FOUND '/extra/data' (should be empty): {geohash_tree.find_data(geohash_tree.root, '/extra/data')}")
-    # geohash_tree.insert('DPWHWTZH001', '/extra/data')
-    # print(f"FOUND '/extra/data' (should include ['DPWHWTZH000', 'DPWHWTZH001', 'DPWHWTSH000', 'DPWHWTSH001']): {geohash_tree.find_data(geohash_tree.root, '/extra/data')}")
-    # print(geohash_tree.root)
-    # print(geohash_tree.recent_hashes)
+    # print(f"FOUND '/extra/data' (should be []): {geohash_tree.find_data_without_geocode(geohash_tree.root, '/extra/data')}")
+    # geohash_tree.insert('/extra/data/dpwhwtsh001')
+    # print(f"FOUND '/extra/data' (should include ['dpwhwtsh001']):"
+    #       f" {geohash_tree.find_data_without_geocode(geohash_tree.root, '/extra/data')}")
+    # #print(geohash_tree.root)
+    # #print(geohash_tree.recent_hashes)
     # print(f'\n######### FIND DATA BY NAMESPACE #########\n')
     # print(geohash_tree.find_data_by_namespace(geohash_tree.root))
     # print(f'\n######### THE TREE #########\n')
-    # print(geohash_tree.root)
+    # #print(geohash_tree.root)
 
 
 
