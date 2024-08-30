@@ -332,13 +332,4 @@ if __name__ == '__main__':
     # node.children[3].insert_data('/testing/hashing')
     # print(f'CHILD 3 DATA: {node.children[3].data}')
     # print(f'CHILD 3 HASH after insertion of data: {node.children[3].hashcode}')
-
-    name = '/some/data/dpwhwtsh000'
-    code = name.split('/')[-1]
-    print(code)
-    #code = 'DPWHWTSH000'
-    current_level = 7
-    leaf_level = 11
-    value = code[current_level:leaf_level]
-    print(value)
  

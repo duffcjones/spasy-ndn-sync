@@ -45,7 +45,7 @@ class Spasy:
         """
         self._tree.insert(data_to_add)
 
-    def remove_data_from_tree(self, delete_data: str, delete_geocode: str) -> None:
+    def remove_data_from_tree(self, delete_data: str) -> None:
         """
         Deletes named data from the SpasyTree.
 
@@ -53,7 +53,7 @@ class Spasy:
             delete_data (str): the named data to delete.
             delete_geocode (str): the geocode from which the data should be deleted.
         """
-        self._tree.delete(self._tree.root, delete_data, delete_geocode, self._tree.root.length_geocode())
+        self._tree.delete(self._tree.root, delete_data, self._tree.root.length_geocode())
     
     ######### OTHER #########
     def is_newer_tree(self, sync_tree_hash: str) -> bool:
@@ -124,8 +124,8 @@ class Spasy:
 # testing
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
-    spasy = Spasy('DPWHWTS')
-    other_tree = SpasyTree(10, Node('DPWHWTS'))
+    spasy = Spasy('dpwhwts')
+    other_tree = SpasyTree(10, Node('dpwhwts'))
 
     # # compare trees
     # print(f"\n######### COMPARE TREES BEFORE ADDING NEW DATA #########\n")
@@ -146,65 +146,66 @@ if __name__ == '__main__':
     # print(f'\n######### THE TREE BEFORE REPLACING IT #########\n')
     # print(spasy.tree.root)
 
-    # geohash_tree = SpasyTree(10, Node('dpwhwts'))
-    # geohash_tree.insert('/extra/data/to/add/dpwhwtsh300')
-    # geohash_tree.insert('/some/data/dpwhwtsh001')
-    # geohash_tree.insert('/some/more/data/dpwhwtsh009')
-    # geohash_tree.insert('/some/testing/data/dpwhwtsh00h')
-    # geohash_tree.insert('/some/data/dpwhwtsh00s')
-    # geohash_tree.insert('/second/piece/of/data/dpwhwtsh000')
-    # geohash_tree.insert('/extra/data/dpwhwtsh000')
-    # geohash_tree.insert('/some/data/dpwhwts0214')
-    # geohash_tree.insert('/extra/data/to/add/dpwhwtsp000')
-    # geohash_tree.insert('/some/data/dpwhwtsz001')
-    # geohash_tree.insert('/some/more/data/dpwhwtsb009')
-    # geohash_tree.insert('/some/testing/data/dpwhwtsm00h')
-    # geohash_tree.insert('/some/data/dpwhwtsn00s')
-    # geohash_tree.insert('/second/piece/of/data/dpwhwts1000')
-    # geohash_tree.insert('/extra/data/dpwhwts2000')
-    # geohash_tree.insert('/some/data/dpwhwts9214')
-    # geohash_tree.insert('/extra/data/to/add/dpwhwtsh000')
-    # geohash_tree.insert('/some/data/dpwhwtsh001')
-    # geohash_tree.insert('/some/more/data/dpwhwtsh009')
-    # geohash_tree.insert('/some/testing/data/dpwhwtsh00h')
-    # geohash_tree.insert('/some/data/dpwhwtshpqs')
-    # geohash_tree.insert('/second/piece/of/data/dpwhwtsprtu')
-    # geohash_tree.insert('/extra/data/dpwhwts9bzx')
-    # geohash_tree.insert('/some/data/dpwhwts/9214')
-    # geohash_tree.insert('/extra/data/to/add/dpwhwtspc18')
-    # geohash_tree.insert('/some/data/dpwhwtspcdq')
-    # geohash_tree.insert('/some/more/data/dpwhwtsmnz4')
-    # geohash_tree.insert('/some/testing/data/dpwhwtsm00h')
-    # geohash_tree.insert('/some/data/dpwhwtsp00s')
-    # geohash_tree.insert('/second/piece/of/data/dpwhwtsq000')
-    # geohash_tree.insert('/extra/data/dpwhwtsvw0z')
-    # geohash_tree.insert('/some/data/dpwhwtsm0p1')
+    geohash_tree = SpasyTree(10, Node('dpwhwts'))
+    geohash_tree.insert('/extra/data/to/add/dpwhwtsh300')
+    geohash_tree.insert('/some/data/dpwhwtsh001')
+    geohash_tree.insert('/some/more/data/dpwhwtsh009')
+    geohash_tree.insert('/some/testing/data/dpwhwtsh00h')
+    geohash_tree.insert('/some/data/dpwhwtsh00s')
+    geohash_tree.insert('/second/piece/of/data/dpwhwtsh000')
+    geohash_tree.insert('/extra/data/dpwhwtsh000')
+    geohash_tree.insert('/some/data/dpwhwts0214')
+    geohash_tree.insert('/extra/data/to/add/dpwhwtsp000')
+    geohash_tree.insert('/some/data/dpwhwtsz001')
+    geohash_tree.insert('/some/more/data/dpwhwtsb009')
+    geohash_tree.insert('/some/testing/data/dpwhwtsm00h')
+    geohash_tree.insert('/some/data/dpwhwtsn00s')
+    geohash_tree.insert('/second/piece/of/data/dpwhwts1000')
+    geohash_tree.insert('/extra/data/dpwhwts2000')
+    geohash_tree.insert('/some/data/dpwhwts9214')
+    geohash_tree.insert('/extra/data/to/add/dpwhwtsh000')
+    geohash_tree.insert('/some/data/dpwhwtsh001')
+    geohash_tree.insert('/some/more/data/dpwhwtsh009')
+    geohash_tree.insert('/some/testing/data/dpwhwtsh00h')
+    geohash_tree.insert('/some/data/dpwhwtshpqs')
+    geohash_tree.insert('/second/piece/of/data/dpwhwtsprtu')
+    geohash_tree.insert('/extra/data/dpwhwts9bzx')
+    geohash_tree.insert('/some/data/dpwhwts/9214')
+    geohash_tree.insert('/extra/data/to/add/dpwhwtspc18')
+    geohash_tree.insert('/some/data/dpwhwtspcdq')
+    geohash_tree.insert('/some/more/data/dpwhwtsmnz4')
+    geohash_tree.insert('/some/testing/data/dpwhwtsm00h')
+    geohash_tree.insert('/some/data/dpwhwtsp00s')
+    geohash_tree.insert('/second/piece/of/data/dpwhwtsq000')
+    geohash_tree.insert('/extra/data/dpwhwtsvw0z')
+    geohash_tree.insert('/some/data/dpwhwtsm0p1')
     # print(geohash_tree.root)
 
-    # start = time.time()
-    # spasy.is_newer_tree(geohash_tree.root.hashcode)
-    # spasy.replace_tree(geohash_tree)
-    # end = time.time()
-    # print(f'end: {end}, start: {start}; calculation = {end - start}')
-    # print(f'The tree contains {asizeof.asizeof(geohash_tree)} bytes.')
-    # print(f'\n######### THE TREE AFTER REPLACING IT #########\n')
+    start = time.time()
+    spasy.is_newer_tree(geohash_tree.root.hashcode)
+    spasy.replace_tree(geohash_tree)
+    end = time.time()
+    print(f'end: {end}, start: {start}; calculation = {end - start}')
+    print(f'The tree contains {asizeof.asizeof(geohash_tree)} bytes.')
+    print(f'\n######### THE TREE AFTER REPLACING IT #########\n')
 
-    # # # add, delete and find data
-    # spasy.add_data_to_tree('/add/data/dpwhwtsh401')
-    # print(f'\n########## THE TREE WITH ADDED DATA #########\n')
-    # #print(spasy.tree.root)
-    # print(f"FIND WITHOUT GEOCODE '/add/data' (should be ['dpwhwtsh300', 'dpwhwtsh001', 'dpwhwtsh000', 'dpwhwtsp000',"
-    #       f" 'dpwhwtsq000', 'dpwtsh401']): {spasy.search('/add/data')}")
-    # print(f"FIND ALL DATA: {spasy.gather_all_data()}")
-    # spasy.add_data_to_tree('/data/test/dpwhwtsh000')
-    # spasy.remove_data_from_tree('/data/test', 'DPWHWTSH000')
-    # print(f'\n########## THE TREE WITH DATA REMOVED #########\n')
-    # print(spasy.tree.root)
-    # print(f"FIND '/add/data/dpwhwtsh401' (should be True): {spasy.search('/add/data/dpwhwtsh401')}")
-    # print(f"FIND '/data/test' (should be []): {spasy.search_without_geocode('/data/test')}")
-    # print(f"FIND WITHOUT GEOCODE '/add/data' (should be ['dpwhwtsh300', 'dpwhwtsh001', 'dpwhwtsh000', 'dpwhwtsp000',"
-    #       f" 'dpwhwtsq000', 'dpwtsh401']): {spasy.search_without_geocode('/add/data')}")
-
+    # add, delete and find data
+    spasy.add_data_to_tree('/add/data/dpwhwtsh401')
+    print(f'\n########## THE TREE WITH ADDED DATA #########\n')
+    #print(spasy.tree.root)
+    print(f"FIND WITHOUT GEOCODE '/add/data' (should be ['dpwhwtsh300', 'dpwhwtsh001', 'dpwhwtsh000', 'dpwhwtsp000',"
+          f" 'dpwhwtsq000', 'dpwtsh401']): {spasy.search('/add/data')}")
+    spasy.add_data_to_tree('/data/test/dpwhwtsb900')
+    print(f'\n######### THE TREE BEFORE REMOVAL #########\n')
+    print(spasy.tree.root)
+    spasy.remove_data_from_tree('/data/test/dpwhwtsb900')
+    print(f'\n########## THE TREE WITH DATA REMOVED #########\n')
+    print(spasy.tree.root)
+    print(f"FIND '/add/data/dpwhwtsh401' (should be True): {spasy.search('/add/data/dpwhwtsh401')}")
+    print(f"FIND '/data/test' (should be []): {spasy.search_without_geocode('/data/test')}")
+    print(f"FIND WITHOUT GEOCODE '/add/data' (should be ['dpwhwtsh300', 'dpwhwtsh001', 'dpwhwtsh000', 'dpwhwtsp000',"
+          f" 'dpwhwtsq000', 'dpwtsh401']): {spasy.search_without_geocode('/add/data')}")
+    print(f"\n#########FIND ALL DATA #########\n: {spasy.gather_all_data()}")
 
 
     
