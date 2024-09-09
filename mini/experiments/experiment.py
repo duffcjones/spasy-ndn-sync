@@ -11,12 +11,14 @@ from mininet.log import setLogLevel, info, error, debug
 
 from mini.application.SpatialSyncApp import SpatialSyncApp
 from mini.application.ConsumerApp import ConsumerApp
+from mini.application.ProducerApp import ProducerApp
+
 from mini.minindn_play.server import PlayServer
 from mini.experiments.setup import Setup
 
 logLevel = "info"
 setupDir = "/spatialsync/setup/"
-topoFile = "/spatialsync/mini/experiments/topologies/topology.conf"
+topoFile = "/spatialsync/mini/experiments/topologies/4-server-topo.conf"
 
 globalPrefix = "/spasy/"
 directPostfix = "/direct/"
@@ -59,7 +61,7 @@ if __name__ == "__main__":
 
     AppManager(ndn, ndn.net.hosts, Nfd)
     info("NFD started on nodes\n")
-    time.sleep(5)
+    # time.sleep(2)
 
     grh = NdnRoutingHelper(ndn.net)
     for i, host in enumerate(ndn.net.hosts):
@@ -97,7 +99,9 @@ if __name__ == "__main__":
     AppManager(ndn, [ndn.net.hosts[4]], SpatialSyncApp,
                config_file=setups[ndn.net.hosts[4].name].setup_config(),
                actions_file=setups[ndn.net.hosts[4].name].setup_actions())
-    # AppManager(ndn, [ndn.net.hosts[4]], ConsumerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
+    # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h1/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # AppManager(ndn, [ndn.net.hosts[1]], ProducerApp, target="/spasy/h1/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 
     # MiniNDNCLI(ndn.net)
     PlayServer(ndn.net).start()

@@ -8,7 +8,7 @@ class SpatialSyncApp(Application):
         self.setup_file = config_file
         self.actions_file = actions_file
 
-        self.cmd = "/spatialsync/client/dist/SpatialSync"
+        self.cmd = "/spatialsync/client/dist/SpatialSync2"
         self.cmd += " " + config_file
         self.cmd += " --actions " + actions_file
 
