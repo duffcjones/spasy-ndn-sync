@@ -25,10 +25,10 @@ directPostfix = "/direct/"
 multiPostfix = "/multi/"
 
 root_geocode = "DPWHWT"
-packet_segment_size = 1024
+packet_segment_size = 50
 waitTime = 1
 
-nFaces = 1
+nFaces = 0
 
 if __name__ == "__main__":
     setLogLevel(logLevel)
@@ -70,6 +70,7 @@ if __name__ == "__main__":
         else:
             setups[host.name] = Setup(host.name, "2")
         grh.addOrigin([host], [globalPrefix + host.name])
+        # grh.addOrigin([host], [globalPrefix])
 
     grh.calculateNPossibleRoutes(nFaces=nFaces)
 
@@ -100,8 +101,15 @@ if __name__ == "__main__":
                config_file=setups[ndn.net.hosts[4].name].setup_config(),
                actions_file=setups[ndn.net.hosts[4].name].setup_actions())
 
-    # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h1/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # AppManager(ndn, [ndn.net.hosts[1]], ProducerApp, target="/spasy/h1/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
+    # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # AppManager(ndn, [ndn.net.hosts[1]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # AppManager(ndn, [ndn.net.hosts[2]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # AppManager(ndn, [ndn.net.hosts[3]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # AppManager(ndn, [ndn.net.hosts[4]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+
+
 
     # MiniNDNCLI(ndn.net)
     PlayServer(ndn.net).start()

@@ -31,7 +31,7 @@ async def main(prefix):
                      freshness_period=10000,
                      final_block_id=Component.from_segment(seg_cnt - 1)) for i in range(seg_cnt)]
     await app.register(prefix, on_interest)
-    await app.register("/spasy/h1/multi", on_multi_interest)
+    # await app.register("/spasy/h1/multi", on_multi_interest)
 
 def on_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
     logging.debug(f'>> Interest: {Name.to_str(name)}, {param}')
@@ -41,17 +41,17 @@ def on_interest(name: FormalName, param: InterestParam, app_param: Optional[Bina
     # logging.debug(MetaInfo(freshness_period=10000))
     # logging.debug(f'Content: (size: {len(content)})')
 
-def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
-    logging.info(f'>> Multi Interest: {name}, {param}')
-    name = Name.to_str(name)
-    # app.put_data(name, content="received".encode(), freshness_period=10000)
-    # logging.debug(f'<< Data: {name}')
-    # logging.debug(MetaInfo(freshness_period=10000))
-
-    sender = "/" + name.split("//")[-1].rsplit("/", 1)[0]
-    root_hash = name.split("/")[-1]
-    logging.debug(f'Received Root Hash {root_hash} from {sender}')
-    # receive_hash(root_hash, sender)
+# def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+#     logging.info(f'>> Multi Interest: {name}, {param}')
+#     name = Name.to_str(name)
+#     # app.put_data(name, content="received".encode(), freshness_period=10000)
+#     # logging.debug(f'<< Data: {name}')
+#     # logging.debug(MetaInfo(freshness_period=10000))
+#
+#     sender = "/" + name.split("//")[-1].rsplit("/", 1)[0]
+#     root_hash = name.split("/")[-1]
+#     logging.debug(f'Received Root Hash {root_hash} from {sender}')
+#     # receive_hash(root_hash, sender)
 
 
 if __name__ == '__main__':

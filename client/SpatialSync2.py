@@ -24,6 +24,9 @@ logging.basicConfig(
                     datefmt='%H:%M:%S',
                     level=logging.INFO)
 
+app = NDNApp()
+
+content = "received".encode()
 root_geocode = ''
 spasy = Spasy("DPWHWT")
 config = {}
@@ -35,46 +38,80 @@ timer = Timer()
 
 async def main():
     logging.info("Registering prefixes")
-    await app.register(config["multi_prefix"], on_multi_interest)
-    await app.register(config["direct_prefix"], on_direct_interest)
+
+    if actions[1].split(" ")[0] == "UPDATE":
+        await app.register(config["direct_prefix"], on_direct_interest)
+        # app.set_interest_filter(config["direct_prefix"], on_direct_interest)
+
+    else:
+        await app.register(config["initialization_prefix"], on_init_interest)
+        await app.register(config["multi_prefix"], on_multi_interest)
+        await app.register("/multi/", on_multi_interest)
+        # app.set_interest_filter(config["multi_prefix"], on_multi_interest)
 
     time.sleep(2)
 
-    requests_thread = threading.Thread(target=run_actions, daemon=False)
-    requests_thread.start()
+    if actions[1].split(" ")[0] != "UPDATE":
+        timer.start_timer("run")
 
-    up_time = time.time()
-    while time.time() - up_time < 10:
-        await asyncio.sleep(0)
-        if requests:
-            name = requests.popleft()
-            logging.info(f'Sending Root Request {name}')
-            received_tree = await send_root_request(name)
-            logging.info(f'Received Root Request {type(received_tree)}')
-            global spasy
-            spasy.replace_tree(received_tree)
-            logging.info(f'Updated tree with hash {received_tree.tree.root.hashcode}')
-            break
-    timer.dump()
-    app.shutdown()
+
+
+    if actions[1].split(" ")[0] == "UPDATE":
+        # requests_thread = threading.Thread(target=run_actions, daemon=False)
+        # requests_thread.start()
+        for route in config["routes"]:
+            await send_init_interest(route)
+
+        time.sleep(2)
+        timer.start_timer("run")
+        await run_actions()
+        # up_time = time.time()
+        # while time.time() - up_time < 3:
+        #     await asyncio.sleep(0)
+        # timer.dump()
+        # app.shutdown()
+    # else:
+    #     up_time = time.time()
+    #     while time.time() - up_time < 3:
+    #         await asyncio.sleep(0)
+    #         # if requests:
+    #         #     name = requests.popleft()
+    #         #     logging.info(f'Sending Root Request {name}')
+    #         #     received_tree = await send_root_request(name)
+    #         #     logging.info(f'Received Root Request {type(received_tree)}')
+    #         #     global spasy
+    #         #     spasy.replace_tree(received_tree)
+    #         #     logging.info(f'Updated tree with hash {received_tree.tree.root.hashcode}')
+    #         #     break
+    #     timer.dump()
+    #     app.shutdown()
+
+
+async def send_init_interest(route):
+    name = route + config["initialization_postfix"]
+    logging.info(f"Send init interest to {name}")
+    data_name, meta_info, seg = await app.express_interest(
+        Name.normalize(name), must_be_fresh=True, can_be_prefix=True,
+        lifetime=100)
+    logging.info("Received init interest")
 
 
 async def send_root_request(name):
     received_tree = None
     try:
-        logging.info(f'Sending Root Interest {name}, {InterestParam(must_be_fresh=True, lifetime=6000)}')
+        # logging.info(f'Sending Root Interest {name}, {InterestParam(must_be_fresh=True, lifetime=6000)}')
         data = b''
         seg_no = 0
-        logging.debug(seg_no)
-        timer.start_timer("send_interest")
-        data_name, meta_info, seg = await app.express_interest(
-            Name.normalize(name) + [Component.from_segment(seg_no)], must_be_fresh=True, can_be_prefix=True,
-            lifetime=1000)
-        timer.stop_timer("send_interest")
-        data += bytes(seg)
-        logging.info(f'Received Tree Name: {Name.to_str(name)}')
+        # logging.debug(seg_no)
+        # timer.start_timer("send_interest")
+        # data_name, meta_info, seg = await app.express_interest(
+        #     Name.normalize(name) + [Component.from_segment(seg_no)], must_be_fresh=True, can_be_prefix=True,
+        #     lifetime=1000)
+        num_seg, data = await fetch_segments(name)
+        # timer.stop_timer("send_interest")
+        # logging.info(f'Received Tree Name: {Name.to_str(name)}')
         received_tree = pickle.loads(data)
-        logging.info(sys.getsizeof(received_tree))
+        # logging.info(sys.getsizeof(received_tree))
     except InterestNack as e:
         logging.info(f'Nacked with reason={e.reason}')
     except InterestTimeout:
@@ -87,6 +124,24 @@ async def send_root_request(name):
         logging.info(f'Error: {e}')
     finally:
         return received_tree
+
+
+async def fetch_segments(name):
+    data = b''
+    seg_no = 0
+    while seg_no < 100:
+        # logging.debug(seg_no)
+        data_name, meta_info, seg = await app.express_interest(
+            Name.normalize(name) + [Component.from_segment(seg_no)], must_be_fresh=True, can_be_prefix=True,
+            lifetime=100)
+
+        data += bytes(seg)
+        if meta_info.final_block_id == Component.from_segment(seg_no):
+            break
+        else:
+            seg_no += 1
+
+    return seg_no, data
 
 
 def setup(config_file, actions_file):
@@ -106,33 +161,62 @@ def setup(config_file, actions_file):
         logging.debug(actions)
 
 
-def run_actions():
+async def run_actions():
     for action in actions:
         if action.split(" ")[0] == "UPDATE":
-            logging.info(f'Adding data at geocode DPWHWTSH401')
             serialized_tree = pickle.dumps(spasy)
             pack_tree(serialized_tree, spasy.tree.root.hashcode)
-            asyncio.run(send_sync_requests(spasy.tree.root.hashcode))
+            logging.info(f'Adding data at geocode DPWHWTSH401')
+            # asyncio.run(send_sync_requests(spasy.tree.root.hashcode))
+            # await send_sync_requests(spasy.tree.root.hashcode)
+
+            sync_requests = []
+            for route in config["routes"]:
+                # await send_sync_request(route, spasy.tree.root.hashcode)
+                # await asyncio.sleep(0)
+                task = asyncio.create_task(send_sync_request(route, spasy.tree.root.hashcode))
+                # task = asyncio.create_task(send_sync_request("/spasy/multi/", spasy.tree.root.hashcode))
+                sync_requests.append(task)
+                # requests_thread = threading.Thread(target=send_sync_requests, kwargs={'route': route, 'root_hash': spasy.tree.root.hashcode }, daemon=False)
+                # requests_thread.start()
+
+                # sync_requests.append(send_sync_request(route, spasy.tree.root.hashcode))
+            # await asyncio.gather(*sync_requests)
+            # asyncio.create_task(send_sync_request(config["routes"][1], spasy.tree.root.hashcode))
 
 
-async def send_sync_requests(root_hash):
-    logging.info("Loading sync requests")
-    sync_requests = []
-    for route in config["routes"]:
-        sync_requests.append(send_sync_request(route, root_hash))
-    await asyncio.gather(*sync_requests)
+# async def send_sync_requests(root_hash):
+#     # logging.info("Loading sync requests")
+#     sync_requests = []
+#     for route in config["routes"]:
+#         sync_requests.append(send_sync_request(route, root_hash))
+#     await asyncio.gather(*sync_requests)
+
+# def send_sync_requests(route, root_hash):
+#     loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(loop)
+#     loop.run_until_complete(send_sync_request(route, root_hash))
+#     loop.close()
+
+# def send_sync_requests(route, root_hash):
+#     asyncio.run(send_sync_request(route, root_hash))
 
 
 async def send_sync_request(route, root_hash):
+    # await send_init_interest(route)
+    name = route + config["multi_postfix"] + config["direct_prefix"] + root_hash
+    # name = route + config["direct_prefix"] + root_hash
+
     try:
-        name = route + config["multi_postfix"] + config["direct_prefix"] + root_hash
         logging.info(f'Sending Sync Interest {name}')
         data_name, meta_info, response = await app.express_interest(
-            Name.normalize(name), must_be_fresh=True, can_be_prefix=True, lifetime=1)
-        logging.debug(f'Received Sync Interest {data_name}')
-        logging.debug(f'Received Data Name: {Name.to_str(data_name)}')
-        logging.debug(meta_info)
-        logging.debug(bytes(response) if response else None)
+            Name.normalize(name), must_be_fresh=True, can_be_prefix=True, lifetime=100)
+        # tasks = []
+        # tasks.append(task)
+        logging.info(f'Received Sync Interest {data_name}')
+        # logging.info(f'Received Sync Response: {Name.to_str(data_name)}')
+        # logging.debug(meta_info)
+        # logging.debug(bytes(response) if response else None)
     except InterestCanceled:
         logging.debug(f'Canceled')
     except ValidationFailure:
@@ -142,21 +226,30 @@ async def send_sync_request(route, root_hash):
     except InterestTimeout:
         logging.debug(f'Sync request sent')
     finally:
+        # logging.info(f'Sent Sync Interest {name}')
         pass
 
 
+# @app.route("/spasy/h1/multi")
 def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
-    logging.info(f'>> Multi Interest: {name}, {param}')
+    logging.info(f'>> Multi Interest: {Name.to_str(name)}')
+    global content
+    app.put_data(name, content=content, freshness_period=100)
+    logging.info(f'<< Data: {name}')
     name = Name.to_str(name)
     sender = "/" + name.split("//")[-1].rsplit("/", 1)[0]
     root_hash = name.split("/")[-1]
-    logging.debug(f'Received Root Hash {root_hash} from {sender}')
-    receive_hash(root_hash, sender)
+    logging.info(f'Received Root Hash {root_hash} from {sender}')
+    asyncio.create_task(receive_hash(root_hash,sender))
+    # asyncio.create_task(receive_hash(root_hash,sender))
+
+
+    # asyncio.run(receive_hash(root_hash, sender))
 
 
 def on_direct_interest(name, param, app_param):
-    logging.debug(f'>> Direct Interest: {Name.to_str(name)}, {param}')
-    logging.debug(f'<< Data: {Name.to_str(name)}')
+    logging.info(f'>> Direct Interest: {Name.to_str(name)}, {param}')
+    logging.info(f'<< Data: {Name.to_str(name)}')
 
     packets, seg_cnt = packed_trees[Name.to_str(name).rsplit("/",1)[0]]
     seg_no = Component.to_number(name[-1])
@@ -165,10 +258,26 @@ def on_direct_interest(name, param, app_param):
         app.put_raw_packet(packets[Component.to_number(name[-1])])
 
 
-def receive_hash(root_hash, sender):
+def on_init_interest(name, param, app_param):
+    logging.info(f'>> Interest: {Name.to_str(name)}, {param}')
+    logging.info(f'<< Data: {Name.to_str(name)}')
+    app.put_data(name, content=content, freshness_period=100)
+
+
+async def receive_hash(root_hash, sender):
     name = sender + "/" + root_hash
-    global requests
-    requests.append(name)
+    # global requests
+    # requests.append(name)
+    # logging.info("Logging hash")
+
+    logging.info(f'Sending Root Request {name}')
+    received_tree = await send_root_request(name)
+    logging.info(f'Received Root Request {type(received_tree)}')
+    # global spasy
+    # spasy.replace_tree(received_tree)
+    # logging.info(f'Updated tree with hash {received_tree.tree.root.hashcode}')
+    logging.info(f'Updated tree with hash')
+
 
 
 def pack_tree(serialized_tree, root_hash):
@@ -194,6 +303,5 @@ if __name__ == '__main__':
     parser.add_argument("config_file")
     parser.add_argument('--actions', dest='actions_file')
     args = parser.parse_args()
-    app = NDNApp()
     setup(args.config_file, args.actions_file)
     app.run_forever(after_start=main())
