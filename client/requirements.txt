@@ -8,12 +8,15 @@ cachetools==5.3.1
 frozenlist==1.4.1
 idna==3.7
 lark==1.1.9
+macholib==1.16.3
 multidict==6.0.5
 packaging==24.1
 pycryptodomex==3.20.0
 pygtrie==2.5.0
 pyinstaller==6.10.0
 pyinstaller-hooks-contrib==2024.8
+Pympler==1.1
+python-geohash==0.8.5
 python-ndn==0.4.2
 setuptools==72.1.0
 yarl==1.9.4
