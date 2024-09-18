@@ -1,5 +1,5 @@
-import time
 import os
+import logging
 
 from minindn.minindn import Minindn
 from minindn.util import MiniNDNCLI
@@ -16,27 +16,28 @@ from mini.application.ProducerApp import ProducerApp
 from mini.minindn_play.server import PlayServer
 from mini.experiments.setup import Setup
 
-logLevel = "info"
+logLevel = logging.INFO
 setupDir = "/spatialsync/setup/"
-topoFile = "/spatialsync/mini/experiments/topologies/4-server-topo.conf"
 
 globalPrefix = "/spasy/"
 directPostfix = "/direct/"
 multiPostfix = "/multi/"
 
-root_geocode = "DPWHWT"
-packet_segment_size = 50
-waitTime = 1
-
+initTime = 2
 nFaces = 0
 
-if __name__ == "__main__":
-    setLogLevel(logLevel)
-    Minindn.cleanUp()
-    Minindn.verifyDependencies()
+def run_experiment(topo_file):
+    Setup.setup_dir = setupDir
+
+    Setup.global_prefix = globalPrefix
+    Setup.direct_postfix = directPostfix
+    Setup.multi_postfix = multiPostfix
+
+    Setup.log_level = logLevel
+    Setup.init_time = initTime
 
     try:
-        with os.scandir(setupDir) as entries:
+        with os.scandir(Setup.setup_dir) as entries:
             for entry in entries:
                 if entry.is_file():
                     os.unlink(entry.path)
@@ -44,73 +45,49 @@ if __name__ == "__main__":
     except OSError:
         print("Error occurred while deleting files.")
 
-    Setup.setup_dir = setupDir
-
-    Setup.global_prefix = globalPrefix
-    Setup.direct_postfix = directPostfix
-    Setup.multi_postfix = multiPostfix
-
-    Setup.root_geocode = root_geocode
-    Setup.packet_segment_size = packet_segment_size
-    Setup.wait_time = waitTime
+    setLogLevel("info")
+    Minindn.cleanUp()
+    Minindn.verifyDependencies()
 
     setups = {}
 
-    ndn = Minindn(topoFile=topoFile)
+    ndn = Minindn(topoFile=topo_file)
     ndn.start()
 
     AppManager(ndn, ndn.net.hosts, Nfd)
-    info("NFD started on nodes\n")
-    # time.sleep(2)
-
     grh = NdnRoutingHelper(ndn.net)
+
     for i, host in enumerate(ndn.net.hosts):
-        if host.name == "h0":
-            setups[host.name] = Setup(host.name, "1")
-        else:
-            setups[host.name] = Setup(host.name, "2")
-        grh.addOrigin([host], [globalPrefix + host.name])
-        # grh.addOrigin([host], [globalPrefix])
+        setup = Setup(host.name)
+        node_prefix = setup.add_prefixes()
+        setups[host.name] = setup
+        grh.addOrigin([host], [node_prefix])
 
     grh.calculateNPossibleRoutes(nFaces=nFaces)
 
     for host in ndn.net.hosts:
         routesFromHost = host.cmd("nfdc route | grep -v '/localhost/nfd'")
-        debug(routesFromHost)
         for dest in ndn.net.hosts:
-            if globalPrefix + dest.name not in routesFromHost and dest.name != host.name:
+            host_setup = setups[host.name]
+            dest_setup = setups[dest.name]
+            if dest_setup.node_prefix not in routesFromHost and dest.name != host.name:
                 raise Exception("Route addition failed\n")
-            if globalPrefix + dest.name in routesFromHost and dest.name != host.name:
-                setups[host.name].routes.append(globalPrefix + dest.name)
+            if dest_setup.node_prefix in routesFromHost and dest.name != host.name:
+                host_setup.add_route(dest_setup.node_prefix)
 
         info("Static route additions successful for node {}\n".format(host.name))
 
-    AppManager(ndn, [ndn.net.hosts[0]], SpatialSyncApp,
-               config_file=setups[ndn.net.hosts[0].name].setup_config(),
-               actions_file=setups[ndn.net.hosts[0].name].setup_actions())
-    AppManager(ndn, [ndn.net.hosts[1]], SpatialSyncApp,
-               config_file=setups[ndn.net.hosts[1].name].setup_config(),
-               actions_file=setups[ndn.net.hosts[1].name].setup_actions())
-    AppManager(ndn, [ndn.net.hosts[2]], SpatialSyncApp,
-               config_file=setups[ndn.net.hosts[2].name].setup_config(),
-               actions_file=setups[ndn.net.hosts[2].name].setup_actions())
-    AppManager(ndn, [ndn.net.hosts[3]], SpatialSyncApp,
-               config_file=setups[ndn.net.hosts[3].name].setup_config(),
-               actions_file=setups[ndn.net.hosts[3].name].setup_actions())
-    AppManager(ndn, [ndn.net.hosts[4]], SpatialSyncApp,
-               config_file=setups[ndn.net.hosts[4].name].setup_config(),
-               actions_file=setups[ndn.net.hosts[4].name].setup_actions())
+    for host in ndn.net.hosts:
+        AppManager(ndn, [host], SpatialSyncApp,
+                   config_file=setups[host.name].setup_config(),
+                   actions_file=setups[host.name].setup_actions())
 
-    # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # # AppManager(ndn, [ndn.net.hosts[1]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # # AppManager(ndn, [ndn.net.hosts[2]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # # AppManager(ndn, [ndn.net.hosts[3]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    # # AppManager(ndn, [ndn.net.hosts[4]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 
-    # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # AppManager(ndn, [ndn.net.hosts[1]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # AppManager(ndn, [ndn.net.hosts[2]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # AppManager(ndn, [ndn.net.hosts[3]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # AppManager(ndn, [ndn.net.hosts[4]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-
-
-
-    # MiniNDNCLI(ndn.net)
+    # # MiniNDNCLI(ndn.net)
     PlayServer(ndn.net).start()
     ndn.stop()
