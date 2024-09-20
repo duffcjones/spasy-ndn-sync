@@ -1,41 +1,31 @@
 import logging
 import argparse
-import asyncio
-import pickle
 import time
+import asyncio
 
 import Config
 from Callbacks import on_direct_interest, on_multi_interest, on_init_interest
-from Interests import send_init_interest, send_sync_request
-from Util import pack_tree
+import Actions
+from Interests import send_init_interests
 
 async def main():
-    if actions[1].split(" ")[0] == "UPDATE":
-        await Config.app.register(Config.config["direct_prefix"], on_direct_interest)
-    else:
-        await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
-        await Config.app.register(Config.config["multi_prefix"], on_multi_interest)
-
+    logging.info("Registering prefixes")
+    await Config.app.register(Config.config["direct_prefix"], on_direct_interest)
+    await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
+    await Config.app.register(Config.config["multi_prefix"], on_multi_interest)
     time.sleep(Config.config["init_time"])
 
-    if actions[1].split(" ")[0] == "UPDATE":
-        for route in Config.config["routes"]:
-            await send_init_interest(route)
-
-        time.sleep(Config.config["init_time"])
-        await run_actions()
+    logging.info("Initializing interests")
+    await send_init_interests()
+    await asyncio.sleep(Config.config["init_time"])
 
 
-async def run_actions():
-    for action in actions:
-        if action.split(" ")[0] == "UPDATE":
-            serialized_tree = pickle.dumps(Config.spasy)
-            pack_tree(serialized_tree, Config.spasy.tree.root.hashcode)
-
-            sync_requests = []
-            for route in Config.config["routes"]:
-                task = asyncio.create_task(send_sync_request(route, Config.spasy.tree.root.hashcode))
-                sync_requests.append(task)
+    for action_key in action_list:
+        action_params = action_key.split(" ")
+        cmd = action_params[0]
+        opts = action_params[1:]
+        action = Actions.actions[cmd]
+        await action(opts)
 
 
 if __name__ == '__main__':
@@ -44,6 +34,6 @@ if __name__ == '__main__':
     parser.add_argument('--actions', dest='actions_file')
     args = parser.parse_args()
 
-    actions = Config.setup(args.config_file, args.actions_file)
+    action_list = Config.setup(args.config_file, args.actions_file)
 
     Config.app.run_forever(after_start=main())

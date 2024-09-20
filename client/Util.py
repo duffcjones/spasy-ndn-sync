@@ -15,3 +15,4 @@ def pack_tree(serialized_tree, root_hash):
                for i in range(seg_cnt)]
 
     Config.packed_trees[Name.to_str(name)] = (packets, seg_cnt)
+    logging.info(f"Packed {seg_cnt} segments")

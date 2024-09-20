@@ -82,12 +82,6 @@ def run_experiment(topo_file):
                    config_file=setups[host.name].setup_config(),
                    actions_file=setups[host.name].setup_actions())
 
-    # # AppManager(ndn, [ndn.net.hosts[0]], ConsumerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # # AppManager(ndn, [ndn.net.hosts[1]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # # AppManager(ndn, [ndn.net.hosts[2]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # # AppManager(ndn, [ndn.net.hosts[3]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-    # # AppManager(ndn, [ndn.net.hosts[4]], ProducerApp, target="/spasy/h0/direct/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-
     # # MiniNDNCLI(ndn.net)
     PlayServer(ndn.net).start()
     ndn.stop()

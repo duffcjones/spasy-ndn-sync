@@ -1,7 +1,7 @@
 from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiment
 
-topoFile = "/spatialsync/mini/experiments/topologies/topologyA.conf"
+topoFile = "/spatialsync/mini/experiments/topologies/topology2.conf"
 
 root_geocode = "DPWHWT"
 packet_segment_size = 50

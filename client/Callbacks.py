@@ -6,7 +6,7 @@ import logging
 import asyncio
 
 import Config
-from Interests import send_init_interest, send_root_request
+from Interests import send_root_request
 
 def on_direct_interest(name, param, app_param):
     packets, seg_cnt = Config.packed_trees[Name.to_str(name).rsplit("/",1)[0]]
@@ -16,9 +16,11 @@ def on_direct_interest(name, param, app_param):
         Config.app.put_raw_packet(packets[Component.to_number(name[-1])])
 
 def on_init_interest(name, param, app_param):
+    logging.info(f"Init interest received for {name}")
     Config.app.put_data(name, content="received".encode(), freshness_period=100)
 
 def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+    logging.info(f"Multi Interest received for {name}")
     global content
     Config.app.put_data(name, content="received".encode(), freshness_period=100)
     name = Name.to_str(name)
