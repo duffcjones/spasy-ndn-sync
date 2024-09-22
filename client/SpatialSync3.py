@@ -2,6 +2,7 @@ import logging
 import argparse
 import time
 import asyncio
+import threading
 
 import Config
 from Callbacks import on_direct_interest, on_multi_interest, on_init_interest
@@ -10,15 +11,17 @@ from Interests import send_init_interests
 
 async def main():
     logging.info("Registering prefixes")
-    await Config.app.register(Config.config["direct_prefix"], on_direct_interest)
+    # await Config.app.register(Config.config["direct_prefix"], on_direct_interest)
+    # await Config.app.register(Config.config["global_prefix"], on_direct_interest)
     await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
+    logging.info(f"Registered prefix {Config.config["initialization_prefix"]}")
     await Config.app.register(Config.config["multi_prefix"], on_multi_interest)
+    logging.info(f"Registered prefix {Config.config["multi_prefix"]}")
     time.sleep(Config.config["init_time"])
 
     logging.info("Initializing interests")
     await send_init_interests()
     await asyncio.sleep(Config.config["init_time"])
-
 
     for action_key in action_list:
         action_params = action_key.split(" ")

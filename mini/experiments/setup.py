@@ -5,12 +5,12 @@ import logging
 
 
 class Setup:
-    direct_postfix = "/direct/"
-    multi_postfix = "/multi/"
-    initialization_postfix = "/init/"
-    global_prefix = "/spasy/"
+    direct_postfix = "/direct"
+    multi_postfix = "/multi"
+    initialization_postfix = "/init"
+    global_prefix = "/spasy"
     setup_dir = "/spatialsync/mini/experiments/setup/"
-    root_geocode = "DPWHWT"
+    # root_geocode = "DPWHWT"
     packet_segment_size = 100
     log_level = logging.INFO
     wait_time = 1
@@ -30,11 +30,12 @@ class Setup:
         self.routes = []
 
     def add_prefixes(self):
-        self.direct_prefix = self.global_prefix + self.node_name + self.direct_postfix
-        self.multi_prefix = self.global_prefix + self.node_name + self.multi_postfix
-        self.initialization_prefix = self.global_prefix + self.node_name + self.initialization_postfix
-        self.node_prefix = self.global_prefix + self.node_name
-        return self.node_prefix
+        # self.direct_prefix = self.global_prefix + self.node_name + self.direct_postfix
+        self.direct_prefix = self.global_prefix + self.direct_postfix
+        self.multi_prefix = self.global_prefix + f"/{self.node_name}" + self.multi_postfix
+        self.initialization_prefix = self.global_prefix + f"/{self.node_name}" + self.initialization_postfix
+        self.node_prefix = self.global_prefix + f"/{self.node_name}"
+        # return self.node_prefix
 
     @classmethod
     def add_actions(cls, actions):
@@ -46,6 +47,7 @@ class Setup:
     def setup_config(self):
         setup_data = {
             "node_name": self.node_name,
+            "global_prefix": self.global_prefix,
             "direct_prefix": self.direct_prefix,
             "multi_prefix": self.multi_prefix,
             "initialization_prefix": self.initialization_prefix,
@@ -55,7 +57,7 @@ class Setup:
             "routes": self.routes,
             "wait_time": self.wait_time,
             "packet_segment_size": self.packet_segment_size,
-            "root_geocode": self.root_geocode,
+            # "root_geocode": self.root_geocode,
             "log_level": self.log_level,
             "init_time": self.init_time
         }

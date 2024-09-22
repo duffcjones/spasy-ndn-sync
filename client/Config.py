@@ -20,9 +20,6 @@ def setup(config_file, actions_file):
         datefmt='%H:%M:%S',
         level=config["log_level"])
 
-    global spasy
-    spasy = Spasy(config["root_geocode"])
-
     with open(actions_file, mode="r") as file:
         actions = file.read().splitlines()
 
