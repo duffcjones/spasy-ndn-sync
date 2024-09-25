@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 
 from minindn.minindn import Minindn
 from minindn.util import MiniNDNCLI
@@ -15,26 +16,36 @@ from mini.application.ProducerApp import ProducerApp
 
 from mini.minindn_play.server import PlayServer
 from mini.experiments.setup import Setup
+from mini.experiments.results import convert_results
 
-logLevel = logging.INFO
-setupDir = "/spatialsync/setup/"
+log_level = logging.INFO
+setup_dir = "/spatialsync/setup/"
+output_dir = "/tmp/minindn/"
 
-globalPrefix = "/spasy"
-directPostfix = "/direct"
-multiPostfix = "/multi"
-
-initTime = 2
+init_time = 2
 nFaces = 0
 
-def run_experiment(topo_file):
-    Setup.setup_dir = setupDir
+base_path = "/spasy"
+direct_root_hash_path = "/direct/root"
+direct_geocode_path = "/direct/geocode"
+multi_path = "/multi"
+initialization_path = "/init"
 
-    Setup.global_prefix = globalPrefix
-    Setup.direct_postfix = directPostfix
-    Setup.multi_postfix = multiPostfix
 
-    Setup.log_level = logLevel
-    Setup.init_time = initTime
+
+def run_experiment(topo_file, results_dir, results_path):
+    Setup.setup_dir = setup_dir
+    Setup.log_level = log_level
+    Setup.output_dir = output_dir
+    Setup.init_time = init_time
+
+    Setup.base_path = base_path
+    Setup.direct_root_hash_path = direct_root_hash_path
+    Setup.direct_geocode_path = direct_geocode_path
+    Setup.multi_path = multi_path
+    Setup.initialization_path = initialization_path
+
+    Setup.init_global_prefixes()
 
     try:
         with os.scandir(Setup.setup_dir) as entries:
@@ -61,15 +72,13 @@ def run_experiment(topo_file):
         setup = Setup(host.name)
         setup.add_prefixes()
         setups[host.name] = setup
-        grh.addOrigin([host], [Setup.global_prefix])
+        grh.addOrigin([host], [Setup.base_path])
         grh.addOrigin([host], [setup.node_prefix])
-
 
     grh.calculateNPossibleRoutes(nFaces=nFaces)
 
     for host in ndn.net.hosts:
-        routesFromHost = host.cmd("nfdc route | grep -v '/localhost/nfd'")
-        print(routesFromHost)
+        # routesFromHost = host.cmd("nfdc route | grep -v '/localhost/nfd'")
         for dest in ndn.net.hosts:
             host_setup = setups[host.name]
             dest_setup = setups[dest.name]
@@ -77,25 +86,15 @@ def run_experiment(topo_file):
                 host_setup.add_route(dest_setup.node_prefix)
         info("Static route additions successful for node {}\n".format(host.name))
 
-
-    # for host in ndn.net.hosts:
-    #     routesFromHost = host.cmd("nfdc route | grep -v '/localhost/nfd'")
-    #     for dest in ndn.net.hosts:
-    #         host_setup = setups[host.name]
-    #         dest_setup = setups[dest.name]
-    #         if dest_setup.node_prefix not in routesFromHost and dest.name != host.name:
-    #             raise Exception("Route addition failed\n")
-    #         if dest_setup.node_prefix in routesFromHost and dest.name != host.name:
-    #             host_setup.add_route(dest_setup.node_prefix)
-    #
-    #     info("Static route additions successful for node {}\n".format(host.name))
-
-    # print(list(reversed(ndn.net.hosts)))
     for host in ndn.net.hosts:
         AppManager(ndn, [host], SpatialSyncApp,
                    config_file=setups[host.name].setup_config(),
                    actions_file=setups[host.name].setup_actions())
 
-    # # MiniNDNCLI(ndn.net)
+    # time.sleep(3)
+
+    # MiniNDNCLI(ndn.net)
     PlayServer(ndn.net).start()
     ndn.stop()
+
+    convert_results(ndn.net.hosts, results_dir, results_path, output_dir)

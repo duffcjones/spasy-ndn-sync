@@ -402,5 +402,6 @@ $RECYCLE.BIN/
 
 # Setup files
 setup
+results
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,python,c++,visualstudiocode,pycharm

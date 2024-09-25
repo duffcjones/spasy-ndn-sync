@@ -16,7 +16,7 @@ from mini.application.ProducerApp import ProducerApp
 from mini.minindn_play.server import PlayServer
 from mini.experiments.setup import Setup
 
-logLevel = logging.INFO
+logLevel = logging.WARN
 setupDir = "/spatialsync/setup/"
 
 globalPrefix = "/spasy/"

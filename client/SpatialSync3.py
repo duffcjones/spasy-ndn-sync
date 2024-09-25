@@ -2,25 +2,28 @@ import logging
 import argparse
 import time
 import asyncio
-import threading
 
 import Config
-from Callbacks import on_direct_interest, on_multi_interest, on_init_interest
+from Callbacks import on_multi_interest, on_init_interest
 import Actions
 from Interests import send_init_interests
 
 async def main():
-    logging.info("Registering prefixes")
-    # await Config.app.register(Config.config["direct_prefix"], on_direct_interest)
-    # await Config.app.register(Config.config["global_prefix"], on_direct_interest)
+    Config.timer.start_timer(f"{Config.config["node_name"]}_initialization_prefix_route_registration")
     await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
+    Config.timer.stop_timer(f"{Config.config["node_name"]}_initialization_prefix_route_registration")
     logging.info(f"Registered prefix {Config.config["initialization_prefix"]}")
+
+    Config.timer.start_timer(f"{Config.config["node_name"]}_multi_prefix_route_registration")
     await Config.app.register(Config.config["multi_prefix"], on_multi_interest)
+    Config.timer.stop_timer(f"{Config.config["node_name"]}_multi_prefix_route_registration")
     logging.info(f"Registered prefix {Config.config["multi_prefix"]}")
+
     time.sleep(Config.config["init_time"])
 
     logging.info("Initializing interests")
     await send_init_interests()
+
     await asyncio.sleep(Config.config["init_time"])
 
     for action_key in action_list:
@@ -29,6 +32,10 @@ async def main():
         opts = action_params[1:]
         action = Actions.actions[cmd]
         await action(opts)
+
+    await asyncio.sleep(3)
+
+    Config.timer.dump()
 
 
 if __name__ == '__main__':

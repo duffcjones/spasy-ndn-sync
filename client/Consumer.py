@@ -95,7 +95,6 @@ async def send_sync_request(name):
     except InterestTimeout:
         logging.debug(f'Sync request sent')
     finally:
-        # logging.info(f'Sent Sync Interest {name}')
         pass
 
 # def send_requests():

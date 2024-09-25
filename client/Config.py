@@ -1,13 +1,23 @@
 import json
 import logging
+from collections import deque
+
 from ndn.app import NDNApp
 
 from Spasy import Spasy
+from Timer import Timer
 
 app = NDNApp()
 config = {}
 spasy = Spasy("")
-packed_trees = {}
+geocode = ""
+
+packed_trees_hashcode_dict = {}
+packed_trees_queue = deque()
+
+packed_tree_geocode = None
+
+timer = None
 
 def setup(config_file, actions_file):
     global config
@@ -22,5 +32,8 @@ def setup(config_file, actions_file):
 
     with open(actions_file, mode="r") as file:
         actions = file.read().splitlines()
+
+    global timer
+    timer = Timer(config["output_path"])
 
     return actions
