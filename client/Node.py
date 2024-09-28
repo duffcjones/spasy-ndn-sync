@@ -21,7 +21,7 @@ class Node:
         else:
             self._geocode = geocode
         print(self._geocode)
-        print(f'TYPE FOR GEOCODE: {type(self._geocode)}')
+        #print(f'TYPE FOR GEOCODE: {type(self._geocode)}')
         self._children = [None, None, None, None]
         self._data = list()
         self._parent = None

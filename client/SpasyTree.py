@@ -412,6 +412,19 @@ class SpasyTree:
 if __name__ == '__main__':
     print('\nTesting SpasyTree...\n')
 
+    # diagram example
+    # paper_tree = SpasyTree(9, Node('dpwhwt'))
+    # print(paper_tree.root)
+    # paper_tree.insert('/alice/ball/0/dpwhwtsh00')
+    # print(paper_tree.root)
+    # paper_tree.insert('/bob/net/1/dpwhwtsh20')
+    # print(paper_tree.root)
+    # print(paper_tree.root.children[3].children[2].children[0].children[0].data)
+    # paper_tree.delete(paper_tree.root, '/bob/net/1/dpwhwtsh20', paper_tree.root.length_geocode())
+    # print(paper_tree.root)
+    # print(paper_tree.root.children[3].children[2].children[0].children[0].data)
+
+
     # hashing tests
     # print(f'\n######### TESTING MERKLE HASHING #########\n')
     # merkle_tree = SpasyTree(2, Node('a'))
