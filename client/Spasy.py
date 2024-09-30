@@ -90,7 +90,7 @@ class Spasy:
         valid_characters = '0123456789bcdefghjkmnpqrstuvwxyz'
 
         max_geocode_length = self.tree.max_depth
-        print(max_geocode_length)
+        # print(max_geocode_length)
         while len(insert_geocode) <= max_geocode_length:
             insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
 
@@ -100,13 +100,49 @@ class Spasy:
     ######### MUTATORS #########
     def replace_tree(self, replacement_tree: SpasyTree) -> None:
         """
-        Replace the current SpasyTree with the newer version of the SpasyTree received
-        via sending an Interest.
+        Replace the current SpasyTree with a new version of a SpasyTree received from
+        another Spasy group member.
 
         Args:
             replacement_tree (SpasyTree): the newer version of the SpasyTree
         """
         self._tree = replacement_tree
+
+    def update_tree(self, other_hash: str, recent_changes: deque) -> None:
+        """
+        Uses a deque that stores recent changes to another user's SpasyTree to 
+        update the current user's SpasyTree. When done, the Merkle hash of the current
+        user's SpasyTree root should match the hash of the other user's SpasyTree.
+
+        Args:
+            other_hash (str): The Merkle hash of another user's SpasyTree. That user's
+                              SpasyTree was recently updated.
+            recent_changes (deque): The deque that stores the recent changes.
+        """
+        # convert recent changes to a set in order to do set difference
+        current_set = set(self.tree.recent_changes)
+        print(f'\n######### THE CURRENT SET #########\n')
+        pprint(current_set)
+        update_set = set(recent_changes)
+        print(f'\n######### THE UPDATE SET #########\n')
+        pprint(update_set)
+
+        # find differences
+        set_difference = update_set.difference(current_set)
+        print(f'\n########## SET DIFFERENCE #########\n')
+        pprint(set_difference)
+
+        print(f'\n######### HANDLING CHANGES #########\n')
+        # handle differences if there are any
+        if set_difference:
+            for element in set_difference:
+                print(f'ELEMENT: {element}')
+                if element[1] == 'insert':
+                    print(f'INSERT: {element[2]}')
+                    self.add_data_to_tree(element[2])
+                elif element[1] == 'delete':
+                    print(f'DELETE: {element[1]}')
+                    self.remove_data_from_tree(element[2])
 
     def add_data_to_tree(self, data_to_add: str) -> None:
         """
@@ -202,14 +238,15 @@ class Spasy:
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
     spasy = Spasy('dpwhwt')
-    start = time.time()
-    spasy.build_tree(10)
-    end = time.time()
+    # start = time.time()
+    # spasy.build_tree(11)
+    # end = time.time()
 
-    print(spasy.tree.root)
-    pprint(spasy.gather_all_data_by_namespace())
-    pprint(spasy.gather_all_data_by_geocode())
-    print(f'Time to build tree: {end - start}')
+    # print(spasy.tree.root)
+    # pprint(spasy.gather_all_data_by_namespace())
+    # pprint(spasy.gather_all_data_by_geocode())
+    # print(f'Time to build tree: {end - start}')
+    # print(spasy.tree.recent_changes)
     # other_tree = SpasyTree(10, Node('dpwhwts'))
 
     # # compare trees
@@ -230,13 +267,6 @@ if __name__ == '__main__':
     # # replace tree
     # print(f'\n######### THE TREE BEFORE REPLACING IT #########\n')
     # print(spasy.tree.root)
-
-    # geohash_tree = SpasyTree(10, Node('dpwhwts'))
-    # geohash_tree.insert('/extra/data/to/add/dpwhwtsh300')
-    # geohash_tree.insert('/some/data/dpwhwtsh001')
-    # geohash_tree.insert('/some/more/data/dpwhwtsh009')
-    # geohash_tree.insert('/some/testing/data/dpwhwtsh00h')
-    # geohash_tree.insert('/some/data/dpwhwtsh00s')
     # geohash_tree.insert('/second/piece/of/data/dpwhwtsh000')
     # geohash_tree.insert('/extra/data/dpwhwtsh000')
     # geohash_tree.insert('/some/data/dpwhwts0214')
@@ -247,7 +277,6 @@ if __name__ == '__main__':
     # geohash_tree.insert('/some/data/dpwhwtsn00s')
     # geohash_tree.insert('/second/piece/of/data/dpwhwts1000')
     # geohash_tree.insert('/extra/data/dpwhwts2000')
-    # geohash_tree.insert('/some/data/dpwhwts9214')
     # geohash_tree.insert('/extra/data/to/add/dpwhwtsh000')
     # geohash_tree.insert('/some/data/dpwhwtsh001')
     # geohash_tree.insert('/some/more/data/dpwhwtsh009')
@@ -255,7 +284,6 @@ if __name__ == '__main__':
     # geohash_tree.insert('/some/data/dpwhwtshpqs')
     # geohash_tree.insert('/second/piece/of/data/dpwhwtsprtu')
     # geohash_tree.insert('/extra/data/dpwhwts9bzx')
-    # geohash_tree.insert('/some/data/dpwhwts/9214')
     # geohash_tree.insert('/extra/data/to/add/dpwhwtspc18')
     # geohash_tree.insert('/some/data/dpwhwtspcdq')
     # geohash_tree.insert('/some/more/data/dpwhwtsmnz4')
@@ -264,7 +292,7 @@ if __name__ == '__main__':
     # geohash_tree.insert('/second/piece/of/data/dpwhwtsq000')
     # geohash_tree.insert('/extra/data/dpwhwtsvw0z')
     # geohash_tree.insert('/some/data/dpwhwtsm0p1')
-    # # print(geohash_tree.root)
+    # print(geohash_tree.root)
 
     # start = time.time()
     # spasy.is_newer_tree(geohash_tree.root.hashcode)
@@ -298,6 +326,36 @@ if __name__ == '__main__':
     # print(f'\n######### ORGANIZE ALL DATA BY GEOCODE #########\n: {spasy.gather_all_data_by_geocode()}')
     # end = time.time()
     # print(f'THE TIME TO CONVERT TO GEOCODE DICTIONARY: {end - start}')
+
+
+    # testing tree merging
+    spasy1 = Spasy('dpwhwt')
+    spasy1.add_data_to_tree('/extra/data/to/add/dpwhwtsh900')
+    spasy1.add_data_to_tree('/some/data/dpwhwtsh001')
+    spasy1.add_data_to_tree('/some/more/data/dpwhwtsh009')
+    spasy1.add_data_to_tree('/some/testing/data/dpwhwtsh00h')
+
+    spasy2 = Spasy('dpwhwt')
+    for element in spasy1.tree.recent_changes:
+        print(f'CONVERSION ELEMENT: {element}')
+        spasy2.tree.recent_changes.append(element)
+
+    spasy2.add_data_to_tree(spasy1.tree.recent_changes[0][2])
+    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsh000')
+
+    print(f'\n######### TREE BEFORE UPDATE #########\n')
+    print(spasy1.tree.root)
+    spasy1.update_tree(spasy2.tree.root, spasy2.tree.recent_changes)
+    print(f'\n######### TREE AFTER UPDATE #########\n')
+    print(spasy1.tree.root)
+    print(f'\n######### TREE AFTER DELETE ##########\n')
+    spasy1.remove_data_from_tree('/extra/data/to/add/dpwhwtsh900')
+    spasy2.update_tree(spasy1.tree.root, spasy1.tree.recent_changes)
+    print(spasy2.tree.root)
+    print(f'\n######### FIRST TREE CHANGES #########\n')
+    pprint(spasy1.tree.recent_changes)
+    print(f'\n######### SECOND TREE CHANGES #########\n')
+    pprint(spasy2.tree.recent_changes)
 
 
     

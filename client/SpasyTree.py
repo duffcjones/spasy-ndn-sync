@@ -367,19 +367,6 @@ class SpasyTree:
                     self._add_to_recent_changes('insert', named_data)
                     self._update_merkle(current_node)
     
-  
-    # TODO If a change is detected with the compare_merkle method, this method
-    # ensures that you update just the branch that needs updating
-    # Updating data is the same as adding data, but updating the tree is  
-    # updating a branch
-    def update(self, other_tree: Self) -> None:
-        """
-        Update the tree to reflect changes to the dataset.
-
-        Args:
-            other_tree (Self): An updated version of the dataset.
-        """
-
     def _update_merkle(self, node: Node) -> None:
         """
         Update each of the Merkle hashes along a path (from leaf to root).

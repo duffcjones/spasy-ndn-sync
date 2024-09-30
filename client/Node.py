@@ -20,7 +20,7 @@ class Node:
             self._geocode = {geocode}
         else:
             self._geocode = geocode
-        print(self._geocode)
+        #print(self._geocode)
         #print(f'TYPE FOR GEOCODE: {type(self._geocode)}')
         self._children = [None, None, None, None]
         self._data = list()
@@ -192,21 +192,16 @@ class Node:
                 
                 # split the named data element in the list and check if there is a version number
                 element_split = existing_data[i].split('/')
-                print(f'ELEMENT SPLIT: {element_split}')
                 if element_split[-2].startswith('a'):  # this can't be None because there will always be data and a geocode
-                    print(f'IT STARTS WITH "a"')
                     # this removes the version number from the string to check if data matches
                     element_without_version = ''.join(element_split[0:-2]) + element_split[-1]
-                    print(f'ELEMENT WITHOUT VERSION: {element_without_version}')
                     current_version = element_split[-2]
-                    print(f'CURRENT VERSION: {current_version}')
                 else:
                     element_without_version = ''.join(element_split)
                     current_version = None
 
                 # the hierarchical names match
                 if element_without_version == data_to_check:
-                    print(f'CHECK IT!')
                     if insert_version is not None:
                         if current_version is not None:
                             # the current version is older than the one to be inserted
@@ -228,7 +223,7 @@ class Node:
                         return
                     
             # the data is new and should be added
-            #print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
+            print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
             self._data.append(named_data)
             self.generate_hash()
 
