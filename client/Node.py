@@ -178,9 +178,9 @@ class Node:
         else:
             # split the string to be inserted; get a version number if there is one
             split_data = named_data.split('/')
-            if split_data[-1].isnumeric():
-                data_to_check = ''.join(split_data[0:-1])
-                insert_version = split_data[-1]
+            if split_data[-2].startswith('a'):
+                data_to_check = ''.join(split_data[0:-2]) + split_data[-1]
+                insert_version = split_data[-2]
             else:
                 data_to_check = ''.join(split_data)
                 insert_version = None
@@ -190,17 +190,23 @@ class Node:
                 if existing_data[i] == named_data:
                     return
                 
-                # split the named data element in the list and check if there is a version
+                # split the named data element in the list and check if there is a version number
                 element_split = existing_data[i].split('/')
-                if element_split[-1].isnumeric():
-                    element_without_version = ''.join(element_split[0:-1])
-                    current_version = element_split[-1]
+                print(f'ELEMENT SPLIT: {element_split}')
+                if element_split[-2].startswith('a'):  # this can't be None because there will always be data and a geocode
+                    print(f'IT STARTS WITH "a"')
+                    # this removes the version number from the string to check if data matches
+                    element_without_version = ''.join(element_split[0:-2]) + element_split[-1]
+                    print(f'ELEMENT WITHOUT VERSION: {element_without_version}')
+                    current_version = element_split[-2]
+                    print(f'CURRENT VERSION: {current_version}')
                 else:
                     element_without_version = ''.join(element_split)
                     current_version = None
 
                 # the hierarchical names match
                 if element_without_version == data_to_check:
+                    print(f'CHECK IT!')
                     if insert_version is not None:
                         if current_version is not None:
                             # the current version is older than the one to be inserted
@@ -283,6 +289,15 @@ if __name__ == '__main__':
     # node.add_child(Node('EFGH'))
     # node.add_child(Node('IJKL'))
     # node.add_child(Node('MNOP'))
+    # node.children[2].insert_data('/some/data/EFGH')
+    # node.children[2].insert_data('/some/data/a2/EFGH')
+    # node.children[2].insert_data('/some/data/a3/EFGH')
+    # node.children[2].insert_data('/some/efgh')
+    # node.children[2].insert_data('/some/data/a1/EFGH')
+    # node.insert_data('/some/data/a1/ABCD')
+
+    # print(node.children[2].data)
+    # print(node.data)
 
     # print(f'\n######### After adding children #########\n {node}')
     # node.remove_child(3)
