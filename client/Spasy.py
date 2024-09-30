@@ -2,6 +2,8 @@ from SpasyTree import *
 import time
 import sys
 from pympler import asizeof
+from random import randint
+from pprint import pprint
 
 class Spasy:
     """
@@ -24,6 +26,78 @@ class Spasy:
     def tree(self) -> SpasyTree:
         """Get or set the data SpasyTree data structure."""
         return self._tree
+    
+    def build_tree(self, size: int=0) -> None:
+        """Insert elements into the tree to automate the building of trees.
+
+        Args:
+            size (int, optional): The number of names to insert in the tree. 
+                                  Defaults to 0.
+        """
+        # get the string value of the root's geocode
+        tree_geocode = ''.join(self._tree.root.geocode)
+
+        # generate a name with a geocode and insert it in the tree
+        for i in range(size):
+            name = self._generate_name(5) + self._generate_geocode(tree_geocode)
+            print(f'Name being inserted: {name}')
+            self._tree.insert(name)
+
+    def _generate_name(self, max_length: int=4) -> str:
+        """
+        A helper to generate a randomized string of named data from a list
+        of common English words.
+
+        Args:
+            max_length (int, optional): The number of elements in the hierarchical name. 
+                                        Defaults to 4.
+
+        Returns:
+            str: The named_data string
+        """
+        # read the list of common English-language words into a list
+        word_list = []
+        with open('client/words.txt') as file:
+            for word in file:
+                word_list.append(word.strip())
+
+        number_elements = randint(2, max_length) # determine the number of elements in the named data string
+        name = ""
+
+        # generate the hierarchical name
+        for i in range(number_elements):
+            name = name + '/' + word_list[randint(0,len(word_list)-1)]
+
+        # if the length of the string is even, add a version number between 1 and 10
+        if number_elements % 2 == 0:
+            version_number = 'a' + str(randint(1,10))
+            name = name + '/' + version_number
+
+        # create a divider to accommodate the geocode
+        name = name + '/'
+
+        return name
+
+    def _generate_geocode(self, geocode: str) -> str:
+        """
+        A helper to generate a geocode for inserting named data in a tree. 
+
+        Args:
+            geocode (str): The Level 6 geocode that serves as the tree's root.
+
+        Returns:
+            str: The geocode which will be appended to the name.
+        """
+        insert_geocode = geocode
+        valid_characters = '0123456789bcdefghjkmnpqrstuvwxyz'
+
+        max_geocode_length = self.tree.max_depth
+        print(max_geocode_length)
+        while len(insert_geocode) <= max_geocode_length:
+            insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
+
+        return insert_geocode
+
     
     ######### MUTATORS #########
     def replace_tree(self, replacement_tree: SpasyTree) -> None:
@@ -129,7 +203,15 @@ class Spasy:
 # testing
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
-    # spasy = Spasy('dpwhwts')
+    spasy = Spasy('dpwhwt')
+    start = time.time()
+    spasy.build_tree(10)
+    end = time.time()
+
+    print(spasy.tree.root)
+    pprint(spasy.gather_all_data_by_namespace())
+    pprint(spasy.gather_all_data_by_geocode())
+    print(f'Time to build tree: {end - start}')
     # other_tree = SpasyTree(10, Node('dpwhwts'))
 
     # # compare trees
