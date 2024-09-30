@@ -20,8 +20,7 @@ class SpasyTree:
         """
         self._root = node 
         self._max_depth = max_depth
-        self._recent_hashes = deque(maxlen=10)
-        self._recent_hashes.append(self._root.hashcode)  # add the root hash to the list of recent hashes
+        self._recent_changes = deque(maxlen=10)
  
     ######### ACCESSORS #########
     @property
@@ -30,9 +29,9 @@ class SpasyTree:
         return self._root
     
     @property
-    def recent_hashes(self) -> deque:
+    def recent_changes(self) -> deque:
         """Get a deque of recently used root hashes."""
-        return self._recent_hashes
+        return self._recent_changes
     
     @property
     def max_depth(self) -> int:
@@ -231,6 +230,7 @@ class SpasyTree:
                 # print(f'The child geocode, {child_node.geocode}, contains the deletion geocode, {delete_geocode}')
                 # print(f'CHILD DATA BEFORE REMOVAL: {child_node.data}')
                 child_node.delete_data(data_to_delete)
+                self._add_to_recent_changes('delete', data_to_delete)
                 #print(f'CHILD DATA AFTER REMOVAL: {child_node.data}')
                 # if the child has no data, we set it to None, but we return True if there is no sibling, False otherwise
                 #print(f'THE CHILD DATA: {child_node.data} AND SIBLINGS: {siblings - 1}')
@@ -281,16 +281,16 @@ class SpasyTree:
     def root(self, new_root: Node):
         self._root = new_root
 
-    def add_hash(self, new_hashcode: str) -> None:
+    def _add_to_recent_changes(self, change_type: str, new_item: str) -> None:
         """
-        Add hashcodes to a deque of recently used hashcodes.
+        Add tuples containing timestamps and new_items to a deque of recent changes.
         Deque provides queue-like behaviour, while dequeuing
         items when items are added to a full deque.
-        
         """
-        if new_hashcode not in self._recent_hashes:
-            self._recent_hashes.append(new_hashcode)
-    
+        timestamp = time.time()
+        recent_change = (timestamp, change_type, new_item)
+        self.recent_changes.append(recent_change)
+        
     def insert(self, named_data: str) -> None:
         """
         Add a node to the quadtree at the maximum depth of the tree.
@@ -338,6 +338,7 @@ class SpasyTree:
                         if code == insert_geocode:
                             #print(f'{named_data} BEING INSERTED IN {code}')
                             child.insert_data(named_data)
+                            self._add_to_recent_changes('insert', named_data)
                             self._update_merkle(child)
                             return
                         # we have found a parent of the node we wish to add data to
@@ -363,6 +364,7 @@ class SpasyTree:
                 # so we should add the data
                 if current_level > self._max_depth:
                     current_node.insert_data(named_data)
+                    self._add_to_recent_changes('insert', named_data)
                     self._update_merkle(current_node)
     
   
@@ -396,10 +398,6 @@ class SpasyTree:
                 if current_node is self._root:
                     reached_root = True
 
-        # add the new root hash to the list of recent root hashes
-        self.add_hash(self._root.hashcode)
-        #print(f"RECENT HASHES: {self._recent_hashes} AND ITS LENGTH {len(self._recent_hashes)}")
-
     ######### STRINGS #########
     def __str__(self) -> str:
         return f"Root: {self.root.geocode}"
@@ -423,6 +421,9 @@ if __name__ == '__main__':
     # paper_tree.delete(paper_tree.root, '/bob/net/1/dpwhwtsh20', paper_tree.root.length_geocode())
     # print(paper_tree.root)
     # print(paper_tree.root.children[3].children[2].children[0].children[0].data)
+    # print(paper_tree.recent_changes)
+    # deque_to_set = set(paper_tree.recent_changes)
+    # print(deque_to_set)
 
 
     # hashing tests

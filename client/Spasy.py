@@ -1,6 +1,4 @@
 from SpasyTree import *
-import time
-import sys
 from pympler import asizeof
 from random import randint
 from pprint import pprint
@@ -144,7 +142,7 @@ class Spasy:
         if self._tree.root.hashcode == sync_tree_hash:
             print(f'The tree is already up-to-date.')
             return False
-        elif sync_tree_hash in self._tree._recent_hashes:
+        elif sync_tree_hash in self._tree._recent_changes:
             print(f'That is an older version of the tree.')
             return False
         else:
