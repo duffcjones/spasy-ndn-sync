@@ -20,18 +20,12 @@ class SpasyTree:
         """
         self._root = node 
         self._max_depth = max_depth
-        self._recent_changes = deque(maxlen=10)
  
     ######### ACCESSORS #########
     @property
     def root(self) -> Node:
         """Get, set, or delete the tree's root."""
         return self._root
-    
-    @property
-    def recent_changes(self) -> deque:
-        """Get a deque of recently used root hashes."""
-        return self._recent_changes
     
     @property
     def max_depth(self) -> int:
@@ -50,27 +44,22 @@ class SpasyTree:
             named_data (str): the full hierarchical data name (with geocode).
 
         Returns:
-            bool: True if in the tree
-                  False otherwise
+            bool: True if in the tree;
+                  False otherwise.
         """
         current_node = self._root
         named_data = named_data.lower()
         geocode = named_data.split('/')[-1]
         current_level = current_node.length_geocode()
-        #print(f'MAX DEPTH: {self._max_depth}')
         while current_level <= self._max_depth + 1:
-            #print(f'CURRENT LEVEL: {current_level} and CURRENT CODE: {geocode[:current_level]}')
             for child in current_node.children:
                 if child is not None:
                     if geocode[:current_level] in child.geocode:
                         # we found the child
-                        #print(f'GEOCODE: {child.geocode}')
                         if named_data in child.data:
-                            #print(f'WE FOUND IT IN {child}')
                             return True
                         else:
                             current_node = child
-                            #print(f'THE CURRENT NODE: {current_node.geocode}')
                             break
             current_level += 1
         return False
@@ -82,13 +71,13 @@ class SpasyTree:
         of a piece of named data (regardless of geocode) within the tree.
 
         Args:
-            node (Node): The node being searched.
-            named_data_without_geocode (str): The data being sought. This has no geocode attached to it.
+            node (Node): the node being searched.
+            named_data_without_geocode (str): the data being sought. This has no geocode attached to it.
             geocode_list (list | None, optional): a list of geocodes in which the data is located. 
                                                   Defaults to None, which becomes an empty list.
 
         Returns:
-            list: A list of geocodes identifying where the data (regardless of geocode) is located.
+            list: a list of geocodes identifying where the data (regardless of geocode) is located.
         """
         if geocode_list is None:
             geocode_list = []
@@ -96,18 +85,15 @@ class SpasyTree:
         named_data_without_geocode = named_data_without_geocode.lower()
 
         if node is not None:
-            #print(f'NODE {node.geocode} IS NOT NONE')
             if node.in_data(named_data_without_geocode):
                 # because we are using buckets, we will add each possible geocode individually
                 for code in node.geocode:
                     if code not in geocode_list:
-                        #print(f'ADDING GEOCODE: {code}')
                         geocode_list.append(code)
             else:
                 for child in node.children:
                     self.find_data_without_geocode(child, named_data_without_geocode, geocode_list)
 
-        #print(f'GEOCODE LIST: {geocode_list}')
         return geocode_list
 
     # TODO: it is possible it makes more sense for this to be part of Spasy
@@ -117,8 +103,10 @@ class SpasyTree:
         This can be used by applications to allow a user to filter the namespaces they want.
 
         Args:
-            node (Node): _description_
-            data_by_namespace (dict | None, optional): _description_. Defaults to None.
+            node (Node): the node being started at.
+            data_by_namespace (dict | None, optional): the dictionary representation of the SpasyTree 
+                                                       with namespaces as keys. 
+                                                       Defaults to None.
 
         Returns:
             dict: the dictionary representation of the SpasyTree with namespaces as keys.
@@ -205,8 +193,6 @@ class SpasyTree:
             bool: True if it is safe to delete the data;
                   False otherwise.
         """
-        # print(f'-------------RECURSING--------------')
-        # print(f'Arguments passed: Node (geocode): {node.geocode}, current_position: {current_position}')
         # CASE 1: Trivial case - the data to be deleted isn't in the tree
         data_to_delete = data_to_delete.lower()
         delete_geocode = data_to_delete.split('/')[-1]
@@ -214,9 +200,7 @@ class SpasyTree:
             print(f"Sorry, but '{data_to_delete}' associated with the geocode '{delete_geocode}' is not in the tree.")
             return False
 
-        #print(f'THIS IS THE NODE GEOCODE: {node.geocode}')
         siblings = node.number_children()
-        #print(f"The current node, {node.geocode}, has {siblings} child(ren).")
         next_position = current_position + 1
         for i in range(len(node.children)):
             child_node = node.children[i]
@@ -224,25 +208,13 @@ class SpasyTree:
                 continue
             # Case 2: the child node has the right geocode, but it has siblings, so we can't delete its parent node
             elif child_node is not None and delete_geocode in child_node.geocode:
-                # print(f'---CASE 2---')
-                # print(f'RIGHT GEOCODE WITH {siblings - 1} SIBLINGS.')
-                # print(f'CHECKING... does the deletion geocode {delete_geocode} contain the child geocode, {child_node.geocode}?')
-                # print(f'The child geocode, {child_node.geocode}, contains the deletion geocode, {delete_geocode}')
-                # print(f'CHILD DATA BEFORE REMOVAL: {child_node.data}')
                 child_node.delete_data(data_to_delete)
-                self._add_to_recent_changes('delete', data_to_delete)
-                #print(f'CHILD DATA AFTER REMOVAL: {child_node.data}')
                 # if the child has no data, we set it to None, but we return True if there is no sibling, False otherwise
-                #print(f'THE CHILD DATA: {child_node.data} AND SIBLINGS: {siblings - 1}')
                 if not child_node.data and siblings > 1:
-                    #print(f'DELETE ONLY THE CHILD.')
-                    #print(f'THE CHILD: {child_node.geocode}')
                     node.remove_child(i)
                     self._update_merkle(node) # removing a child requires an update to hashes
                     return False
                 elif not child_node.data:
-                    #print('DELETE THE WHOLE NODE.')
-                    #print(f'THE CURRENT NODE: {node}')
                     node.remove_children()
                     self._update_merkle(node)              
                     return True
@@ -254,21 +226,15 @@ class SpasyTree:
             # the next position stores the next geocode in the path to the geocode that holds the data
             elif child_node is not None:
                 for code in child_node.geocode:
-                    #print(f"THE CODE: {code[0:next_position]}, and the DELETE CODE: {delete_geocode[0:next_position]}")
                     if code[0:next_position] == delete_geocode[0:next_position]:
-                        #print(f'THE CODE TO NEXT POSITION: {code[0:next_position]}')
-                        #print(f'CHILD GEOCODE: {child_node.geocode}, NEXT POSITION: {next_position}')
                         safe_to_delete = self.delete(child_node, data_to_delete, next_position) 
                         # Case 3: if there is only one geocode, we can safely delete
                         if safe_to_delete:
-                            #print(f'CHILD NODE GEOCODE: {node.geocode}')
-                            #print(f'---CASE 3---')
                             node.remove_child(i)
                             self._update_merkle(node) 
                             #check if there are still children
                             for child in node.children:
                                 if child is not None:
-                                    #print(f'THE NODE STILL HAS CHILDREN, SO UNSAFE TO DELETE...')
                                     return False
                             return True
                         else:
@@ -281,16 +247,6 @@ class SpasyTree:
     def root(self, new_root: Node):
         self._root = new_root
 
-    def _add_to_recent_changes(self, change_type: str, new_item: str) -> None:
-        """
-        Add tuples containing timestamps and new_items to a deque of recent changes.
-        Deque provides queue-like behaviour, while dequeuing
-        items when items are added to a full deque.
-        """
-        timestamp = time.time()
-        recent_change = (timestamp, change_type, new_item)
-        self.recent_changes.append(recent_change)
-        
     def insert(self, named_data: str) -> None:
         """
         Add a node to the quadtree at the maximum depth of the tree.
@@ -304,10 +260,7 @@ class SpasyTree:
         current_level = self._root.length_geocode()
         named_data = named_data.lower()
         insert_geocode = named_data.split('/')[-1].lower()
-        #print(f'CURRENT DEPTH: {current_level}')
         start_level = current_level
-        #print(f'START LEVEL: {start_level}')
-        #print(f'INSERT GEOCODE: {insert_geocode}')
 
         # because all data is at leaf level, the geocode must match the height of the tree
         if self._max_depth != len(insert_geocode) - 1:
@@ -336,9 +289,7 @@ class SpasyTree:
                     for code in child.geocode:
                         # we have found the node to which this data belongs
                         if code == insert_geocode:
-                            #print(f'{named_data} BEING INSERTED IN {code}')
                             child.insert_data(named_data)
-                            self._add_to_recent_changes('insert', named_data)
                             self._update_merkle(child)
                             return
                         # we have found a parent of the node we wish to add data to
@@ -347,7 +298,6 @@ class SpasyTree:
                             current_node = child
                             #current_level += 1
                             found = True
-                            #print(f'THE NODE WAS FOUND AND THE CURRENT LEVEL IS {current_level}')
                             break
 
             # we must create the child or add this geocode to an existing node
@@ -356,7 +306,6 @@ class SpasyTree:
                 geocode_to_add = insert_geocode[0:current_level]
                 
                 node_to_insert = Node(geocode_to_add)  # the node to be added to the tree
-                #print(f'ADDING CHILD: {node_to_insert.geocode} in NODE {current_node.geocode} at LEVEL {current_level} and DEPTH {current_level}')
                 index = current_node.add_child(node_to_insert)
                 current_node = current_node.children[index]
                 
@@ -364,7 +313,6 @@ class SpasyTree:
                 # so we should add the data
                 if current_level > self._max_depth:
                     current_node.insert_data(named_data)
-                    self._add_to_recent_changes('insert', named_data)
                     self._update_merkle(current_node)
     
     def _update_merkle(self, node: Node) -> None:
@@ -376,9 +324,7 @@ class SpasyTree:
         else:
             reached_root = False
             current_node = node
-            # print(f'THE PARENT: {current_node.parent}')
-            # print(f"BECAUSE IT'S THE ROOT: {current_node is self._root}")
-            # print(f"THE LEAF NODE'S HASH: {current_node.hashcode}")
+            
             while not reached_root:
                 current_node.parent.generate_hash()
                 current_node = current_node.parent
@@ -408,8 +354,6 @@ if __name__ == '__main__':
     # paper_tree.delete(paper_tree.root, '/bob/net/1/dpwhwtsh20', paper_tree.root.length_geocode())
     # print(paper_tree.root)
     # print(paper_tree.root.children[3].children[2].children[0].children[0].data)
-    # print(paper_tree.recent_changes)
-    # deque_to_set = set(paper_tree.recent_changes)
     # print(deque_to_set)
 
 
@@ -562,7 +506,6 @@ if __name__ == '__main__':
     # print(f"FOUND '/extra/data' (should include ['dpwhwtsh001']):"
     #       f" {geohash_tree.find_data_without_geocode(geohash_tree.root, '/extra/data')}")
     # print(geohash_tree.root)
-    # print(geohash_tree.recent_hashes)
     # print(f'\n######### FIND DATA BY NAMESPACE #########\n')
     # print(geohash_tree.find_data_by_namespace(geohash_tree.root))
     # print(f'\n######### THE TREE #########\n')

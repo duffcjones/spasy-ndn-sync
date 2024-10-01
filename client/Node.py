@@ -11,17 +11,16 @@ class Node:
     def __init__(self, geocode: set = set()) -> None:
         """
         Args:
-            merkle (str): the node's Merkle hash
+            merkle (str): the node's Merkle hash.
             geocode (list): a list containing the geospatial index/indices 
-                           associated with the Node
+                           associated with the Node.
         """
         self._hashcode = sha256().hexdigest() # Note: since it is on the empty string, it'll always be the same hash
         if isinstance(geocode, str):
             self._geocode = {geocode}
         else:
             self._geocode = geocode
-        #print(self._geocode)
-        #print(f'TYPE FOR GEOCODE: {type(self._geocode)}')
+        
         self._children = [None, None, None, None]
         self._data = list()
         self._parent = None
@@ -67,17 +66,13 @@ class Node:
 
         Returns:
             bool: True if the data is in the node's data list;
-                  False otherwise
+                  False otherwise.
         """
-        #print(f'LOOKING FOR: {named_data}')
         for element in self._data:
-            #print(f'ELEMENT: {element}')
             data_string = element.split('/')
             data_without_geocode = '/'.join(data_string[:-1])
-            #print(f'DATA WITHOUT GEOCODE: {data_without_geocode}')
             if data_without_geocode == named_data.lower():
                 return True
-        #print(f'RETURNING FALSE')
         return False
     
     def length_geocode(self) -> int:
@@ -109,16 +104,13 @@ class Node:
         Adds a child Node to the list of children.
 
         Args:
-            node_to_add (Self): the child being added
+            node_to_add (Self): the child being added.
 
         Returns:
-            int: the index where the child Node was 
-                 inserted in the children list
+            int: the index where the child Node was inserted in the children list.
         """
-
         geocode_to_add = list(node_to_add.geocode)[0]
         geocode_char = geocode_to_add[-1].lower()
-        #print(f'GEOCODE CHAR: {geocode_char}')
         index = None
         if geocode_char in '01234567':
             index = 0
@@ -127,7 +119,6 @@ class Node:
                 self._children[0] = node_to_add
             else:
                 self._children[0].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[0]}')
         elif geocode_char in '89bcdefg':
             index = 1
             if self._children[1] is None:
@@ -135,7 +126,6 @@ class Node:
                 self._children[1] = node_to_add
             else:
                 self._children[1].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[1]}')
         elif geocode_char in 'hjkmnpqr':
             index = 2
             if self._children[2] is None:
@@ -143,7 +133,6 @@ class Node:
                 self._children[2] = node_to_add
             else:
                 self._children[2].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[2]}')
         elif geocode_char in 'stuvwxyz':
             index = 3
             if self._children[3] is None:
@@ -151,7 +140,6 @@ class Node:
                 self._children[3] = node_to_add
             else:
                 self._children[3].add_geocode(geocode_to_add)
-                #print(f'IT EXISTS, SO APPENDING to: {self._children[3]}')
 
         return index
 
@@ -164,7 +152,7 @@ class Node:
         number or timestamp.
 
         Args:
-            named_data (str): the named data object's name
+            named_data (str): the named data object's name.
         """
         existing_data = self._data
         named_data = named_data.lower() # all names added to a list should follow the same format
@@ -172,8 +160,6 @@ class Node:
         # if the list is empty, we can safely insert the data
         if len(existing_data) == 0:
             self._data.append(named_data)
-            # print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode}')
-            # print(f'THE DATA IS STORED: {self._data} in {self.geocode}')
             self.generate_hash()
         else:
             # split the string to be inserted; get a version number if there is one
@@ -207,7 +193,6 @@ class Node:
                             # the current version is older than the one to be inserted
                             if current_version < insert_version:
                                 self._data[i] = named_data
-                                #print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
                                 self.generate_hash()
                                 return
                             elif current_version >= insert_version:
@@ -215,7 +200,6 @@ class Node:
                         # current version must be older, as it didn't have a version number
                         elif current_version is None:
                             self._data[i] = named_data
-                            #print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
                             self.generate_hash()
                             return
                     # the current version is already up-to-date   
@@ -223,7 +207,6 @@ class Node:
                         return
                     
             # the data is new and should be added
-            print(f'ADDING NAMED DATA: {named_data} TO NODE {self._geocode} ')
             self._data.append(named_data)
             self.generate_hash()
 
@@ -233,20 +216,15 @@ class Node:
         hash_value = sha256()
         if self._data:
             for named_data in self._data:
-                #print(f'GENERATING DATA HASH for {self._geocode}')
                 hash_value.update(named_data.encode())
 
         # internal nodes don't store data, so their hash is a combination of child hashes
         else:
-            #print(f'GENERATING PARENT HASH...')
             for child in self._children:
                 if child is not None:
-                    #print(f'THE CHILD HASH: {child.hashcode}')
                     hash_value.update(child.hashcode.encode())
-                    #print(f'HASH WHILE CALCULATING: {hash_value.hexdigest()}')
         
         self._hashcode = hash_value.hexdigest()
-        #print(f'THE GENERATED HASH... {hash_value.hexdigest()} for {self._geocode}')
 
     ######### DELETERS #########
     def remove_children(self) -> None:
