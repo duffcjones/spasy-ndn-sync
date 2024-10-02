@@ -20,7 +20,7 @@ class Spasy:
         
         self._tree = SpasyTree(10, Node(geocode))
         self._recent_updates = [] # a list that will be treated as a heap
-        self._max_number_recent_updates = 10
+        self._max_number_recent_updates = 25 # maximum size of priority queue
     
     ######### ACCESSORS #########
     @property
@@ -45,15 +45,15 @@ class Spasy:
 
         # generate a name with a geocode and insert it in the tree
         for i in range(size):
-            name = self._generate_name(5) + self._generate_geocode(tree_geocode)
+            name = self._generate_name() + self._generate_geocode(tree_geocode)
             #print(f'Name being inserted: {name}')
             self._tree.insert(name)
-            insert_info = (time.time(), 'insert', name)
+            insert_info = (time.time(), 'i', name)
             self._add_to_recent_updates(insert_info)
             #print(f'\n######### RECENT UPDATES #########\n')
             #pprint(self._recent_updates)
 
-    def _generate_name(self, max_length: int=4) -> str:
+    def _generate_name(self, max_length: int=10) -> str:
         """
         Generates a randomized string of named data from a list of common English words. 
         This is a helper method for building randomized trees.
@@ -120,8 +120,8 @@ class Spasy:
         priority queue.
 
         Args:
-            updated_item (tuple): contains a timestamp, action (i.e., 'insert' or 'delete'),
-                                  and the data being added or deleted. 
+            updated_item (tuple): contains a timestamp, action (i.e., 'i' or 'd'),
+                                  and the data being inserted or deleted. 
         """
         # if the priority queue is larger than the default size, pop an element while pushing
         if len(self.recent_updates) >= self._max_number_recent_updates:
@@ -172,15 +172,16 @@ class Spasy:
                 timestamp = element[0]
                 data = element[2]
                 # print(f'ELEMENT: {element}')
-                if element[1] == 'insert':
+                if element[1] == 'i':
                     # print(f'INSERT: {data}')
                     self.add_data_to_tree(data, timestamp)
                     # print(f'TIMESTAMP: {timestamp}')
-                elif element[1] == 'delete':
+                elif element[1] == 'd':
                     # print(f'DELETE: {data}')
                     # print(f'TIMESTAMP: {timestamp}')
                     self.remove_data_from_tree(data, timestamp)
-                                        
+
+        # check that the hashes match 
 
     def add_data_to_tree(self, data_to_add: str, timestamp: str="") -> None:
         """
@@ -196,7 +197,7 @@ class Spasy:
         if timestamp == "":
             timestamp = time.time()
         self._tree.insert(data_to_add)
-        self._add_to_recent_updates((timestamp, 'insert', data_to_add))
+        self._add_to_recent_updates((timestamp, 'i', data_to_add))
 
     def remove_data_from_tree(self, delete_data: str, timestamp: str="") -> None:
         """
@@ -212,7 +213,7 @@ class Spasy:
         if timestamp == "":
             timestamp = time.time()
         self._tree.delete(self._tree.root, delete_data, self._tree.root.length_geocode())
-        self._add_to_recent_updates((timestamp, 'delete', delete_data))
+        self._add_to_recent_updates((timestamp, 'd', delete_data))
     
     ######### OTHER #########
     def is_newer_tree(self, sync_tree_hash: str) -> bool:
@@ -289,7 +290,7 @@ class Spasy:
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
     # spasy = Spasy('dpwhwt')
-    # spasy.build_tree(6) # build a tree with six elements
+    # spasy.build_tree(10000) # build a tree with six elements
 
     # spasy2 = Spasy('dpwhwt')
     # for element in spasy.recent_updates:
@@ -307,11 +308,11 @@ if __name__ == '__main__':
     # spasy.update_tree(spasy2.tree.root.hashcode, spasy2.recent_updates) # update the first tree
     # end = time.time()
     
-    #print(f'\n######### THE FIRST TREE #########\n')
-    #print(spasy.tree.root)
+    # print(f'\n######### THE FIRST TREE #########\n')
+    # print(spasy.tree.root)
 
-    #print(f'\n######### THE SECOND TREE #########\n')
-    #print(spasy2.tree.root)
+    # print(f'\n######### THE SECOND TREE #########\n')
+    # print(spasy2.tree.root)
 
     # print(f'\n######### DO THE TREES HAVE THE SAME HASH AFTER THE UPDATE? Spasy1: {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
     # print(f'\n######### HOW LONG DID IT TAKE TO UPDATE THE TREE? {end - start}')
@@ -328,6 +329,10 @@ if __name__ == '__main__':
     # spasy.remove_data_from_tree('/some/test/data/dpwhwtmpz0v')
     # print(f'DATA BY NAMESPACE AFTER REMOVAL:')
     # pprint(spasy.gather_all_data_by_namespace())
+    # print(f'RECENT UPDATES:')
+    # pprint(spasy2.recent_updates)
+    # pprint(spasy.recent_updates)
+    # print(f'SIZE: {asizeof.asizeof(spasy2.tree)}')
 
     
 
