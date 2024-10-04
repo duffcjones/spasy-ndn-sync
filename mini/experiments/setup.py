@@ -1,3 +1,4 @@
+import copy
 from collections import deque
 from os.path import join
 import json
@@ -21,6 +22,7 @@ class Setup:
     wait_time = 1
     init_time = 2
     action_list = deque()
+    action_list_backup = deque()
 
     def __init__(self, node_name):
         self.node_name = node_name
@@ -48,6 +50,7 @@ class Setup:
     @classmethod
     def add_actions(cls, actions):
         cls.action_list.append(actions)
+        cls.action_list_backup.append(actions)
 
     def add_route(self, node_prefix):
         self.multi_cast_routes.append(node_prefix)
@@ -88,3 +91,7 @@ class Setup:
                 actions_file.write(f"{action}\n")
 
         return self.actions_file
+
+    @classmethod
+    def reset(cls):
+        cls.action_list = copy.deepcopy(cls.action_list_backup)

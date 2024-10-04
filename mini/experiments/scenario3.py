@@ -1,11 +1,13 @@
 from mini.experiments.setup import Setup
-from mini.experiments.experiment2 import run_experiment
+from mini.experiments.experiment2 import run_experiments
 
-topoFile = "/spatialsync/mini/experiments/topologies/topology3.conf"
-results_dir = "/spatialsync/mini/experiments/results/"
-results_path = results_dir + "results3.csv"
+iterations = 2
 
-packet_segment_size = 1500
+topo_file = "/spatialsync/mini/experiments/topologies/topology3.conf"
+results_dir = "/spatialsync/mini/experiments/results"
+analysis_file = "analysis.csv"
+
+packet_segment_size = 50
 waitTime = 1
 
 if __name__ == "__main__":
@@ -16,4 +18,4 @@ if __name__ == "__main__":
     Setup.add_actions(["INIT dpwhwt 1", "ADD /add/data/dpwhwtsh234 0", "UPDATE 0"])
     # Setup.add_actions(["INIT dpwhwt 1", "WAIT 3"])
 
-    run_experiment(topoFile, results_dir, results_path)
+    run_experiments(topo_file, iterations, results_dir, analysis_file)

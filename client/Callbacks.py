@@ -6,6 +6,7 @@ from ndn.encoding import Name, Component
 from typing import Optional
 import logging
 import asyncio
+from pympler import asizeof
 
 import Config
 from Interests import send_root_request
@@ -62,8 +63,9 @@ async def receive_hash(root_hash, seg_cnt):
     name = Config.config["direct_root_hash_prefix"] + f"/{root_hash}"
     received_tree = await send_root_request(name, seg_cnt)
     if Config.spasy.is_newer_tree(received_tree):
+        # replace this
         Config.spasy.replace_tree(received_tree)
-        logging.info(f"Received new tree with hash {root_hash} of size {sys.getsizeof(received_tree)}")
+        logging.info(f"Received new tree with hash {root_hash} of size {asizeof.asizeof(received_tree)}")
         Config.timer.stop_timer("sync_update")
     else:
         logging.info(f"Old tree with hash {root_hash} received")

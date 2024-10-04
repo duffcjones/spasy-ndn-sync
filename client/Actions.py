@@ -2,6 +2,7 @@ import logging
 import asyncio
 import pickle
 import sys
+from pympler import asizeof
 
 import Config
 from Interests import send_init_interests, send_sync_request
@@ -48,7 +49,7 @@ async def join(opts):
     num_seg, received_tree = await fetch_segments(name)
     Config.spasy = received_tree
     Config.timer.stop_timer(f"{Config.config["node_name"]}_join_update")
-    logging.info(f"Receieved tree for geocode {opts[0]}")
+    logging.info(f"Receieved tree for geocode {opts[0]} with size {asizeof.asizeof(Config.spasy)}")
 
     await asyncio.sleep(int(opts[-1]))
     return
