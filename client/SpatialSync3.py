@@ -9,14 +9,14 @@ import Actions
 from Interests import send_init_interests
 
 async def main():
-    Config.timer.start_timer(f"{Config.config["node_name"]}_initialization_prefix_route_registration")
+    # Config.timer.start_timer(f"{Config.config["node_name"]}_initialization_prefix_route_registration")
     await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
-    Config.timer.stop_timer(f"{Config.config["node_name"]}_initialization_prefix_route_registration")
+    # Config.timer.stop_timer(f"{Config.config["node_name"]}_initialization_prefix_route_registration")
     logging.info(f"Registered prefix {Config.config["initialization_prefix"]}")
 
-    Config.timer.start_timer(f"{Config.config["node_name"]}_multi_prefix_route_registration")
+    # Config.timer.start_timer(f"{Config.config["node_name"]}_multi_prefix_route_registration")
     await Config.app.register(Config.config["multi_prefix"], on_multi_interest)
-    Config.timer.stop_timer(f"{Config.config["node_name"]}_multi_prefix_route_registration")
+    # Config.timer.stop_timer(f"{Config.config["node_name"]}_multi_prefix_route_registration")
     logging.info(f"Registered prefix {Config.config["multi_prefix"]}")
 
     time.sleep(Config.config["init_time"])
@@ -33,9 +33,8 @@ async def main():
         action = Actions.actions[cmd]
         await action(opts)
 
-    await asyncio.sleep(3)
-
     Config.timer.dump()
+    Config.stats.dump()
 
 
 if __name__ == '__main__':

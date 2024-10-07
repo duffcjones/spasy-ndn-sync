@@ -5,6 +5,8 @@ import logging
 import pickle
 import asyncio
 
+from pympler.asizeof import asizeof
+
 import Config
 
 async def send_interest(name):
@@ -15,6 +17,9 @@ async def send_interest(name):
             Name.normalize(name), must_be_fresh=True, can_be_prefix=True,
             lifetime=1000)
         logging.info(f'Received response for {Name.to_str(data_name)}')
+        logging.info(f"data_name: {asizeof(data_name)}")
+        logging.info(f"meta_info: {asizeof(meta_info)}")
+        logging.info(f"data: {asizeof(data)}")
     except InterestNack as e:
         logging.info(f'Interest {name} nacked with reason={e.reason}')
     except InterestTimeout:
@@ -39,9 +44,9 @@ async def send_init_interests():
 
 
 async def send_root_request(name, seg_cnt):
-    num_seg, received_tree = await fetch_segments_concurrent(name, seg_cnt)
+    num_seg, received_tree, data = await fetch_segments_concurrent(name, seg_cnt)
     logging.info(f"Received response for interest {name}")
-    return received_tree
+    return received_tree, data
 
 
 async def fetch_segments(name):
@@ -55,7 +60,7 @@ async def fetch_segments(name):
     if meta_info.final_block_id != Component.from_segment(0):
         root_requests = []
         current_seg = 1
-        while current_seg < 100:
+        while current_seg < 1000:
             logging.info(f"Requesting segment {current_seg} of tree with root {name}")
             root_requests.append(send_interest(Name.normalize(name) + [Component.from_segment(current_seg)]))
             if meta_info.final_block_id == Component.from_segment(current_seg):
@@ -68,7 +73,10 @@ async def fetch_segments(name):
         data += bytes(segment)
 
     received_tree = pickle.loads(data)
-    return current_seg, received_tree
+    # received_tree = data
+    # logging.info(f"Type is {type(received_tree)}")
+
+    return current_seg, received_tree, data
 
 
 async def fetch_segments_concurrent(name, seg_cnt):
@@ -86,7 +94,7 @@ async def fetch_segments_concurrent(name, seg_cnt):
         data += bytes(segment)
 
     received_tree = pickle.loads(data)
-    return seg_cnt, received_tree
+    return seg_cnt, received_tree, data
 
 
 async def fetch_segments_sequential(name):
@@ -96,7 +104,7 @@ async def fetch_segments_sequential(name):
     data = b''
     root_requests = []
     current_seg = 0
-    while current_seg < 100:
+    while current_seg < 1000:
         logging.info(f"Requesting segment {current_seg} of tree with root {name}")
         data_name, meta_info, seg = await send_interest(Name.normalize(name) + [Component.from_segment(current_seg)])
         data += bytes(seg)
@@ -104,10 +112,10 @@ async def fetch_segments_sequential(name):
             break
         current_seg += 1
     received_tree = pickle.loads(data)
-    return current_seg, received_tree
+    return current_seg, received_tree, data
 
 
 async def send_sync_request(route, root_hash, seg_cnt):
-    name = route + Config.config["multi_path"] + f"/{root_hash}" + f"/{seg_cnt}"
+    name = route + Config.config["multi_path"] + f"/{root_hash}" + f"/{Config.geocode}" + f"/{seg_cnt}"
     await send_interest(name)
     return

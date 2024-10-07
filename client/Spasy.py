@@ -32,6 +32,14 @@ class Spasy:
     def recent_updates(self) -> list:
         """Get the recent updates that have been made to SPASY's tree."""
         return self._recent_updates
+
+    @property
+    def max_number_recent_updates(self) -> int:
+        return self._max_number_recent_updates
+
+    @max_number_recent_updates.setter
+    def max_number_recent_updates(self, value: int) -> None:
+        self._max_number_recent_updates = value
     
     def build_tree(self, size: int=0) -> None:
         """Insert elements into the tree to automate the building of trees.
@@ -69,7 +77,7 @@ class Spasy:
         """
         # read the list of common English-language words into a list
         word_list = []
-        with open('client/words.txt') as file:
+        with open('/spatialsync/client/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 
@@ -477,12 +485,3 @@ if __name__ == '__main__':
     # pprint(spasy1.recent_updates)
     # print(f'SPASY 2')
     # pprint(spasy2.recent_updates)
-
-
-
-    
-
-
-
-    
-

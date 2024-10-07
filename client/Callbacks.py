@@ -14,7 +14,8 @@ from Interests import send_root_request
 def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
     logging.info(f"Received direct root hash interest {Name.to_str(name)}")
 
-    packets, seg_cnt = Config.packed_trees_hashcode_dict[Name.to_str(name).split("/")[-2]]
+    # packets, seg_cnt = Config.packed_trees_hashcode_dict[Name.to_str(name).split("/")[-2]]
+    packets, seg_cnt = Config.packed_updates_dict[Name.to_str(name).split("/")[-2]]
     seg_no = Component.to_number(name[-1])
 
     if seg_no < seg_cnt:
@@ -49,7 +50,7 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
     Config.app.put_data(name, content="received".encode(), freshness_period=100)
     name = Name.to_str(name)
     partitions = name.split("/")
-    root_hash = partitions[-2]
+    root_hash = partitions[-3]
     seg_cnt = partitions[-1]
 
     if Config.spasy.is_newer_tree(root_hash):
@@ -61,12 +62,17 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
 
 async def receive_hash(root_hash, seg_cnt):
     name = Config.config["direct_root_hash_prefix"] + f"/{root_hash}"
-    received_tree = await send_root_request(name, seg_cnt)
-    if Config.spasy.is_newer_tree(received_tree):
+    Config.timer.start_timer(f"{Config.config["node_name"]}_receive_updates")
+    received_updates, data = await send_root_request(name, seg_cnt)
+    Config.timer.stop_timer(f"{Config.config["node_name"]}_receive_updates")
+    # if Config.spasy.is_newer_tree(received_tree):
         # replace this
-        Config.spasy.replace_tree(received_tree)
-        logging.info(f"Received new tree with hash {root_hash} of size {asizeof.asizeof(received_tree)}")
-        Config.timer.stop_timer("sync_update")
-    else:
-        logging.info(f"Old tree with hash {root_hash} received")
+        # Config.spasy.replace_tree(received_tree)
+    Config.spasy.update_tree(root_hash, received_updates)
+    Config.timer.stop_timer("sync_update")
+    logging.info(f"Received new tree updates with resulting hash {root_hash} of size {asizeof.asizeof(received_updates)}")
+    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_uncompressed", asizeof.asizeof(received_updates))
+    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_compressed", asizeof.asizeof(received_updates))
+    # else:
+    #     logging.info(f"Old tree with hash {root_hash} received")
     return

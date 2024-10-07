@@ -18,11 +18,13 @@ class Setup:
     setup_dir = "/spatialsync/mini/experiments/setup/"
     output_dir = "/tmp/minindn/"
     packet_segment_size = 100
+    packet_segment_size_overhead = 128
     log_level = logging.INFO
     wait_time = 1
     init_time = 2
+
     action_list = deque()
-    action_list_backup = deque()
+    # action_list_backup = deque()
 
     def __init__(self, node_name):
         self.node_name = node_name
@@ -35,7 +37,8 @@ class Setup:
         self.actions = []
         self.multi_cast_routes = []
 
-        self.output_path = self.output_dir + f"{self.node_name}/log/results"
+        self.timer_output_path = self.output_dir + f"{self.node_name}/log/results"
+        self.stats_output_path = self.output_dir + f"{self.node_name}/log/stats"
 
     @classmethod
     def init_global_prefixes(cls):
@@ -50,7 +53,7 @@ class Setup:
     @classmethod
     def add_actions(cls, actions):
         cls.action_list.append(actions)
-        cls.action_list_backup.append(actions)
+        # cls.action_list_backup.append(actions)
 
     def add_route(self, node_prefix):
         self.multi_cast_routes.append(node_prefix)
@@ -58,7 +61,8 @@ class Setup:
     def setup_config(self):
         setup_data = {
             "node_name": self.node_name,
-            "output_path": self.output_path,
+            "timer_output_path": self.timer_output_path,
+            "stats_output_path": self.stats_output_path,
             "direct_root_hash_prefix": self.direct_root_hash_prefix,
             "direct_geocode_prefix": self.direct_geocode_prefix,
             "multi_prefix": self.multi_prefix,
@@ -70,9 +74,9 @@ class Setup:
             "direct_geocode_path": self.direct_geocode_path,
             "base_path": self.base_path,
             "wait_time": self.wait_time,
-            "packet_segment_size": self.packet_segment_size,
+            "packet_segment_size": self.packet_segment_size - self.packet_segment_size_overhead,
             "log_level": self.log_level,
-            "init_time": self.init_time
+            "init_time": self.init_time,
         }
         self.config_file = join(self.setup_dir, f'{self.node_name}config.json')
         with open(self.config_file, mode="w") as setup_file:
@@ -94,4 +98,5 @@ class Setup:
 
     @classmethod
     def reset(cls):
-        cls.action_list = copy.deepcopy(cls.action_list_backup)
+        cls.action_list = deque()
+        # cls.action_list = copy.deepcopy(cls.action_list_backup)

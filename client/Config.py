@@ -6,6 +6,7 @@ from ndn.app import NDNApp
 
 from Spasy import Spasy
 from Timer import Timer
+from Stats import Stats
 
 app = NDNApp()
 config = {}
@@ -15,9 +16,13 @@ geocode = ""
 packed_trees_hashcode_dict = {}
 packed_trees_queue = deque()
 
+packed_updates_dict = {}
+packed_updates_queue = deque()
+
 packed_tree_geocode = None
 
 timer = None
+stats = None
 
 def setup(config_file, actions_file):
     global config
@@ -34,6 +39,8 @@ def setup(config_file, actions_file):
         actions = file.read().splitlines()
 
     global timer
-    timer = Timer(config["output_path"])
+    timer = Timer(config["timer_output_path"])
+    global stats
+    stats = Stats(config["stats_output_path"])
 
     return actions
