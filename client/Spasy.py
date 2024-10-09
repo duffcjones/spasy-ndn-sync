@@ -1,6 +1,6 @@
 from SpasyTree import *
 from pympler import asizeof
-from random import randint
+from random import randint, seed
 from pprint import pprint
 from heapq import heappush, heappushpop, heapify
 
@@ -50,18 +50,21 @@ class Spasy:
         """
         # get the string value of the root's geocode
         tree_geocode = ''.join(self._tree.root.geocode)
-
         # generate a name with a geocode and insert it in the tree
+        seed_value = 0 # we want the tree to always be the same for experiments
         for i in range(size):
-            name = self._generate_name() + self._generate_geocode(tree_geocode)
+            
+            name = self._generate_name(seed_value) + self._generate_geocode(seed_value, tree_geocode)
             #print(f'Name being inserted: {name}')
             self._tree.insert(name)
             insert_info = (time.time(), 'i', name)
             self._add_to_recent_updates(insert_info)
+            seed_value += 1000 # increment the seed to make sure it doesn't generate the same string and geocode
+                               # multiple times for the same tree
             #print(f'\n######### RECENT UPDATES #########\n')
             #pprint(self._recent_updates)
 
-    def _generate_name(self, max_length: int=10) -> str:
+    def _generate_name(self, seed_value: int, max_length: int=10) -> str:
         """
         Generates a randomized string of named data from a list of common English words. 
         This is a helper method for building randomized trees.
@@ -69,6 +72,8 @@ class Spasy:
         https://gist.github.com/deekayen/4148741.)
 
         Args:
+            seed_value (int): a random number seed to ensure the generated trees are always
+                              the same (for experimental purposes.)
             max_length (int, optional): the number of elements in the hierarchical name. 
                                         Defaults to 4.
 
@@ -76,8 +81,9 @@ class Spasy:
             str: the named_data string.
         """
         # read the list of common English-language words into a list
+        seed(seed_value) 
         word_list = []
-        with open('/spatialsync/client/words.txt') as file:
+        with open('spatialsync/client/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 
@@ -87,6 +93,7 @@ class Spasy:
         # generate the hierarchical name
         for i in range(number_elements):
             name = name + '/' + word_list[randint(0,len(word_list)-1)]
+        print(f'THE GENERATED NAME: {name}')
 
         # if the length of the string is even, add a version number between 1 and 10
         if number_elements % 2 == 0:
@@ -98,25 +105,31 @@ class Spasy:
 
         return name
 
-    def _generate_geocode(self, geocode: str) -> str:
+    def _generate_geocode(self, seed_value: int, geocode: str) -> str:
         """
         Generates a geocode for inserting named data in a tree.
         This is a helper method for building randomized trees. 
 
         Args:
+            seed_value (int): a random number seed to ensure the generated trees are always
+                              the same (for experimental purposes.)
             geocode (str): the Level 6 geocode that serves as the tree's root.
 
         Returns:
             str: the geocode which will be appended to the name.
         """
+        seed_increment = seed_value
         insert_geocode = geocode
         valid_characters = '0123456789bcdefghjkmnpqrstuvwxyz'
 
         max_geocode_length = self.tree.max_depth
         # print(max_geocode_length)
         while len(insert_geocode) <= max_geocode_length:
+            seed(seed_increment)
             insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
+            seed_increment += 100
 
+        print(f'THE GENERATED GEOCODE: {insert_geocode}')
         return insert_geocode
 
     
@@ -297,8 +310,12 @@ class Spasy:
 # testing
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
-    # spasy = Spasy('dpwhwt')
-    # spasy.build_tree(10000) # build a tree with six elements
+    spasy = Spasy('dpwhwt')
+    spasy.build_tree(10) # build a tree with six elements
+    print(spasy.tree.root)
+    spasy2 = Spasy('dpwhwt')
+    spasy2.build_tree(10)
+    print(spasy2.tree.root)
 
     # spasy2 = Spasy('dpwhwt')
     # for element in spasy.recent_updates:
