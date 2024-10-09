@@ -2,4 +2,4 @@
 
 cd /spatialsync
 #sudo python -m mini.experiments.experiment
-sudo python -m mini.experiments.scenario1.treesize
+sudo python -m mini.experiments.scenario2.node

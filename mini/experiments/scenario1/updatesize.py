@@ -1,6 +1,6 @@
 from mini.experiments.setup import Setup
 from mini.experiments.experiment2 import run_experiments
-from mini.experiments.util import make_topo
+from mini.experiments.util import make_topo, clear_results
 
 iterations = 1
 
@@ -20,7 +20,8 @@ if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
     Setup.wait_time = waitTime
 
-    queue_sizes = [10,25,50,100,1000]
+    # queue_sizes = [10,25,50,100,1000]
+    queue_sizes = [10]
 
     for queue_size in queue_sizes:
         topo = make_topo(num_nodes, latency, bandwidth)

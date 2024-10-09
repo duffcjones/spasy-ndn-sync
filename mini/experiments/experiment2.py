@@ -22,8 +22,8 @@ from mini.experiments.results import analyse_results
 
 import asyncio
 
-log_level = logging.WARN
-# log_level = logging.INFO
+# log_level = logging.WARN
+log_level = logging.INFO
 setup_dir = "/spatialsync/setup/"
 output_dir = "/tmp/minindn/"
 
@@ -119,10 +119,10 @@ async def run_experiment(topo, results_dir, results_path, stats_path, actions):
                    actions_file=setups[host.name].setup_actions())
 
     # await asyncio.sleep(30)
-    time.sleep(25)
+    time.sleep(120)
 
     # MiniNDNCLI(ndn.net)
-    # PlayServer(ndn.net).start()
+    PlayServer(ndn.net).start()
 
     ndn.stop()
 

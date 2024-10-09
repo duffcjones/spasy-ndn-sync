@@ -1,6 +1,6 @@
 from mini.experiments.setup import Setup
 from mini.experiments.experiment2 import run_experiments
-from mini.experiments.util import make_topo
+from mini.experiments.util import make_topo, clear_results
 
 iterations = 10
 
@@ -24,6 +24,7 @@ if __name__ == "__main__":
     # tree_sizes = [10]
 
     for tree_size in tree_sizes:
+        clear_results("/tmp/minindn")
         topo = make_topo(num_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(tree_size)
         actions = [

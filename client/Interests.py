@@ -15,7 +15,7 @@ async def send_interest(name):
         logging.info(f"Sending interest for {name}")
         data_name, meta_info, data = await Config.app.express_interest(
             Name.normalize(name), must_be_fresh=True, can_be_prefix=True,
-            lifetime=1000)
+            lifetime=100)
         logging.info(f'Received response for {Name.to_str(data_name)}')
         logging.info(f"data_name: {asizeof(data_name)}")
         logging.info(f"meta_info: {asizeof(meta_info)}")
