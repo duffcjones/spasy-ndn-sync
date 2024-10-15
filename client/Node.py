@@ -145,11 +145,9 @@ class Node:
 
     def insert_data(self, named_data: str) -> None:
         """
-        Inserts new named data into the list of data. 
-        Checks if the new data is a version of previous data or new data.
-        The expectation is that the final value in a hierarchical named data
-        string is fully numeric only when being used to indicate a version
-        number or timestamp.
+        Inserts new named data into the list of data. Checks if the new data is a version 
+        (signified by '_v<number>' in the penultimate component) of previous data or new data.
+        The final value in the string is the geohash.
 
         Args:
             named_data (str): the named data object's name.
@@ -164,7 +162,7 @@ class Node:
         else:
             # split the string to be inserted; get a version number if there is one
             split_data = named_data.split('/')
-            if split_data[-2].startswith('a'):
+            if split_data[-2].startswith('_v'):
                 data_to_check = ''.join(split_data[0:-2]) + split_data[-1]
                 insert_version = split_data[-2]
             else:
@@ -178,7 +176,7 @@ class Node:
                 
                 # split the named data element in the list and check if there is a version number
                 element_split = existing_data[i].split('/')
-                if element_split[-2].startswith('a'):  # this can't be None because there will always be data and a geocode
+                if element_split[-2].startswith('_v'):  # this can't be None because there will always be data and a geocode
                     # this removes the version number from the string to check if data matches
                     element_without_version = ''.join(element_split[0:-2]) + element_split[-1]
                     current_version = element_split[-2]
@@ -208,6 +206,7 @@ class Node:
                     
             # the data is new and should be added
             self._data.append(named_data)
+            self._data.sort()
             self.generate_hash()
 
     def generate_hash(self) -> None:

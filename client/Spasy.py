@@ -20,7 +20,7 @@ class Spasy:
         
         self._tree = SpasyTree(10, Node(geocode))
         self._recent_updates = [] # a list that will be treated as a heap
-        self._max_number_recent_updates = 25 # maximum size of priority queue
+        self._max_number_recent_updates = 30 # maximum size of priority queue
     
     ######### ACCESSORS #########
     @property
@@ -64,6 +64,97 @@ class Spasy:
             #print(f'\n######### RECENT UPDATES #########\n')
             #pprint(self._recent_updates)
 
+    def build_tree_from_file(self, filename: str, size: int, timestamp: bool=False) -> None:
+        """
+        Build a tree from a file that contains names and, optionally, timestamps.
+
+        Args:
+            filename (str): _description_
+            size (int): _description_
+            timestamp (bool, optional): _description_. Defaults to False.
+        """
+
+        if not timestamp:
+            with open(filename, 'r') as file:
+                count = 0
+                while count <= size:
+                    self.add_data_to_tree(file.readline().strip())
+                    count += 1
+
+        else:
+            with open(filename, 'r') as file:
+                count = 0
+                while count <= size:
+                    line = file.readline().strip().split(',')
+                    # print(f'LINE: {line}')
+                    
+                    # if the line is empty, we've reached the end of the file
+                    if line == ['']:
+                        break
+                    #split_line = line.split(',')
+                    named_data = line[0]
+                    time_added = line[1]
+                    # print(f'Named data: {named_data}')
+                    # print(f'Timestamp: {time_added}')
+                    self.add_data_to_tree(named_data, time_added)
+                    count += 1
+
+    def _create_experiment_tree(self, size: int, max_length_name: int, timestamp: bool=False) -> None:
+        """
+        Create a file that builds randomly named data strings to be used to build a
+        SpasyTree that will have the same data. Used to run consistent experiments.
+
+        Args:
+            size (int): The number of elements that the tree will have.
+            max_length_name (int): The maximum length of the hierarchical name of the named data.
+            timestamp (bool): Will add a timestamp for each name to allow for trees to match when running experiments, if True.
+                              Defaults to False.
+        """
+        word_list = []
+        with open('client/words.txt') as file:
+            for word in file:
+                word_list.append(word.strip())
+
+        name_list = []
+        
+        for i in range(size):
+            name = ""
+            number_elements = randint(2, max_length_name) # determine the number of elements in the named data string
+        # generate the hierarchical name
+            for j in range(number_elements):
+                name = name + '/' + word_list[randint(0,len(word_list)-1)]
+
+            # if the length of the string is even, add a version number between 1 and 10
+            if number_elements % 2 == 0:
+                version_number = '_v' + str(randint(1,10))
+                name = name + '/' + version_number
+
+            # create a divider to accommodate the geocode
+            name = name + '/'
+
+            insert_geocode =  ''.join(self._tree.root.geocode)
+            valid_characters = '0123456789bcdefghjkmnpqrstuvwxyz'
+
+            max_geocode_length = self.tree.max_depth
+            while len(insert_geocode) <= max_geocode_length:
+                
+                insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
+
+            
+            name_list.append(name + insert_geocode)
+        
+        if timestamp:
+            with open('spasy_tree.txt', 'w') as file2:
+                for entry in name_list:
+                    time_added = str(time.time())
+                    string_to_add = entry + ',' + time_added + '\n'
+                    file2.write(entry + ',' + time_added + '\n')
+        else:
+            with open('spasy_tree.txt', 'w') as file2:
+                for entry in name_list:
+                    file2.write(entry)
+            
+
     def _generate_name(self, seed_value: int, max_length: int=10) -> str:
         """
         Generates a randomized string of named data from a list of common English words. 
@@ -83,7 +174,7 @@ class Spasy:
         # read the list of common English-language words into a list
         seed(seed_value) 
         word_list = []
-        with open('spatialsync/client/words.txt') as file:
+        with open('client/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 
@@ -93,11 +184,10 @@ class Spasy:
         # generate the hierarchical name
         for i in range(number_elements):
             name = name + '/' + word_list[randint(0,len(word_list)-1)]
-        print(f'THE GENERATED NAME: {name}')
 
         # if the length of the string is even, add a version number between 1 and 10
         if number_elements % 2 == 0:
-            version_number = 'a' + str(randint(1,10))
+            version_number = '_v' + str(randint(1,10))
             name = name + '/' + version_number
 
         # create a divider to accommodate the geocode
@@ -129,7 +219,7 @@ class Spasy:
             insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
             seed_increment += 100
 
-        print(f'THE GENERATED GEOCODE: {insert_geocode}')
+        # print(f'THE GENERATED GEOCODE: {insert_geocode}')
         return insert_geocode
 
     
@@ -175,31 +265,19 @@ class Spasy:
         """
         # convert recent changes to a set in order to do set difference
         current_set = set(self.recent_updates)
-        # print(f'\n######### THE CURRENT SET #########\n')
-        # pprint(current_set)
         update_set = set(recent_changes)
-        # print(f'\n######### THE UPDATE SET #########\n')
-        # pprint(update_set)
 
         # find differences
         set_difference = update_set.difference(current_set)
-        # print(f'\n########## SET DIFFERENCE #########\n')
-        # pprint(set_difference)
-        # print(f'\n######### HANDLING CHANGES #########\n')
         
         # handle differences if there are any
         if set_difference:
             for element in set_difference:
                 timestamp = element[0]
                 data = element[2]
-                # print(f'ELEMENT: {element}')
                 if element[1] == 'i':
-                    # print(f'INSERT: {data}')
                     self.add_data_to_tree(data, timestamp)
-                    # print(f'TIMESTAMP: {timestamp}')
                 elif element[1] == 'd':
-                    # print(f'DELETE: {data}')
-                    # print(f'TIMESTAMP: {timestamp}')
                     self.remove_data_from_tree(data, timestamp)
 
         # check that the hashes match 
@@ -216,7 +294,7 @@ class Spasy:
                                        is the data's publisher.
         """
         if timestamp == "":
-            timestamp = time.time()
+            timestamp = str(time.time())
         self._tree.insert(data_to_add)
         self._add_to_recent_updates((timestamp, 'i', data_to_add))
 
@@ -310,12 +388,27 @@ class Spasy:
 # testing
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
+
+
     spasy = Spasy('dpwhwt')
-    spasy.build_tree(10) # build a tree with six elements
-    print(spasy.tree.root)
+    use_timestamps = True
+    # spasy._create_experiment_tree(100000, 10, use_timestamps)
+    spasy.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
+    
     spasy2 = Spasy('dpwhwt')
-    spasy2.build_tree(10)
-    print(spasy2.tree.root)
+    spasy2.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
+
+    hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
+    # start_build = time.time()
+    # spasy.build_tree(10000) # build a tree with six elements
+    # end_build = time.time()
+
+    # print(f'Time to build tree: {end_build - start_build}')
+    # # print(f'Time to insert 25 elements into the tree: {end_insert - start_insert}')
+
+    
+    # # spasy2 = Spasy('dpwhwt')
+    # # spasy2.build_tree(10000)
 
     # spasy2 = Spasy('dpwhwt')
     # for element in spasy.recent_updates:
@@ -323,24 +416,52 @@ if __name__ == '__main__':
     #     timestamp = element[0]
     #     spasy2.add_data_to_tree(data, timestamp)
 
-    # print(f'\n######### TESTING THE RECENT UPDATES #########\n')
-    # print(f'\n######### NEWER TREE? #########\n')
-    # spasy2.add_data_to_tree('/some/test/data/dpwhwtmpz0v') # add something to the second tree
+    # hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
 
-    # print(f'\n######### DO THE TREES HAVE THE SAME HASH BEFORE THE UPDATE? {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
+    print(f'\n######### TESTING THE RECENT UPDATES #########\n')
+    print(f'\n######### NEWER TREE? #########\n')
+    spasy2.add_data_to_tree('/some/test/data/dpwhwtmpz0v') # add something to the second tree
+    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsh000')
+    spasy2.add_data_to_tree('/extra/data/dpwhwtsh000')
+    spasy2.add_data_to_tree('/some/data/dpwhwts0214')
+    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsp000')
+    spasy2.add_data_to_tree('/some/data/dpwhwtsz001')
+    spasy2.add_data_to_tree('/some/more/data/dpwhwtsb009')
+    spasy2.add_data_to_tree('/some/testing/data/dpwhwtsm00h')
+    spasy2.add_data_to_tree('/some/data/dpwhwtsn00s')
+    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwts1000')
+    spasy2.add_data_to_tree('/extra/data/dpwhwts2000')
+    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsh000')
+    spasy2.add_data_to_tree('/some/data/dpwhwtsh001')
+    spasy2.add_data_to_tree('/some/more/data/dpwhwtsh009')
+    spasy2.add_data_to_tree('/some/more/data//dpwhwtsmnz4')
+    spasy2.add_data_to_tree('/some/testing/data/dpwhwtsh00h')
+    spasy2.add_data_to_tree('/some/data/dpwhwtshpqs')
+    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsprtu')
+    spasy2.add_data_to_tree('/extra/data/dpwhwts9bzx')
+    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtspc18')
+    spasy2.add_data_to_tree('/some/data/dpwhwtspcdq')
+    spasy2.add_data_to_tree('/some/more/data/_v1/dpwhwtsmnz4')
 
-    # start = time.time()
-    # spasy.update_tree(spasy2.tree.root.hashcode, spasy2.recent_updates) # update the first tree
-    # end = time.time()
+    
+
+
+    before_the_update = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
+
+    start = time.time()
+    spasy.update_tree(spasy2.tree.root.hashcode, spasy2.recent_updates) # update the first tree
+    end = time.time()
     
     # print(f'\n######### THE FIRST TREE #########\n')
     # print(spasy.tree.root)
 
     # print(f'\n######### THE SECOND TREE #########\n')
     # print(spasy2.tree.root)
-
-    # print(f'\n######### DO THE TREES HAVE THE SAME HASH AFTER THE UPDATE? Spasy1: {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
-    # print(f'\n######### HOW LONG DID IT TAKE TO UPDATE THE TREE? {end - start}')
+    print(f'\n######### DO THE TREES HAVE THE SAME HASH TO START? {hash_to_start}')
+    print(f'\n######### DO THE TREES HAVE THE SAME HASH BEFORE THE UPDATE TO SPASY? {before_the_update}')
+    print(f'\n######### DO THE TREES HAVE THE SAME HASH AFTER THE UPDATE? {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
+    print(f'{spasy.tree.root.hashcode} and {spasy2.tree.root.hashcode}')
+    print(f'\n######### HOW LONG DID IT TAKE TO UPDATE THE TREE? {end - start}')
 
     # # TESTING REMAINING METHODS
     # print(f'\n######### TESTING OTHER METHODS #########')
