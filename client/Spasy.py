@@ -18,7 +18,7 @@ class Spasy:
 
     def __init__(self, geocode: str) -> None:
         
-        self._tree = SpasyTree(10, Node(geocode))
+        self._tree = SpasyTree(9, Node(geocode))
         self._recent_updates = [] # a list that will be treated as a heap
         self._max_number_recent_updates = 30 # maximum size of priority queue
     
@@ -392,76 +392,76 @@ if __name__ == '__main__':
 
     spasy = Spasy('dpwhwt')
     use_timestamps = True
-    # spasy._create_experiment_tree(100000, 10, use_timestamps)
-    spasy.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
+    spasy._create_experiment_tree(100000, 10, use_timestamps)
+    # spasy.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
     
-    spasy2 = Spasy('dpwhwt')
-    spasy2.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
-
-    hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
-    # start_build = time.time()
-    # spasy.build_tree(10000) # build a tree with six elements
-    # end_build = time.time()
-
-    # print(f'Time to build tree: {end_build - start_build}')
-    # # print(f'Time to insert 25 elements into the tree: {end_insert - start_insert}')
-
-    
-    # # spasy2 = Spasy('dpwhwt')
-    # # spasy2.build_tree(10000)
-
     # spasy2 = Spasy('dpwhwt')
-    # for element in spasy.recent_updates:
-    #     data = element[2]
-    #     timestamp = element[0]
-    #     spasy2.add_data_to_tree(data, timestamp)
+    # spasy2.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
 
     # hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
+    # # start_build = time.time()
+    # # spasy.build_tree(10000) # build a tree with six elements
+    # # end_build = time.time()
 
-    print(f'\n######### TESTING THE RECENT UPDATES #########\n')
-    print(f'\n######### NEWER TREE? #########\n')
-    spasy2.add_data_to_tree('/some/test/data/dpwhwtmpz0v') # add something to the second tree
-    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsh000')
-    spasy2.add_data_to_tree('/extra/data/dpwhwtsh000')
-    spasy2.add_data_to_tree('/some/data/dpwhwts0214')
-    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsp000')
-    spasy2.add_data_to_tree('/some/data/dpwhwtsz001')
-    spasy2.add_data_to_tree('/some/more/data/dpwhwtsb009')
-    spasy2.add_data_to_tree('/some/testing/data/dpwhwtsm00h')
-    spasy2.add_data_to_tree('/some/data/dpwhwtsn00s')
-    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwts1000')
-    spasy2.add_data_to_tree('/extra/data/dpwhwts2000')
-    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsh000')
-    spasy2.add_data_to_tree('/some/data/dpwhwtsh001')
-    spasy2.add_data_to_tree('/some/more/data/dpwhwtsh009')
-    spasy2.add_data_to_tree('/some/more/data//dpwhwtsmnz4')
-    spasy2.add_data_to_tree('/some/testing/data/dpwhwtsh00h')
-    spasy2.add_data_to_tree('/some/data/dpwhwtshpqs')
-    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsprtu')
-    spasy2.add_data_to_tree('/extra/data/dpwhwts9bzx')
-    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtspc18')
-    spasy2.add_data_to_tree('/some/data/dpwhwtspcdq')
-    spasy2.add_data_to_tree('/some/more/data/_v1/dpwhwtsmnz4')
+    # # print(f'Time to build tree: {end_build - start_build}')
+    # # # print(f'Time to insert 25 elements into the tree: {end_insert - start_insert}')
+
+    
+    # # # spasy2 = Spasy('dpwhwt')
+    # # # spasy2.build_tree(10000)
+
+    # # spasy2 = Spasy('dpwhwt')
+    # # for element in spasy.recent_updates:
+    # #     data = element[2]
+    # #     timestamp = element[0]
+    # #     spasy2.add_data_to_tree(data, timestamp)
+
+    # # hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
+
+    # print(f'\n######### TESTING THE RECENT UPDATES #########\n')
+    # print(f'\n######### NEWER TREE? #########\n')
+    # spasy2.add_data_to_tree('/some/test/data/dpwhwtmpz0') # add something to the second tree
+    # spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/extra/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwts021')
+    # spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsp00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtsz00')
+    # spasy2.add_data_to_tree('/some/more/data/dpwhwtsb00')
+    # spasy2.add_data_to_tree('/some/testing/data/dpwhwtsm00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtsn00')
+    # spasy2.add_data_to_tree('/second/piece/of/data/dpwhwts100')
+    # spasy2.add_data_to_tree('/extra/data/dpwhwts200')
+    # spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/more/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/more/data//dpwhwtsmnz')
+    # spasy2.add_data_to_tree('/some/testing/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtshpq')
+    # spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsprt')
+    # spasy2.add_data_to_tree('/extra/data/dpwhwts9bz')
+    # spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtspc1')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtspcd')
+    # spasy2.add_data_to_tree('/some/more/data/_v1/dpwhwtsmnz')
 
     
 
 
-    before_the_update = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
+    # before_the_update = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
 
-    start = time.time()
-    spasy.update_tree(spasy2.tree.root.hashcode, spasy2.recent_updates) # update the first tree
-    end = time.time()
+    # start = time.time()
+    # spasy.update_tree(spasy2.tree.root.hashcode, spasy2.recent_updates) # update the first tree
+    # end = time.time()
     
-    # print(f'\n######### THE FIRST TREE #########\n')
-    # print(spasy.tree.root)
+    # # print(f'\n######### THE FIRST TREE #########\n')
+    # # print(spasy.tree.root)
 
-    # print(f'\n######### THE SECOND TREE #########\n')
-    # print(spasy2.tree.root)
-    print(f'\n######### DO THE TREES HAVE THE SAME HASH TO START? {hash_to_start}')
-    print(f'\n######### DO THE TREES HAVE THE SAME HASH BEFORE THE UPDATE TO SPASY? {before_the_update}')
-    print(f'\n######### DO THE TREES HAVE THE SAME HASH AFTER THE UPDATE? {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
-    print(f'{spasy.tree.root.hashcode} and {spasy2.tree.root.hashcode}')
-    print(f'\n######### HOW LONG DID IT TAKE TO UPDATE THE TREE? {end - start}')
+    # # print(f'\n######### THE SECOND TREE #########\n')
+    # # print(spasy2.tree.root)
+    # print(f'\n######### DO THE TREES HAVE THE SAME HASH TO START? {hash_to_start}')
+    # print(f'\n######### DO THE TREES HAVE THE SAME HASH BEFORE THE UPDATE TO SPASY? {before_the_update}')
+    # print(f'\n######### DO THE TREES HAVE THE SAME HASH AFTER THE UPDATE? {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
+    # print(f'{spasy.tree.root.hashcode} and {spasy2.tree.root.hashcode}')
+    # print(f'\n######### HOW LONG DID IT TAKE TO UPDATE THE TREE? {end - start}')
 
     # # TESTING REMAINING METHODS
     # print(f'\n######### TESTING OTHER METHODS #########')

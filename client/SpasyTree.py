@@ -343,18 +343,25 @@ class SpasyTree:
 if __name__ == '__main__':
     print('\nTesting SpasyTree...\n')
 
-    # diagram example
+
+    # # diagram example
     # paper_tree = SpasyTree(9, Node('dpwhwt'))
-    # print(paper_tree.root)
+    # print(f'To begin: {paper_tree.root}')
+    # paper_tree.insert('/bob/net/1/dpwhwtbr2v')
+    # print(f'\nAfter Bob: {paper_tree.root}')
+    # bob_hash = paper_tree.root.hashcode
     # paper_tree.insert('/alice/ball/0/dpwhwtsh00')
-    # print(paper_tree.root)
-    # paper_tree.insert('/bob/net/1/dpwhwtsh20')
+    # print(f'\nAfter Alice: {paper_tree.root}')
+    # print(f'\nAfter Bob hash: {bob_hash}')
+    # print(f'\nAfter Alice hash: {paper_tree.root.hashcode}')
+
+    
     # print(paper_tree.root)
     # print(paper_tree.root.children[3].children[2].children[0].children[0].data)
     # paper_tree.delete(paper_tree.root, '/bob/net/1/dpwhwtsh20', paper_tree.root.length_geocode())
     # print(paper_tree.root)
     # print(paper_tree.root.children[3].children[2].children[0].children[0].data)
-    # print(deque_to_set)
+   
 
 
     # hashing tests
