@@ -2,6 +2,7 @@ import os
 import csv
 from collections import defaultdict
 import statistics
+import re
 
 
 def convert_results(hosts, results_dir, results_path, output_dir):
@@ -16,6 +17,9 @@ def convert_results(hosts, results_dir, results_path, output_dir):
             with open(output_path, 'r') as output_file:
                 while line := output_file.readline():
                     timer_values = line.split()
+                    if len(timer_values) < 2:
+                        print(line)
+                        raise Exception("Missing result")
                     timer_name = timer_values[0]
                     if timer_values[1] == 'none':
                         timers[timer_name].append(timer_values[2])
@@ -30,23 +34,23 @@ def convert_results(hosts, results_dir, results_path, output_dir):
         csv_writer = csv.DictWriter(results_file, fieldnames=['name', 'start', 'end', 'time'])
         csv_writer.writeheader()
         for name,values in timers.items():
-            csv_writer.writerow({'name': name,'start': values[0],'end': values[1:],'time': ",".join([str(round((int(i) - int(values[0])) / 1000000)) for i in values[1:]])})
+            csv_writer.writerow({'name': name,'start': values[0],'end': values[1:],'time': ",".join([str((float(i) - float(values[0])) / 1000000) for i in values[1:]])})
 
 
 def analyse_results(results_dir, analysis_file):
-    with open(results_dir + "/results-0.csv","r") as file:
+    with open(f"{results_dir}/" + get_template_file(results_dir,f"\/*-results-0.csv"),"r") as file:
         reader = csv.reader(file)
         results = {rows[0]: rows[-1] for rows in reader}
     results_dict = {k:[] for k in list(results.keys())}
 
     for file in os.listdir(results_dir):
-        if file.split('-')[0] == "results":
+        if file.split('-')[-2] == "results":
             with open(results_dir + f"/{file}", 'r') as results_file:
                 reader = csv.reader(results_file)
                 results = {rows[0]: rows[-1] for rows in reader}
                 for key in results.keys():
                     if key != "name":
-                        results_dict[key].extend([int(value) for value in results[key].split(",")])
+                        results_dict[key].extend([float(value) for value in results[key].split(",")])
 
     del results_dict['name']
 
@@ -57,15 +61,17 @@ def analyse_results(results_dir, analysis_file):
             stats[key].append(statistics.median(values))
             stats[key].append(statistics.stdev(values))
             stats[key].append(statistics.variance(values))
+            stats[key].append(min(values))
+            stats[key].append(max(values))
         else:
             stats[key].append(values[0])
 
     with open(analysis_file,'x', newline='') as analysis:
-        csv_writer = csv.DictWriter(analysis, fieldnames=['name', 'mean', 'median', 'stdev', 'variance', 'value'])
+        csv_writer = csv.DictWriter(analysis, fieldnames=['name', 'mean', 'median', 'stdev', 'variance', 'min', 'max', 'value'])
         csv_writer.writeheader()
         for name,values in stats.items():
             if len(values) > 1:
-                csv_writer.writerow({'name': name,'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3]})
+                csv_writer.writerow({'name': name,'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3], 'min': values[4], 'max': values[5]})
             else:
                 csv_writer.writerow({'name': name, 'value': values[0]})
 
@@ -92,13 +98,13 @@ def convert_stats(hosts, results_dir, stats_path, output_dir):
 
 
 def analyse_stats(results_dir, analysis_file):
-    with open(results_dir + "/stats-0.csv","r") as file:
+    with open(f"{results_dir}/" + get_template_file(results_dir,f"\/*-stats-0.csv"),"r") as file:
         reader = csv.reader(file)
         stats = {rows[0]: rows[-1] for rows in reader}
     stats_dict = {k:[] for k in list(stats.keys())}
 
     for file in os.listdir(results_dir):
-        if file.split('-')[0] == "stats":
+        if file.split('-')[-2] == "stats":
             with open(results_dir + f"/{file}", 'r') as stats_file:
                 reader = csv.reader(stats_file)
                 stats = {rows[0]: rows[-1] for rows in reader}
@@ -126,3 +132,10 @@ def analyse_stats(results_dir, analysis_file):
                 csv_writer.writerow({'name': name,'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3]})
             else:
                 csv_writer.writerow({'name': name, 'value': values[0]})
+
+
+def get_template_file(folder,pattern):
+    files = os.listdir(folder)
+    r = re.compile(pattern)
+    files = [file for file in files if r.search(file)]
+    return files[0]

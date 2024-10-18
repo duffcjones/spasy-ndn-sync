@@ -9,17 +9,14 @@ from pympler.asizeof import asizeof
 
 import Config
 
-async def send_interest(name):
+async def send_interest(name, ttl=5000):
     data_name, meta_info, data = None, None, None
     try:
         logging.info(f"Sending interest for {name}")
         data_name, meta_info, data = await Config.app.express_interest(
-            Name.normalize(name), must_be_fresh=True, can_be_prefix=True,
-            lifetime=100)
+            Name.normalize(name),must_be_fresh=False, can_be_prefix=True,
+            lifetime=ttl)
         logging.info(f'Received response for {Name.to_str(data_name)}')
-        logging.info(f"data_name: {asizeof(data_name)}")
-        logging.info(f"meta_info: {asizeof(meta_info)}")
-        logging.info(f"data: {asizeof(data)}")
     except InterestNack as e:
         logging.info(f'Interest {name} nacked with reason={e.reason}')
     except InterestTimeout:
@@ -37,9 +34,7 @@ async def send_interest(name):
 async def send_init_interests():
     for route in Config.config["multi_cast_routes"]:
         name = route + Config.config["initialization_path"]
-        Config.timer.start_timer(f"{Config.config["node_name"]}_init_interest")
         await send_interest(name)
-        Config.timer.stop_timer(f"{Config.config["node_name"]}_init_interest")
     return
 
 
@@ -53,7 +48,6 @@ async def fetch_segments(name):
     segments = []
     current_seg = 0
     logging.info(f"Sending initial interest for tree with root {name}")
-    # Config.timer.start_timer(f"{Config.config["node_name"]}_")
     data_name, meta_info, seg = await send_interest(Name.normalize(name) + [Component.from_segment(current_seg)])
     segments.append((data_name, meta_info, seg))
 
@@ -72,9 +66,11 @@ async def fetch_segments(name):
     for _, _, segment in segments:
         data += bytes(segment)
 
+    logging.info("Unserializing data")
+    Config.timer.start_timer(f"{Config.config['node_name']}_unserialize_data")
     received_tree = pickle.loads(data)
-    # received_tree = data
-    # logging.info(f"Type is {type(received_tree)}")
+    Config.timer.stop_timer(f"{Config.config['node_name']}_unserialize_data")
+    logging.info("Unserialized data")
 
     return current_seg, received_tree, data
 
@@ -117,5 +113,6 @@ async def fetch_segments_sequential(name):
 
 async def send_sync_request(route, root_hash, seg_cnt):
     name = route + Config.config["multi_path"] + f"/{root_hash}" + f"/{Config.geocode}" + f"/{seg_cnt}"
-    await send_interest(name)
+    # logging.info(f"Sending sync request {name}")
+    await send_interest(name, 5)
     return

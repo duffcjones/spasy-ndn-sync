@@ -172,9 +172,9 @@ class Spasy:
             str: the named_data string.
         """
         # read the list of common English-language words into a list
-        seed(seed_value) 
+        seed(seed_value)
         word_list = []
-        with open('client/words.txt') as file:
+        with open('/spatialsync/client/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 

@@ -2,7 +2,10 @@ import logging
 import asyncio
 import pickle
 import sys
+import time
+
 from pympler import asizeof
+from random import randint, seed
 
 import Config
 from Interests import send_init_interests, send_sync_request
@@ -34,6 +37,9 @@ async def init(opts):
     await Config.app.register(geocode_route, on_direct_geocode_interest)
     logging.info(f"Registered route for {geocode_route}")
 
+    # Reset seeding for nonce generation
+    seed()
+
     await asyncio.sleep(int(opts[-1]))
     return
 
@@ -41,10 +47,16 @@ async def init(opts):
 async def add(opts):
     logging.info(f"Action: Add data {opts[0]}")
 
-    Config.timer.start_timer("sync_update")
+    # Config.timer.start_global_timer("sync_update")
+    Config.timer.start_timer("add_data")
     Config.spasy.add_data_to_tree(opts[0])
+    Config.timer.stop_timer("add_data")
 
+    Config.timer.start_timer("prep_tree")
     await prep_tree()
+    Config.timer.stop_timer("prep_tree")
+
+    Config.timer.start_global_timer("sync_update")
 
     await asyncio.sleep(int(opts[-1]))
     return
@@ -55,16 +67,19 @@ async def join(opts):
     Config.timer.start_timer(f"{Config.config["node_name"]}_join_update")
     name = Config.config["direct_geocode_prefix"] + f"/{opts[0]}"
     num_seg, received_tree, data = await fetch_segments(name)
+    # Config.timer.start_timer(f"{Config.config['node_name']}_copy_tree")
     Config.spasy = received_tree
+    # Config.timer.stop_timer(f"{Config.config['node_name']}_copy_tree")
     Config.timer.stop_timer(f"{Config.config["node_name"]}_join_update")
-    logging.info(f"Receieved tree for geocode {opts[0]} with size {asizeof.asizeof(Config.spasy)}")
+    # Config.timer.start_timer(f"{Config.config['node_name']}_calculate_size")
+    # logging.info(f"Receieved tree for geocode {opts[0]} with size {asizeof.asizeof(Config.spasy)}")
+    # Config.timer.stop_timer(f"{Config.config['node_name']}_calculate_size")
     logging.info(f"Root of tree is {Config.spasy.tree.root.hashcode}")
-    # logging.info(Config.spasy.gather_all_data_by_geocode())
 
     # Size of full tree uncompressed received through join request
-    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_size", f"{asizeof.asizeof(received_tree)}")
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_size", f"{asizeof.asizeof(received_tree)}")
     # Size of full tree compressed received through join request
-    Config.stats.record_stat(f"{Config.config["node_name"]}_received_compressed_tree_size", f"{asizeof.asizeof(data)}")
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_received_compressed_tree_size", f"{asizeof.asizeof(data)}")
 
     await asyncio.sleep(int(opts[-1]))
     return
@@ -75,10 +90,16 @@ async def update(opts):
 
     root_hash, seg_cnt = Config.packed_updates_queue[-1]
 
+    # sync_requests = []
+    # for route in Config.config["multi_cast_routes"]:
+    #     task = asyncio.create_task(send_sync_request(route, root_hash, seg_cnt))
+    #     sync_requests.append(task)
+
     sync_requests = []
+    Config.timer.start_global_timer(f"sync_request")
     for route in Config.config["multi_cast_routes"]:
-        task = asyncio.create_task(send_sync_request(route, root_hash, seg_cnt))
-        sync_requests.append(task)
+        sync_requests.append(send_sync_request(route, root_hash, seg_cnt))
+    await asyncio.gather(*sync_requests)
 
     await asyncio.sleep(int(opts[-1]))
     return
@@ -92,7 +113,6 @@ async def wait(opts):
 
 async def prep_tree():
     logging.info(f"Packing tree with hashcode {Config.spasy.tree.root.hashcode}")
-    # logging.info(Config.spasy.gather_all_data_by_geocode())
 
     root_hash_route = Config.config["direct_root_hash_prefix"] + f"/{Config.spasy.tree.root.hashcode}"
     # packets, seg_cnt = pack_data(Config.spasy, root_hash_route)
@@ -101,15 +121,19 @@ async def prep_tree():
     packets, seg_cnt, serialized_data = pack_data(Config.spasy.recent_updates, root_hash_route)
 
     # Size of single update packet
-    Config.stats.record_stat(f"{Config.config["node_name"]}_update_packet_size", f"{asizeof.asizeof(packets[0])}")
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_update_packet_size", f"{asizeof.asizeof(packets[0])}")
     # Size of all packets of update list after compression
-    Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_updates_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_updates_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
+    # Number of packets
+    Config.stats.record_stat(f"num_packets_queue", f"{seg_cnt}")
 
     Config.packed_updates_dict[Config.spasy.tree.root.hashcode] = (packets, seg_cnt)
     Config.packed_updates_queue.append((Config.spasy.tree.root.hashcode, seg_cnt))
 
 
+    Config.timer.start_timer("register_root_hash_route")
     await Config.app.register(root_hash_route, on_direct_root_hash_interest)
+    Config.timer.stop_timer("register_root_hash_route")
     logging.info(f"Registered route for {root_hash_route}")
 
     geocode_route = Config.config["direct_geocode_prefix"] + f"/{Config.geocode}"
@@ -118,16 +142,24 @@ async def prep_tree():
     Config.packed_tree_geocode = (packets, seg_cnt)
 
     #Size of single tree packet
-    Config.stats.record_stat(f"{Config.config["node_name"]}_tree_packet_size", f"{asizeof.asizeof(packets[0])}")
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_tree_packet_size", f"{asizeof.asizeof(packets[0])}")
     # Size of all packets of full tree (after compression)
-    Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_tree_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_tree_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
+    # Number of packets
+    Config.stats.record_stat(f"num_packets_tree", f"{seg_cnt}")
     return
 
+async def set(opts):
+    logging.info("Initializing interests")
+    Config.timer.start_timer(f"init_interests")
+    await send_init_interests()
+    Config.timer.stop_timer(f"init_interests")
 
 actions = {
     "INIT": init,
     "ADD": add,
     "JOIN": join,
     "UPDATE": update,
-    "WAIT": wait
+    "WAIT": wait,
+    "SET": set
 }

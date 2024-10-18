@@ -16,7 +16,7 @@ def make_topo(num_nodes,latency,bandwidth):
         user_nodes.append(node)
 
     for user_node in user_nodes:
-        topo.addLink(mec_node, user_node, delay=f"{latency}ms", bw=bandwidth)
+        topo.addLink(mec_node, user_node, delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
 
     return topo
 

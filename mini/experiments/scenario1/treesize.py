@@ -13,7 +13,7 @@ waitTime = 1
 num_nodes = 2
 bandwidth = 1000
 latency = 2
-queue_size = 10
+queue_size = 100
 geocode = "dpwhwt"
 
 if __name__ == "__main__":
