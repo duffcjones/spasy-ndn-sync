@@ -1,4 +1,3 @@
-import copy
 from collections import deque
 from os.path import join
 import json
@@ -17,14 +16,14 @@ class Setup:
 
     setup_dir = "/spatialsync/mini/experiments/setup/"
     output_dir = "/tmp/minindn/"
-    packet_segment_size = 100
+    packet_segment_size = 8800
     packet_segment_size_overhead = 128
     log_level = logging.INFO
     wait_time = 1
     init_time = 2
+    word_list_path = "/spatialsync/mini/experiments/spasy_tree.txt"
 
     action_list = deque()
-    # action_list_backup = deque()
 
     def __init__(self, node_name):
         self.node_name = node_name
@@ -53,7 +52,6 @@ class Setup:
     @classmethod
     def add_actions(cls, actions):
         cls.action_list.append(actions)
-        # cls.action_list_backup.append(actions)
 
     def add_route(self, node_prefix):
         self.multi_cast_routes.append(node_prefix)
@@ -77,6 +75,7 @@ class Setup:
             "packet_segment_size": self.packet_segment_size - self.packet_segment_size_overhead,
             "log_level": self.log_level,
             "init_time": self.init_time,
+            "word_list_path": self.word_list_path
         }
         self.config_file = join(self.setup_dir, f'{self.node_name}config.json')
         with open(self.config_file, mode="w") as setup_file:
@@ -99,4 +98,3 @@ class Setup:
     @classmethod
     def reset(cls):
         cls.action_list = deque()
-        # cls.action_list = copy.deepcopy(cls.action_list_backup)

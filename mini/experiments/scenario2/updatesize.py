@@ -1,6 +1,6 @@
 from mini.experiments.scenario2.latency import queue_size
 from mini.experiments.setup import Setup
-from mini.experiments.experiment2 import run_experiments
+from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
 
 iterations = 10

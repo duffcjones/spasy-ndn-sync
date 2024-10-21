@@ -1,12 +1,10 @@
 import logging
 import argparse
-import time
 import asyncio
 
 import Config
 from Callbacks import on_multi_interest, on_init_interest
 import Actions
-from Interests import send_init_interests
 
 async def main():
     await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
@@ -14,8 +12,6 @@ async def main():
 
     await Config.app.register(Config.config["multi_prefix"], on_multi_interest)
     logging.info(f"Registered prefix {Config.config["multi_prefix"]}")
-
-    time.sleep(Config.config["init_time"])
 
     await asyncio.sleep(Config.config["init_time"])
 

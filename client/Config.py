@@ -3,18 +3,16 @@ import logging
 from collections import deque
 
 from ndn.app import NDNApp
+from ndn.security.keychain.keychain_digest import KeychainDigest
 
 from Spasy import Spasy
 from Timer import Timer
 from Stats import Stats
 
-app = NDNApp()
+app = NDNApp(keychain=KeychainDigest())
 config = {}
 spasy = Spasy("")
 geocode = ""
-
-packed_trees_hashcode_dict = {}
-packed_trees_queue = deque()
 
 packed_updates_dict = {}
 packed_updates_queue = deque()

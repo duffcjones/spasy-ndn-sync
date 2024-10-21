@@ -11,7 +11,6 @@ from pympler import asizeof
 def pack_data(data, name):
     serialized_data = pickle.dumps(data)
     logging.info(f"size {asizeof.asizeof(serialized_data)}")
-    # serialized_data = data
     seg_cnt = (len(serialized_data) + Config.config["packet_segment_size"] - 1) // Config.config["packet_segment_size"]
     logging.info(f"Packing data under name {name}")
 

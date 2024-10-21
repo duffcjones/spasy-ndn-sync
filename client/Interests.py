@@ -19,12 +19,12 @@ async def send_interest(name, ttl=5000):
         logging.info(f'Received response for {Name.to_str(data_name)}')
     except InterestNack as e:
         logging.info(f'Interest {name} nacked with reason={e.reason}')
-    except InterestTimeout:
+    except InterestTimeout as e:
         logging.info(f'Interest {name} timed out')
-    except InterestCanceled:
+    except InterestCanceled as e:
         logging.info(f'Interest {name} canceled')
-    except ValidationFailure:
-        logging.info(f'Interest {name} data failed to validate')
+    except ValidationFailure as e:
+        logging.info(f'Interest {name} data failed to validate with reason={e.result}')
     except Exception as e:
         logging.info(f'Interest {name} error: {e}')
     finally:
@@ -39,7 +39,7 @@ async def send_init_interests():
 
 
 async def send_root_request(name, seg_cnt):
-    num_seg, received_tree, data = await fetch_segments_concurrent(name, seg_cnt)
+    received_tree, data = await fetch_segments_concurrent(name, seg_cnt)
     logging.info(f"Received response for interest {name}")
     return received_tree, data
 
@@ -52,15 +52,15 @@ async def fetch_segments(name):
     segments.append((data_name, meta_info, seg))
 
     if meta_info.final_block_id != Component.from_segment(0):
-        root_requests = []
+        seg_requests = []
         current_seg = 1
-        while current_seg < 1000:
+        while current_seg < 10000:
             logging.info(f"Requesting segment {current_seg} of tree with root {name}")
-            root_requests.append(send_interest(Name.normalize(name) + [Component.from_segment(current_seg)]))
+            seg_requests.append(send_interest(Name.normalize(name) + [Component.from_segment(current_seg)]))
             if meta_info.final_block_id == Component.from_segment(current_seg):
                 break
             current_seg += 1
-        segments.extend(await asyncio.gather(*root_requests))
+        segments.extend(await asyncio.gather(*seg_requests))
 
     data = b''
     for _, _, segment in segments:
@@ -76,9 +76,9 @@ async def fetch_segments(name):
 
 
 async def fetch_segments_concurrent(name, seg_cnt):
-    segments = []
     logging.info(f"Sending interests for root {name}")
 
+    segments = []
     root_requests = []
     for current_seg in range(int(seg_cnt)):
         logging.info(f"Requesting segment {current_seg} of tree with root {name}")
@@ -90,17 +90,14 @@ async def fetch_segments_concurrent(name, seg_cnt):
         data += bytes(segment)
 
     received_tree = pickle.loads(data)
-    return seg_cnt, received_tree, data
+    return received_tree, data
 
 
 async def fetch_segments_sequential(name):
-    segments = []
-    current_seg = 0
     logging.info(f"Sending interests for tree with root {name}")
     data = b''
-    root_requests = []
     current_seg = 0
-    while current_seg < 1000:
+    while current_seg < 10000:
         logging.info(f"Requesting segment {current_seg} of tree with root {name}")
         data_name, meta_info, seg = await send_interest(Name.normalize(name) + [Component.from_segment(current_seg)])
         data += bytes(seg)
@@ -113,6 +110,5 @@ async def fetch_segments_sequential(name):
 
 async def send_sync_request(route, root_hash, seg_cnt):
     name = route + Config.config["multi_path"] + f"/{root_hash}" + f"/{Config.geocode}" + f"/{seg_cnt}"
-    # logging.info(f"Sending sync request {name}")
     await send_interest(name, 5)
     return
