@@ -10,6 +10,8 @@ from Timer import Timer
 from Stats import Stats
 
 app = NDNApp(keychain=KeychainDigest())
+# app = NDNApp()
+
 config = {}
 spasy = Spasy("")
 geocode = ""

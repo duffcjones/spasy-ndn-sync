@@ -36,7 +36,7 @@ async def init(opts):
     # Size of initialized tree updates uncompressed
     Config.stats.record_stat(f"{Config.config["node_name"]}_initial_updates_size_uncompressed", f"{asizeof.asizeof(Config.spasy.recent_updates)}")
 
-    await prep_tree(Config.spasy)
+    # await prep_tree(Config.spasy)
 
     geocode_route = Config.config["direct_geocode_prefix"] + f"/{opts[0]}"
     await Config.app.register(geocode_route, on_direct_geocode_interest)
@@ -58,11 +58,6 @@ async def add(opts):
     Config.timer.start_timer("add_data")
     Config.spasy.add_data_to_tree(str(opts[0]))
     Config.timer.stop_timer("add_data")
-
-    Config.timer.start_timer("prep_tree")
-    await prep_tree(Config.spasy)
-    Config.timer.stop_timer("prep_tree")
-
 
     await asyncio.sleep(int(opts[-1]))
     return
@@ -92,7 +87,11 @@ async def join(opts):
 
 
 async def update(opts):
-    logging.info("Action: Update")
+    logging.info(f"Action: Update")
+
+    # Config.timer.start_timer("prep_queue")
+    # await prep_queue(Config.spasy)
+    # Config.timer.stop_timer("prep_queue")
 
     root_hash, seg_cnt = Config.packed_updates_queue[-1]
 
@@ -112,12 +111,47 @@ async def wait(opts):
     return
 
 
-async def prep_tree(spasy):
-    logging.info(f"Packing tree with hashcode {spasy.tree.root.hashcode}")
+async def prep_tree(opts):
+    logging.info(f"Packing tree with hashcode {Config.spasy.tree.root.hashcode}")
+
+    Config.timer.start_timer(f"prep_tree")
+
+    geocode_route = Config.config["direct_geocode_prefix"] + f"/{Config.geocode}"
+    logging.info(f"Packing tree with geocode {Config.geocode}")
+    packets, seg_cnt, serialized_data = pack_data(Config.spasy, geocode_route)
+    Config.packed_tree_geocode = (packets, seg_cnt)
+
+    Config.timer.stop_timer(f"prep_tree")
+
+    #Size of single tree packet
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_tree_packet_size", f"{asizeof.asizeof(packets[0])}")
+    # Size of all packets of full tree (after compression)
+    # Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_tree_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
+    # Number of packets
+    Config.stats.record_stat(f"num_packets_tree", f"{seg_cnt}")
+
+    await asyncio.sleep(int(opts[-1]))
+    return
+
+
+async def prep_queue(opts):
+    logging.info(f"Packing queue with hashcode {Config.spasy.tree.root.hashcode}")
+
+    Config.timer.start_timer(f"prep_queue")
 
     # Pack recent updates
-    root_hash_route = Config.config["direct_root_hash_prefix"] + f"/{spasy.tree.root.hashcode}"
-    packets, seg_cnt, serialized_data = pack_data(spasy.recent_updates, root_hash_route)
+    root_hash_route = Config.config["direct_root_hash_prefix"] + f"/{Config.spasy.tree.root.hashcode}"
+    packets, seg_cnt, serialized_data = pack_data(Config.spasy.recent_updates, root_hash_route)
+
+    Config.packed_updates_dict[Config.spasy.tree.root.hashcode] = (packets, seg_cnt)
+    Config.packed_updates_queue.append((Config.spasy.tree.root.hashcode, seg_cnt))
+
+    Config.timer.start_timer("register_root_hash_route")
+    await Config.app.register(root_hash_route, on_direct_root_hash_interest)
+    Config.timer.stop_timer("register_root_hash_route")
+    logging.info(f"Registered route for {root_hash_route}")
+
+    Config.timer.stop_timer("prep_queue")
 
     # Size of single update packet
     # Config.stats.record_stat(f"{Config.config["node_name"]}_update_packet_size", f"{asizeof.asizeof(packets[0])}")
@@ -126,27 +160,9 @@ async def prep_tree(spasy):
     # Number of packets
     Config.stats.record_stat(f"num_packets_queue", f"{seg_cnt}")
 
-    Config.packed_updates_dict[spasy.tree.root.hashcode] = (packets, seg_cnt)
-    Config.packed_updates_queue.append((spasy.tree.root.hashcode, seg_cnt))
-
-
-    Config.timer.start_timer("register_root_hash_route")
-    await Config.app.register(root_hash_route, on_direct_root_hash_interest)
-    Config.timer.stop_timer("register_root_hash_route")
-    logging.info(f"Registered route for {root_hash_route}")
-
-    geocode_route = Config.config["direct_geocode_prefix"] + f"/{Config.geocode}"
-    logging.info(f"Packing tree with geocode {Config.geocode}")
-    packets, seg_cnt, serialized_data = pack_data(spasy, geocode_route)
-    Config.packed_tree_geocode = (packets, seg_cnt)
-
-    #Size of single tree packet
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_tree_packet_size", f"{asizeof.asizeof(packets[0])}")
-    # Size of all packets of full tree (after compression)
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_tree_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
-    # Number of packets
-    Config.stats.record_stat(f"num_packets_tree", f"{seg_cnt}")
+    await asyncio.sleep(int(opts[-1]))
     return
+
 
 actions = {
     "SETUP": setup,
@@ -155,4 +171,6 @@ actions = {
     "JOIN": join,
     "UPDATE": update,
     "WAIT": wait,
+    "PREP_QUEUE": prep_queue,
+    "PREP_TREE": prep_tree,
 }

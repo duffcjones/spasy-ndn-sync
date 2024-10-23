@@ -15,8 +15,11 @@ def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_par
     packets, seg_cnt = Config.packed_updates_dict[Name.to_str(name).split("/")[-2]]
     seg_no = Component.to_number(name[-1])
 
+    # Config.app.put_data(name, content="received".encode(), freshness_period=1000)
     if seg_no < seg_cnt:
         Config.app.put_raw_packet(packets[Component.to_number(name[-1])])
+    # if seg_no < seg_cnt:
+    #     Config.app.put_data(packets[Component.to_number(name[-2])])
 
     logging.info(f"Returned response for direct root hash interest {Name.to_str(name)}")
     return
@@ -30,6 +33,7 @@ def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param
 
     if seg_no < seg_cnt:
         Config.app.put_raw_packet(packets[Component.to_number(name[-1])])
+    # Config.app.put_data(name, content="received".encode(), freshness_period=1000)
 
     logging.info(f"Returned response for direct geocode interest for {Name.to_str(name)}")
     return

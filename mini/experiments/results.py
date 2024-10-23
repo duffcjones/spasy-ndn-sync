@@ -3,6 +3,7 @@ import csv
 from collections import defaultdict
 import statistics
 import re
+import numpy as np
 
 
 def convert_results(hosts, results_dir, results_path, output_dir):
@@ -63,15 +64,16 @@ def analyse_results(results_dir, analysis_file):
             stats[key].append(statistics.variance(values))
             stats[key].append(min(values))
             stats[key].append(max(values))
+            stats[key].append(np.quantile(values,[0,0.25,0.5,0.75,1]))
         else:
             stats[key].append(values[0])
 
     with open(analysis_file,'x', newline='') as analysis:
-        csv_writer = csv.DictWriter(analysis, fieldnames=['name', 'mean', 'median', 'stdev', 'variance', 'min', 'max', 'value'])
+        csv_writer = csv.DictWriter(analysis, fieldnames=['name', 'mean', 'median', 'stdev', 'variance', 'min', 'max','quantiles', 'value'])
         csv_writer.writeheader()
         for name,values in stats.items():
             if len(values) > 1:
-                csv_writer.writerow({'name': name,'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3], 'min': values[4], 'max': values[5]})
+                csv_writer.writerow({'name': name,'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3], 'min': values[4], 'max': values[5], 'quantiles': values[6]})
             else:
                 csv_writer.writerow({'name': name, 'value': values[0]})
 

@@ -16,10 +16,10 @@ def pack_data(data, name):
 
     packets = [Config.app.prepare_data(Name.normalize(name) + [Component.from_segment(i)],
                                 serialized_data[i * Config.config["packet_segment_size"]:(i + 1) * Config.config["packet_segment_size"]],
-                                freshness_period=10000,
-                                final_block_id=Component.from_segment(seg_cnt - 1),
-                                no_signature=True)
+                                freshness_period=100000,
+                                final_block_id=Component.from_segment(seg_cnt - 1),)
                for i in range(seg_cnt)]
+    logging.info(Config.timer.timers)
 
     logging.info(f"packet size is {asizeof.asizeof(packets[0])}")
 
