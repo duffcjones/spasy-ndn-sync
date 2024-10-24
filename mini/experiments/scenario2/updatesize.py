@@ -11,7 +11,7 @@ experiment_file = "scenario2-updatesize-{}"
 
 packet_segment_size = 8800
 waitTime = 1
-num_nodes = 5
+num_nodes = 3
 bandwidth = 1000
 latency = 2
 tree_size = 10000
