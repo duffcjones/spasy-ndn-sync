@@ -6,7 +6,7 @@ iterations = 1
 
 topo_file_base = "/spatialsync/mini/experiments/scenario2/topologies/latency-{}.conf"
 results_dir_base = "/spatialsync/mini/experiments/results/scenario2/treesize-{}"
-analysis_file = "scenario1-treesize-{}"
+experiment_file = "scenario2-treesize-{}"
 
 packet_segment_size = 8800
 waitTime = 1
@@ -33,4 +33,4 @@ if __name__ == "__main__":
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /some/test/data/dpwhwtmpz0 0","PREP_QUEUE 0", "UPDATE 0", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
         ]
-        run_experiments(topo, iterations, results_dir, analysis_file, actions)
+        run_experiments(topo, iterations, results_dir, experiment_file.format(tree_size), actions)
