@@ -13,9 +13,10 @@ waitTime = 1
 # num_nodes = 2
 bandwidth = 1000
 latency = 2
-tree_size = 1000
-queue_size = 100
+tree_size = 25000
+queue_size = 50
 geocode = "dpwhwt"
+experimentWaitTime = 15
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
@@ -29,7 +30,9 @@ if __name__ == "__main__":
         topo = make_topo(num_node, latency, bandwidth)
         results_dir = results_dir_base.format(num_node)
         actions = [
-            ["WAIT 15", f"INIT {geocode} {tree_size} {queue_size} 0", "WAIT 20"],
-            ["WAIT 20", f"JOIN {geocode} 0", "WAIT 10"]
-        ]
-        run_experiments(topo, iterations, results_dir, experiment_name.format(num_node), actions,  70)
+            ["SETUP 2",f"INIT {geocode} 1 1 5", "WAIT 5"]
+            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", "PREP_TREE 0", "WAIT 5"],
+            ["SETUP 2",f"INIT {geocode} 1 1 5", f"JOIN {geocode} 0", "WAIT 5"]
+        ] 
+
+        run_experiments(topo, iterations, results_dir, experiment_name.format(num_node), actions,  experimentWaitTime)

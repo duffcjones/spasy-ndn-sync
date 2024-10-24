@@ -47,7 +47,7 @@ def on_init_interest(name: FormalName, param: InterestParam, app_param: Optional
 
 
 def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
-    Config.timer.stop_global_timer("sync_request")
+    Config.timer.stop_global_timer("notification_interest")
     logging.info(f"Multi Interest received for {Name.to_str(name)}")
     # Config.app.put_data(name, content="received".encode(), freshness_period=100)
     name = Name.to_str(name)
@@ -55,7 +55,7 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
     root_hash = partitions[-3]
     seg_cnt = partitions[-1]
 
-    if Config.spasy.is_newer_tree(root_hash):
+    if Config.spasy.is_newer_tree(Config.geocode, root_hash):
         asyncio.create_task(receive_hash(root_hash, seg_cnt))
     else:
         logging.info(f"Old tree with hash {root_hash} received")
@@ -70,7 +70,7 @@ async def receive_hash(root_hash, seg_cnt):
     Config.timer.stop_timer(f"receive_updates")
 
     Config.timer.start_timer(f"update_tree")
-    Config.spasy.update_tree(root_hash, received_updates)
+    Config.spasy.update_tree(Config.geocode, received_updates)
     Config.timer.stop_timer(f"update_tree")
 
     Config.timer.stop_global_timer("sync_update")

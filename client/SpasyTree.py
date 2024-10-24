@@ -14,7 +14,7 @@ class SpasyTree:
     Assumes the use of Geohash.
     """
 
-    def __init__(self, max_depth: int, node: Node = None) -> None:
+    def __init__(self, max_depth: int, max_queue: int=30, node: Node = None) -> None:
         """
         Args:
             node (Node, optional): a node object representing the tree's root. 
@@ -23,7 +23,7 @@ class SpasyTree:
         self._root = node 
         self._max_depth = max_depth
         self._recent_updates = [] # a list that will be treated as a heap
-        self._max_number_recent_updates = 30 # maximum size of priority queue
+        self._max_number_recent_updates = max_queue # maximum size of priority queue
         
  
     ######### ACCESSORS #########

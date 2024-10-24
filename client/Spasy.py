@@ -15,10 +15,10 @@ class Spasy:
     at Geohash Level 10.
     """
 
-    def __init__(self, geocode: str) -> None:
+    def __init__(self, geocode: str, max_updates: int=50) -> None:
         
         #self._tree = SpasyTree(9, Node(geocode))
-        self._trees = {str(geocode): SpasyTree(9, Node(geocode))}
+        self._trees = {str(geocode): SpasyTree(9, max_updates, Node(geocode))}
         self._subscribed_trees = [geocode]
 
     ######### ACCESSORS #########
@@ -220,6 +220,12 @@ class Spasy:
     
     ######### MUTATORS #########
     def add_tree(self, new_tree: SpasyTree) -> None:
+        """
+        Adds a tree to the list of SpasyTrees the user is subscribed to.
+
+        Args:
+            new_tree (SpasyTree): the tree the user wants to subscribe to.
+        """
         geocode = next(iter(new_tree.root.geocode)) # gets the first element of the geocode set, which is the root geocode
         self._trees[geocode] = new_tree
         self._subscribed_trees.append(geocode)
@@ -238,19 +244,18 @@ class Spasy:
         """
         self._tree = replacement_tree
 
-    def update_tree(self, other_hash: str, recent_changes: list) -> None:
+    def update_tree(self, geocode: str, recent_changes: list) -> None:
         """
         Uses a priority queue that stores recent changes to another user's SpasyTree to 
         update the current user's SpasyTree. When done, the Merkle hash of the current
         user's SpasyTree root should match the hash of the other user's SpasyTree.
 
         Args:
-            other_hash (str): the Merkle hash of another user's SpasyTree. That user's
-                              SpasyTree was recently updated.
+            geocode (str): the geocode of the tree that requires an update.
             recent_changes (list): the priority queue that stores the recent changes.
         """
         # convert recent changes to a set in order to do set difference
-        current_set = set(self.recent_updates)
+        current_set = set(self.trees[geocode].recent_updates)
         update_set = set(recent_changes)
 
         # find differences
@@ -263,9 +268,9 @@ class Spasy:
                 timestamp = element[0]
                 data = element[2]
                 if element[1] == 'i':
-                    self.add_data_to_tree(data, timestamp)
+                    self.add_data_to_tree(geocode, data, timestamp)
                 elif element[1] == 'd':
-                    self.remove_data_from_tree(data, timestamp)
+                    self.remove_data_from_tree(geocode, data, timestamp)
 
         # check that the hashes match 
 
@@ -280,10 +285,10 @@ class Spasy:
                                        Defaults to "", which occurs when the caller 
                                        is the data's publisher.
         """
-        print(f'DATA BEING ADDED: {data_to_add}')
+        #print(f'DATA BEING ADDED: {data_to_add}')
         if timestamp == "":
             timestamp = str(time.time())
-        print(f'ADD DATA GEOCODE: {geocode}')
+        #print(f'ADD DATA GEOCODE: {geocode}')
         self._trees[geocode].insert(data_to_add)
         self.trees[geocode].add_to_recent_updates((timestamp, 'i', data_to_add))
 
@@ -307,18 +312,19 @@ class Spasy:
         self._trees[geocode].add_to_recent_updates((str(timestamp), 'd', delete_data))
     
     ######### OTHER #########
-    def is_newer_tree(self, sync_tree_hash: str) -> bool:
+    def is_newer_tree(self, tree_geocode: str, sync_tree_hash: str) -> bool:
         """
         When a Sync Interest is received, the hashcodes must be compared.
 
         Args:
+            tree_geocode (str): the current tree's geocode.
             sync_tree_hash (str): the root hashcode of a SpasyTree.
 
         Returns:
-            bool: True if they match;
-                  False otherwise.
+            bool: False if they match;
+                  True otherwise.
         """
-        if self._tree.root.hashcode == sync_tree_hash:
+        if self._trees[tree_geocode].root.hashcode == sync_tree_hash:
             print(f'The tree is already up-to-date.')
             return False
         # # THIS DOES NOT APPLY TO THE CURRENT VERSION, AS OLD HASHES AREN'T KEPT
@@ -392,19 +398,36 @@ if __name__ == '__main__':
     spasy.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
     print(spasy.trees['dpwhwt'].root)
     print(spasy.gather_all_data_by_namespace('dpwhwt'))
-    new_tree = SpasyTree(9, Node('dvqrcq'))
+    new_tree = SpasyTree(9, 30, Node('dvqrcq'))
     print(new_tree.root)
     spasy.add_tree(new_tree)
+    spasy.add_data_to_tree('dvqrcq', '/some/new/data/dvqrcqbcdg')
     print(spasy.trees)
     print(spasy.trees['dvqrcq'].root.data)
-    spasy.build_tree_from_file('dpwhwt', "spasy_tree.txt", 10, use_timestamps)
-    spasy2 = Spasy('dpwhwt')
-    spasy2.build_tree_from_file('dpwhwt', "spasy_tree.txt", 10, use_timestamps)
-    #print(spasy.trees['dpwhwt'].root)
-    # print(spasy.gather_all_data_by_namespace('dpwhwt'))
-    # print(spasy.gather_all_data_by_geocode('dpwhwt'))
-    spasy.remove_data_from_tree('dpwhwt', "/there/world/product/plural/our/colony/sign/less/_v7/dpwhwt829w")
+    start = time.time()
+    spasy.build_tree_from_file('dpwhwt', "spasy_tree.txt", 3, use_timestamps)
+    update_value = spasy.trees['dpwhwt'].recent_updates
+    end = time.time()
+    print(f'TOTAL: {end - start}')
+    print(spasy.trees['dpwhwt'].root)
+    new_tree = SpasyTree(9, 30, Node('dpwhwt'))
+    spasy.add_tree(new_tree)
+    print(f'AGAIN: {spasy.trees['dpwhwt'].root}')
+    print(f'THE HASH: {spasy.trees['dvqrcq'].root.hashcode}')
+    print(f'THE OTHER: {spasy.trees['dpwhwt'].root.hashcode}')
+    print(f'TREES: {spasy.trees}')
+    print(spasy.is_newer_tree('dpwhwt', spasy.trees['dvqrcq'].root.hashcode))
+    spasy.update_tree('dpwhwt', update_value)
     pprint(f'RECENT UPDATES: {spasy.trees['dpwhwt'].recent_updates}')
+    print(update_value)
+    # print(spasy.is_newer_tree('dpwhwt', spasy.trees['dvqrcq'].root.hashcode))
+    # spasy2 = Spasy('dpwhwt')
+    # spasy2.build_tree_from_file('dpwhwt', "spasy_tree.txt", 10, use_timestamps)
+    # #print(spasy.trees['dpwhwt'].root)
+    # # print(spasy.gather_all_data_by_namespace('dpwhwt'))
+    # # print(spasy.gather_all_data_by_geocode('dpwhwt'))
+    # spasy.remove_data_from_tree('dpwhwt', "/there/world/product/plural/our/colony/sign/less/_v7/dpwhwt829w")
+    # pprint(f'RECENT UPDATES: {spasy.trees['dpwhwt'].recent_updates}')
     
     # # # spasy._create_experiment_tree(100000, 10, use_timestamps)
     # spasy.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)

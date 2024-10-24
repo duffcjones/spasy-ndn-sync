@@ -15,19 +15,20 @@ bandwidth = 1000
 tree_size = 10000
 queue_size = 25
 geocode = "dpwhwt"
-experimentWaitTime = 30
+experimentWaitTime = 15 
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
     Setup.wait_time = waitTime
 
     actions = [
-        ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /some/test/data/dpwhwtmpz0 0","PREP_QUEUE 0", "UPDATE 0", "WAIT 10"],
-        ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 10"]
+        ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
+        ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /some/test/data/dpwhwtmpz0 0","PREP_QUEUE 0", "UPDATE 0", "WAIT 5"],
+        ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
     ]
 
     # latencies = [1,2,3,5,10]
-    latencies = [2]
+    latencies = [10]
     for latency in latencies:
         clear_results("/tmp/minindn")
         topo = make_topo(num_nodes, latency, bandwidth)

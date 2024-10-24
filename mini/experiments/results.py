@@ -64,7 +64,7 @@ def analyse_results(results_dir, analysis_file):
             stats[key].append(statistics.variance(values))
             stats[key].append(min(values))
             stats[key].append(max(values))
-            stats[key].append(np.quantile(values,[0,0.25,0.5,0.75,1]))
+            stats[key].append(np.quantile(values,[0,0.25,0.5,0.75,0.9,1]))
         else:
             stats[key].append(values[0])
 
