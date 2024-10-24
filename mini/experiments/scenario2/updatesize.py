@@ -33,4 +33,4 @@ if __name__ == "__main__":
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /some/test/data/dpwhwtmpz0 0","PREP_QUEUE 0", "UPDATE 0", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
         ]
-        run_experiments(topo, iterations, results_dir, experiment_file.format(queue_size), actions)
+        run_experiments(topo, iterations, results_dir, experiment_file.format(queue_size), actions, experimentWaitTime)
