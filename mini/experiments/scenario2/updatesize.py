@@ -7,7 +7,7 @@ iterations = 1
 
 topo_file_base = "/spatialsync/mini/experiments/scenario2/topologies/latency-{}.conf"
 results_dir_base = "/spatialsync/mini/experiments/results/scenario2/queuesize-{}"
-analysis_file = "analysis.csv"
+analysis_file = "scenario1-updatesize-{}"
 
 packet_segment_size = 8800
 waitTime = 1

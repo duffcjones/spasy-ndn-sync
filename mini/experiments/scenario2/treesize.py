@@ -6,7 +6,7 @@ iterations = 1
 
 topo_file_base = "/spatialsync/mini/experiments/scenario2/topologies/latency-{}.conf"
 results_dir_base = "/spatialsync/mini/experiments/results/scenario2/treesize-{}"
-analysis_file = "analysis.csv"
+analysis_file = "scenario1-treesize-{}"
 
 packet_segment_size = 8800
 waitTime = 1
