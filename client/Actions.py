@@ -38,16 +38,19 @@ async def init(opts):
 
     # await prep_tree(Config.spasy)
 
-    geocode_route = Config.config["direct_geocode_prefix"] + f"/{opts[0]}"
-    await Config.app.register(geocode_route, on_direct_geocode_interest)
-    logging.info(f"Registered route for {geocode_route}")
-
     # Reset seeding for nonce generation
     # seed()
 
     await asyncio.sleep(int(opts[-1]))
     return
 
+async def register_route(opts):
+
+    geocode_route = Config.config["direct_geocode_prefix"] + f"/{opts[0]}"
+    await Config.app.register(geocode_route, on_direct_geocode_interest)
+    logging.info(f"Registered route for {geocode_route}")
+
+    return 
 
 async def add(opts):
     logging.info(f"Action: Add data {opts[0]}")
@@ -174,4 +177,5 @@ actions = {
     "WAIT": wait,
     "PREP_QUEUE": prep_queue,
     "PREP_TREE": prep_tree,
+    "REGISTER_ROUTE": register_route,
 }
