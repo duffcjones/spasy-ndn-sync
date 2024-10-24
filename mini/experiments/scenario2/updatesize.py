@@ -23,14 +23,15 @@ if __name__ == "__main__":
     Setup.wait_time = waitTime
 
     # queue_sizes = [10,25,50,100,1000]
-    queue_sizes = [250]
+    queue_sizes = [500]
 
     for queue_size in queue_sizes:
+        clear_results("/tmp/minindn")
         topo = make_topo(num_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(queue_size)
         actions = [
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 40"],
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /some/test/data/dpwhwtmpz0 0","PREP_QUEUE 0", "UPDATE 0", "WAIT 40"],
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 40"]
+            [f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 40"],
+            [f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /some/test/data/dpwhwtmpz0 0","PREP_QUEUE 0", "UPDATE 0", "WAIT 40"],
+            [f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 40"]
         ]
         run_experiments(topo, iterations, results_dir, experiment_file.format(queue_size), actions, experimentWaitTime)
