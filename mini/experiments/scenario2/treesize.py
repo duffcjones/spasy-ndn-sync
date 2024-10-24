@@ -15,7 +15,7 @@ bandwidth = 1000
 latency = 2
 queue_size = 50
 geocode = "dpwhwt"
-experimentWaitTime = 40
+experimentWaitTime = 65
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
