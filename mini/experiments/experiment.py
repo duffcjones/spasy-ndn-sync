@@ -94,6 +94,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
     ndn.start()
 
     AppManager(ndn, ndn.net.hosts, Nfd)
+    time.sleep(2)
     grh = NdnRoutingHelper(ndn.net)
 
     for i, host in enumerate(ndn.net.hosts):

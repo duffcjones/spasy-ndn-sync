@@ -3,7 +3,7 @@ from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
 
-iterations = 10
+iterations = 1
 
 topo_file_base = "/spatialsync/mini/experiments/scenario2/topologies/latency-{}.conf"
 results_dir_base = "/spatialsync/mini/experiments/results/scenario2/queuesize-{}"
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         topo = make_topo(num_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(queue_size)
         actions = [
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
+            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /some/test/data/dpwhwtmpz0 0","PREP_QUEUE 0", "UPDATE 0", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
         ]

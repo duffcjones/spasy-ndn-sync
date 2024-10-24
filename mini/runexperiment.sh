@@ -2,4 +2,4 @@
 
 cd /spatialsync
 #sudo python -m mini.experiments.experiment
-sudo python3 -m mini.experiments.scenario2.latency
+sudo python3 -m mini.experiments.scenario1.latency
