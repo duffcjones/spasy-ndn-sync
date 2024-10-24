@@ -16,7 +16,7 @@ bandwidth = 1000
 latency = 2
 tree_size = 10000
 geocode = "dpwhwt"
-experimentWaitTime = 15 
+experimentWaitTime = 20
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
