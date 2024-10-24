@@ -29,7 +29,7 @@ async def init(opts):
     Config.spasy.build_tree_from_file(opts[0], Config.config["word_list_path"], int(opts[1]), True)
     Config.geocode = opts[0]
     logging.info(f"Tree created for geocode {opts[0]} with root hashcode {Config.spasy.trees[opts[0]].root.hashcode} with update queue of size {Config.spasy.trees[opts[0]].max_number_recent_updates}")
-    logging.info(f"Number of assets: {opts[1]}\n Size: {asizeof.asizeof(Config.spasy[opts[0]])} bytes")
+    logging.info(f"Number of assets: {opts[1]}\n Size: {asizeof.asizeof(Config.spasy.trees[opts[0]])} bytes")
 
     # Size of full initialized tree uncompressed
     Config.stats.record_stat(f"{Config.config["node_name"]}_initial_tree_size_uncompressed", f"{asizeof.asizeof(Config.spasy.trees[opts[0]])}")

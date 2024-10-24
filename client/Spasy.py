@@ -72,7 +72,7 @@ class Spasy:
             with open(filename, 'r') as file:
                 count = 0
                 while count <= size:
-                    print(f'GEOCODE: {geocode}')
+                    #print(f'GEOCODE: {geocode}')
                     self.add_data_to_tree(geocode, file.readline().strip())
                     count += 1
 
@@ -82,15 +82,15 @@ class Spasy:
                 while count <= size:
                     line = file.readline().strip().split(',')
                     # print(f'LINE: {line}')
-                    print(f'GEOCODE: {geocode}') 
+                    #print(f'GEOCODE: {geocode}') 
                     # if the line is empty, we've reached the end of the file
                     if line == ['']:
                         break
                     #split_line = line.split(',')
                     named_data = line[0]
                     time_added = line[1]
-                    print(f'Named data: {named_data}')
-                    print(f'Timestamp: {time_added}')
+                    #print(f'Named data: {named_data}')
+                    #print(f'Timestamp: {time_added}')
                     self.add_data_to_tree(geocode, named_data, time_added)
                     count += 1
 
