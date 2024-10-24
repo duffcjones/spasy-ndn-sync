@@ -1,6 +1,8 @@
 from Node import *
 from collections import deque
 import time
+from heapq import heappush, heappushpop, heapify
+
 
 
 class SpasyTree:
@@ -20,6 +22,9 @@ class SpasyTree:
         """
         self._root = node 
         self._max_depth = max_depth
+        self._recent_updates = [] # a list that will be treated as a heap
+        self._max_number_recent_updates = 30 # maximum size of priority queue
+        
  
     ######### ACCESSORS #########
     @property
@@ -35,6 +40,15 @@ class SpasyTree:
         It will determine how granular the tree is.
         """
         return self._max_depth
+    
+    @property
+    def recent_updates(self) -> list:
+        """Get the recent updates that have been made to SPASY's tree."""
+        return self._recent_updates
+    
+    @property
+    def max_number_recent_updates(self) -> int:
+        return self._max_number_recent_updates
     
     def find_data(self, named_data: str) -> bool:
         """
@@ -246,6 +260,28 @@ class SpasyTree:
     @root.setter
     def root(self, new_root: Node):
         self._root = new_root
+
+    @max_number_recent_updates.setter
+    def max_number_recent_updates(self, value: int) -> None:
+        self._max_number_recent_updates = value
+
+    def add_to_recent_updates(self, updated_item: tuple) -> None:        
+        """
+        Add tuples containing timestamps, actions, and new_items to a priority queue of 
+        recent changes. The oldest element is removed when new elements are added to the 
+        priority queue.
+
+        Args:
+            updated_item (tuple): contains a timestamp, action (i.e., 'i' or 'd'),
+                                  and the data being inserted or deleted. 
+        """
+        # if the priority queue is larger than the default size, pop an element while pushing
+        if len(self.recent_updates) >= self._max_number_recent_updates:
+            heappushpop(self.recent_updates, updated_item)
+        # just push an element
+        else:
+            heappush(self.recent_updates, updated_item)
+
 
     def insert(self, named_data: str) -> None:
         """

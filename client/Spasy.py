@@ -2,7 +2,6 @@ from SpasyTree import *
 from pympler import asizeof
 from random import randint, seed
 from pprint import pprint
-from heapq import heappush, heappushpop, heapify
 
 class Spasy:
     """
@@ -13,34 +12,27 @@ class Spasy:
     area and maintain synchronization of assets between users.
 
     Assumes SpasyTree root is at Geohash Level 6 and data is stored in leaves
-    at Geohash Level 11.
+    at Geohash Level 10.
     """
 
     def __init__(self, geocode: str) -> None:
         
-        self._tree = SpasyTree(9, Node(geocode))
-        self._recent_updates = [] # a list that will be treated as a heap
-        self._max_number_recent_updates = 30 # maximum size of priority queue
-    
+        #self._tree = SpasyTree(9, Node(geocode))
+        self._trees = {str(geocode): SpasyTree(9, Node(geocode))}
+        self._subscribed_trees = [geocode]
+
     ######### ACCESSORS #########
     @property
-    def tree(self) -> SpasyTree:
+    def trees(self) -> SpasyTree:
         """Get or set the data SpasyTree data structure."""
-        return self._tree
+        return self._trees
     
     @property
-    def recent_updates(self) -> list:
-        """Get the recent updates that have been made to SPASY's tree."""
-        return self._recent_updates
+    def subscribed_trees(self) -> set:
+        """Get or set the subscribed trees."""
+        return self._subscribed_trees
 
-    @property
-    def max_number_recent_updates(self) -> int:
-        return self._max_number_recent_updates
 
-    @max_number_recent_updates.setter
-    def max_number_recent_updates(self, value: int) -> None:
-        self._max_number_recent_updates = value
-    
     def build_tree(self, size: int=0) -> None:
         """Insert elements into the tree to automate the building of trees.
 
@@ -64,21 +56,24 @@ class Spasy:
             #print(f'\n######### RECENT UPDATES #########\n')
             #pprint(self._recent_updates)
 
-    def build_tree_from_file(self, filename: str, size: int, timestamp: bool=False) -> None:
+    def build_tree_from_file(self, geocode: str, filename: str, size: int, timestamp: bool=False) -> None:
         """
         Build a tree from a file that contains names and, optionally, timestamps.
 
         Args:
-            filename (str): _description_
-            size (int): _description_
-            timestamp (bool, optional): _description_. Defaults to False.
+            filename (str): the name of the file that stores the names to be added to the tree.
+            size (int): the size of the tree once built.
+            timestamp (bool, optional): True, if there is a timestamp associated with the named data 
+                                        in the file.
+                                        False otherwise. Defaults to False.
         """
 
         if not timestamp:
             with open(filename, 'r') as file:
                 count = 0
                 while count <= size:
-                    self.add_data_to_tree(file.readline().strip())
+                    print(f'GEOCODE: {geocode}')
+                    self.add_data_to_tree(geocode, file.readline().strip())
                     count += 1
 
         else:
@@ -87,16 +82,16 @@ class Spasy:
                 while count <= size:
                     line = file.readline().strip().split(',')
                     # print(f'LINE: {line}')
-                    
+                    print(f'GEOCODE: {geocode}') 
                     # if the line is empty, we've reached the end of the file
                     if line == ['']:
                         break
                     #split_line = line.split(',')
                     named_data = line[0]
                     time_added = line[1]
-                    # print(f'Named data: {named_data}')
-                    # print(f'Timestamp: {time_added}')
-                    self.add_data_to_tree(named_data, time_added)
+                    print(f'Named data: {named_data}')
+                    print(f'Timestamp: {time_added}')
+                    self.add_data_to_tree(geocode, named_data, time_added)
                     count += 1
 
     def _create_experiment_tree(self, size: int, max_length_name: int, timestamp: bool=False) -> None:
@@ -224,23 +219,14 @@ class Spasy:
 
     
     ######### MUTATORS #########
-    def _add_to_recent_updates(self, updated_item: tuple) -> None:        
-        """
-        Add tuples containing timestamps, actions, and new_items to a priority queue of 
-        recent changes. The oldest element is removed when new elements are added to the 
-        priority queue.
+    def add_tree(self, new_tree: SpasyTree) -> None:
+        geocode = next(iter(new_tree.root.geocode)) # gets the first element of the geocode set, which is the root geocode
+        self._trees[geocode] = new_tree
+        self._subscribed_trees.append(geocode)
 
-        Args:
-            updated_item (tuple): contains a timestamp, action (i.e., 'i' or 'd'),
-                                  and the data being inserted or deleted. 
-        """
-        # if the priority queue is larger than the default size, pop an element while pushing
-        if len(self.recent_updates) >= self._max_number_recent_updates:
-            heappushpop(self.recent_updates, updated_item)
-        # just push an element
-        else:
-            heappush(self.recent_updates, updated_item)
-
+    @subscribed_trees.setter
+    def subscribed_trees(self, new_subscription: str) -> None:
+        self._subscribed_trees.add(new_subscription)
 
     def replace_tree(self, replacement_tree: SpasyTree) -> None:
         """
@@ -269,6 +255,7 @@ class Spasy:
 
         # find differences
         set_difference = update_set.difference(current_set)
+        print(f'SET DIFF: {set_difference}')
         
         # handle differences if there are any
         if set_difference:
@@ -282,7 +269,7 @@ class Spasy:
 
         # check that the hashes match 
 
-    def add_data_to_tree(self, data_to_add: str, timestamp: str="") -> None:
+    def add_data_to_tree(self, geocode: str, data_to_add: str, timestamp: str="") -> None:
         """
         Inserts named data in the SpasyTree.
 
@@ -293,12 +280,14 @@ class Spasy:
                                        Defaults to "", which occurs when the caller 
                                        is the data's publisher.
         """
+        print(f'DATA BEING ADDED: {data_to_add}')
         if timestamp == "":
             timestamp = str(time.time())
-        self._tree.insert(data_to_add)
-        self._add_to_recent_updates((timestamp, 'i', data_to_add))
+        print(f'ADD DATA GEOCODE: {geocode}')
+        self._trees[geocode].insert(data_to_add)
+        self.trees[geocode].add_to_recent_updates((timestamp, 'i', data_to_add))
 
-    def remove_data_from_tree(self, delete_data: str, timestamp: str="") -> None:
+    def remove_data_from_tree(self, geocode: str, delete_data: str, timestamp: str="") -> None:
         """
         Deletes named data from the SpasyTree.
 
@@ -311,8 +300,11 @@ class Spasy:
         """
         if timestamp == "":
             timestamp = time.time()
-        self._tree.delete(self._tree.root, delete_data, self._tree.root.length_geocode())
-        self._add_to_recent_updates((timestamp, 'd', delete_data))
+        print(f'DELETE: {timestamp, delete_data}')
+
+        ## ADD CONDITION
+        self._trees[geocode].delete(self._trees[geocode].root, delete_data, self._trees[geocode].root.length_geocode())
+        self._trees[geocode].add_to_recent_updates((str(timestamp), 'd', delete_data))
     
     ######### OTHER #########
     def is_newer_tree(self, sync_tree_hash: str) -> bool:
@@ -365,7 +357,7 @@ class Spasy:
         """
         return self._tree.find_data_without_geocode(self._tree.root, data_to_find, geocode_list)
     
-    def gather_all_data_by_namespace(self) -> dict:
+    def gather_all_data_by_namespace(self, geocode: str) -> dict:
         """
         Takes all of the data from the SpasyTree and organizes it by namespace.
 
@@ -373,9 +365,9 @@ class Spasy:
             dict: a dictionary containing all of the data in the tree
                   organized into namespaces.  
         """
-        return self._tree.find_data_by_namespace(self._tree.root)
+        return self._trees[geocode].find_data_by_namespace(self._trees[geocode].root)
     
-    def gather_all_data_by_geocode(self) -> dict:
+    def gather_all_data_by_geocode(self, geocode: str) -> dict:
         """
         Takes all of the data from the SpasyTree and organizes it by geocode.
 
@@ -383,22 +375,44 @@ class Spasy:
             dict: a dictionary containing all of the data in the tree
                   organized into geocodes. 
         """
-        return self._tree.find_data_by_geocode(self._tree.root)
+        return self._trees[geocode].find_data_by_geocode(self._trees[geocode].root)
+    
+    def is_subscribed(self, subscription_to_check: str):
+        return subscription_to_check in self._trees
     
 # testing
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
 
-
-    spasy = Spasy('dpwhwt')
     use_timestamps = True
-    # # spasy._create_experiment_tree(100000, 10, use_timestamps)
-    spasy.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
-    
-    spasy2 = Spasy('dpwhwt')
-    spasy2.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
+    spasy = Spasy('dpwhwt')
+    print(spasy.trees)
+    print(spasy.is_subscribed('dpwhwt'))
 
-    hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
+    spasy.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
+    print(spasy.trees['dpwhwt'].root)
+    print(spasy.gather_all_data_by_namespace('dpwhwt'))
+    new_tree = SpasyTree(9, Node('dvqrcq'))
+    print(new_tree.root)
+    spasy.add_tree(new_tree)
+    print(spasy.trees)
+    print(spasy.trees['dvqrcq'].root.data)
+    spasy.build_tree_from_file('dpwhwt', "spasy_tree.txt", 10, use_timestamps)
+    spasy2 = Spasy('dpwhwt')
+    spasy2.build_tree_from_file('dpwhwt', "spasy_tree.txt", 10, use_timestamps)
+    #print(spasy.trees['dpwhwt'].root)
+    # print(spasy.gather_all_data_by_namespace('dpwhwt'))
+    # print(spasy.gather_all_data_by_geocode('dpwhwt'))
+    spasy.remove_data_from_tree('dpwhwt', "/there/world/product/plural/our/colony/sign/less/_v7/dpwhwt829w")
+    pprint(f'RECENT UPDATES: {spasy.trees['dpwhwt'].recent_updates}')
+    
+    # # # spasy._create_experiment_tree(100000, 10, use_timestamps)
+    # spasy.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
+    
+    # spasy2 = Spasy('dpwhwt')
+    # spasy2.build_tree_from_file('spasy_tree.txt', 100, use_timestamps)
+
+    # hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
     # start_build = time.time()
     # spasy.build_tree(10000) # build a tree with six elements
     # end_build = time.time()
@@ -418,50 +432,50 @@ if __name__ == '__main__':
 
     # hash_to_start = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
 
-    print(f'\n######### TESTING THE RECENT UPDATES #########\n')
-    print(f'\n######### NEWER TREE? #########\n')
-    spasy2.add_data_to_tree('/some/test/data/dpwhwtmpz0') # add something to the second tree
-    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsh00')
-    spasy2.add_data_to_tree('/extra/data/dpwhwtsh00')
-    spasy2.add_data_to_tree('/some/data/dpwhwts021')
-    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsp00')
-    spasy2.add_data_to_tree('/some/data/dpwhwtsz00')
-    spasy2.add_data_to_tree('/some/more/data/dpwhwtsb00')
-    spasy2.add_data_to_tree('/some/testing/data/dpwhwtsm00')
-    spasy2.add_data_to_tree('/some/data/dpwhwtsn00')
-    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwts100')
-    spasy2.add_data_to_tree('/extra/data/dpwhwts200')
-    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsh00')
-    spasy2.add_data_to_tree('/some/data/dpwhwtsh00')
-    spasy2.add_data_to_tree('/some/more/data/dpwhwtsh00')
-    spasy2.add_data_to_tree('/some/more/data//dpwhwtsmnz')
-    spasy2.add_data_to_tree('/some/testing/data/dpwhwtsh00')
-    spasy2.add_data_to_tree('/some/data/dpwhwtshpq')
-    spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsprt')
-    spasy2.add_data_to_tree('/extra/data/dpwhwts9bz')
-    spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtspc1')
-    spasy2.add_data_to_tree('/some/data/dpwhwtspcd')
-    spasy2.add_data_to_tree('/some/more/data/_v1/dpwhwtsmnz')
+    # print(f'\n######### TESTING THE RECENT UPDATES #########\n')
+    # print(f'\n######### NEWER TREE? #########\n')
+    # spasy2.add_data_to_tree('/some/test/data/dpwhwtmpz0') # add something to the second tree
+    # spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/extra/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwts021')
+    # spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsp00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtsz00')
+    # spasy2.add_data_to_tree('/some/more/data/dpwhwtsb00')
+    # spasy2.add_data_to_tree('/some/testing/data/dpwhwtsm00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtsn00')
+    # spasy2.add_data_to_tree('/second/piece/of/data/dpwhwts100')
+    # spasy2.add_data_to_tree('/extra/data/dpwhwts200')
+    # spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/more/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/more/data//dpwhwtsmnz')
+    # spasy2.add_data_to_tree('/some/testing/data/dpwhwtsh00')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtshpq')
+    # spasy2.add_data_to_tree('/second/piece/of/data/dpwhwtsprt')
+    # spasy2.add_data_to_tree('/extra/data/dpwhwts9bz')
+    # spasy2.add_data_to_tree('/extra/data/to/add/dpwhwtspc1')
+    # spasy2.add_data_to_tree('/some/data/dpwhwtspcd')
+    # spasy2.add_data_to_tree('/some/more/data/_v1/dpwhwtsmnz')
 
     
 
 
-    before_the_update = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
+    # before_the_update = spasy.tree.root.hashcode == spasy2.tree.root.hashcode
 
-    start = time.time()
-    spasy.update_tree(spasy2.tree.root.hashcode, spasy2.recent_updates) # update the first tree
-    end = time.time()
+    # start = time.time()
+    # spasy.update_tree(spasy2.tree.root.hashcode, spasy2.recent_updates) # update the first tree
+    # end = time.time()
     
-    # print(f'\n######### THE FIRST TREE #########\n')
-    # print(spasy.tree.root)
+    # # print(f'\n######### THE FIRST TREE #########\n')
+    # # print(spasy.tree.root)
 
-    # print(f'\n######### THE SECOND TREE #########\n')
-    # print(spasy2.tree.root)
-    print(f'\n######### DO THE TREES HAVE THE SAME HASH TO START? {hash_to_start}')
-    print(f'\n######### DO THE TREES HAVE THE SAME HASH BEFORE THE UPDATE TO SPASY? {before_the_update}')
-    print(f'\n######### DO THE TREES HAVE THE SAME HASH AFTER THE UPDATE? {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
-    print(f'{spasy.tree.root.hashcode} and {spasy2.tree.root.hashcode}')
-    print(f'\n######### HOW LONG DID IT TAKE TO UPDATE THE TREE? {end - start}')
+    # # print(f'\n######### THE SECOND TREE #########\n')
+    # # print(spasy2.tree.root)
+    # print(f'\n######### DO THE TREES HAVE THE SAME HASH TO START? {hash_to_start}')
+    # print(f'\n######### DO THE TREES HAVE THE SAME HASH BEFORE THE UPDATE TO SPASY? {before_the_update}')
+    # print(f'\n######### DO THE TREES HAVE THE SAME HASH AFTER THE UPDATE? {spasy.tree.root.hashcode == spasy2.tree.root.hashcode}')
+    # print(f'{spasy.tree.root.hashcode} and {spasy2.tree.root.hashcode}')
+    # print(f'\n######### HOW LONG DID IT TAKE TO UPDATE THE TREE? {end - start}')
 
     # # TESTING REMAINING METHODS
     # print(f'\n######### TESTING OTHER METHODS #########')
