@@ -23,7 +23,7 @@ if __name__ == "__main__":
     Setup.wait_time = waitTime
 
     # num_nodes = [5, 10, 15, 20]
-    num_nodes = [15]
+    num_nodes = [5]
 
     for num_node in num_nodes:
         clear_results("/tmp/minindn")

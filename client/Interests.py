@@ -39,7 +39,7 @@ async def send_init_interests():
 
 
 async def send_root_request(name, seg_cnt):
-    received_tree, data = await fetch_segments_sequential(name)
+    received_tree, data = await fetch_segments_concurrent(name, seg_cnt)
     logging.info(f"Received response for interest {name}")
     return received_tree, data
 

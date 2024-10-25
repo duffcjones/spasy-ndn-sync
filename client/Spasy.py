@@ -260,7 +260,7 @@ class Spasy:
 
         # find differences
         set_difference = update_set.difference(current_set)
-        print(f'SET DIFF: {set_difference}')
+        # print(f'SET DIFF: {set_difference}')
         
         # handle differences if there are any
         if set_difference:

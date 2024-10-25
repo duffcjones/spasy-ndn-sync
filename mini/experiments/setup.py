@@ -17,7 +17,7 @@ class Setup:
     setup_dir = "/spatialsync/mini/experiments/setup/"
     output_dir = "/tmp/minindn/"
     packet_segment_size = 8800
-    packet_segment_size_overhead = 128
+    packet_segment_size_overhead = 128 + 88
     log_level = logging.INFO
     wait_time = 1
     init_time = 2

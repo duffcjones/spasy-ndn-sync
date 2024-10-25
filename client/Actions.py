@@ -145,6 +145,7 @@ async def prep_queue(opts):
 
     # Pack recent updates
     root_hash_route = Config.config["direct_root_hash_prefix"] + f"/{Config.spasy.trees[Config.geocode].root.hashcode}"
+    # logging.info(Config.spasy.trees[Config.geocode].recent_updates)
     packets, seg_cnt, serialized_data = pack_data(Config.spasy.trees[Config.geocode].recent_updates, root_hash_route)
 
     Config.packed_updates_dict[Config.spasy.trees[Config.geocode].root.hashcode] = (packets, seg_cnt)

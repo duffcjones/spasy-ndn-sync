@@ -123,7 +123,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
     time.sleep(time_to_wait)
 
     # MiniNDNCLI(ndn.net)
-    # PlayServer(ndn.net).start()
+    PlayServer(ndn.net).start()
 
     ndn.stop()
 
