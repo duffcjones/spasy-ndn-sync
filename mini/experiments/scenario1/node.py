@@ -1,3 +1,5 @@
+import sys
+
 from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
@@ -10,20 +12,21 @@ experiment_name = "scenario1-node-{}"
 
 packet_segment_size = 8800
 waitTime = 1
-# num_nodes = 2
 bandwidth = 1000
 latency = 2
-tree_size = 25000
+tree_size = 10000
 queue_size = 50
 geocode = "dpwhwt"
 experimentWaitTime = 15
 
 if __name__ == "__main__":
+    iterations = int(sys.argv[1])
+
     Setup.packet_segment_size = packet_segment_size
     Setup.wait_time = waitTime
 
-    # num_nodes = [5, 10, 15, 20]
-    num_nodes = [5]
+    num_nodes = [3,5,10,15,19]
+    # num_nodes = [15]
 
     for num_node in num_nodes:
         clear_results("/tmp/minindn")

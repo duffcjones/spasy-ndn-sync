@@ -15,10 +15,6 @@ def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_par
     packets, seg_cnt = Config.packed_updates_dict[Name.to_str(name).split("/")[-2]]
     seg_no = Component.to_number(name[-1])
 
-    # packets, seg_cnt = Config.packed_tree_geocode
-    # seg_no = Component.to_number(name[-1])
-
-    # Config.app.put_data(name, content="received".encode(), freshness_period=1000)
     if seg_no < seg_cnt:
         Config.app.put_raw_packet(packets[Component.to_number(name[-1])])
 
@@ -34,7 +30,6 @@ def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param
 
     if seg_no < seg_cnt:
         Config.app.put_raw_packet(packets[Component.to_number(name[-1])])
-    # Config.app.put_data(name, content="received".encode(), freshness_period=1000)
 
     logging.info(f"Returned response for direct geocode interest for {Name.to_str(name)}")
     return
@@ -50,13 +45,11 @@ def on_init_interest(name: FormalName, param: InterestParam, app_param: Optional
 def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
     Config.timer.stop_global_timer("notification_interest")
     logging.info(f"Multi Interest received for {Name.to_str(name)}")
-    # Config.app.put_data(name, content="received".encode(), freshness_period=100)
+
     name = Name.to_str(name)
     partitions = name.split("/")
     root_hash = partitions[-3]
     seg_cnt = partitions[-1]
-
-    # asyncio.create_task(receive_hash(root_hash, seg_cnt))
 
     if Config.spasy.is_newer_tree(Config.geocode, root_hash):
         asyncio.create_task(receive_hash(root_hash, seg_cnt))

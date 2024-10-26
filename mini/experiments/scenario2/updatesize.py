@@ -1,4 +1,5 @@
-from mini.experiments.scenario2.latency import queue_size
+import sys
+
 from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
@@ -19,11 +20,13 @@ geocode = "dpwhwt"
 experimentWaitTime = 15
 
 if __name__ == "__main__":
+    iterations = int(sys.argv[1])
+
     Setup.packet_segment_size = packet_segment_size
     Setup.wait_time = waitTime
 
-    # queue_sizes = [10,25,50,100,1000]
-    queue_sizes = [200]
+    # queue_sizes = [10,25,50,100,250]
+    queue_sizes = [250]
 
     for queue_size in queue_sizes:
         clear_results("/tmp/minindn")

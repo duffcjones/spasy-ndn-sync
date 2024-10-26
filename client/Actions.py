@@ -36,13 +36,12 @@ async def init(opts):
     # Size of initialized tree updates uncompressed
     Config.stats.record_stat(f"{Config.config["node_name"]}_initial_updates_size_uncompressed", f"{asizeof.asizeof(Config.spasy.trees[opts[0]].recent_updates)}")
 
-    # await prep_tree(Config.spasy)
-
     # Reset seeding for nonce generation
     # seed()
 
     await asyncio.sleep(int(opts[-1]))
     return
+
 
 async def register_route(opts):
 
@@ -51,6 +50,7 @@ async def register_route(opts):
     logging.info(f"Registered route for {geocode_route}")
 
     return 
+
 
 async def add(opts):
     logging.info(f"Action: Add data {opts[0]}")
@@ -69,16 +69,16 @@ async def add(opts):
 async def join(opts):
     logging.info(f"Action: Join geocode {opts[0]}")
 
-    Config.timer.start_timer(f"{Config.config["node_name"]}_join_update")
+    Config.timer.start_timer(f"join_update")
     name = Config.config["direct_geocode_prefix"] + f"/{opts[0]}"
     num_seg, received_tree, data = await fetch_segments(name)
     new_tree = received_tree.trees[Config.geocode]
     Config.spasy.add_tree(new_tree)
-    Config.timer.stop_timer(f"{Config.config["node_name"]}_join_update")
+    Config.timer.stop_timer(f"join_update")
 
-    Config.timer.start_timer(f"{Config.config['node_name']}_calculate_size")
+    Config.timer.start_timer(f"calculate_size")
     #logging.info(f"Receieved tree for geocode {opts[0]} with size {asizeof.asizeof(Config.spasy)}")
-    Config.timer.stop_timer(f"{Config.config['node_name']}_calculate_size")
+    Config.timer.stop_timer(f"calculate_size")
     logging.info(f"Root of tree is {Config.spasy.trees[Config.geocode].root.hashcode}")
 
     # Size of full tree uncompressed received through join request
@@ -92,10 +92,6 @@ async def join(opts):
 
 async def update(opts):
     logging.info(f"Action: Update")
-
-    # Config.timer.start_timer("prep_queue")
-    # await prep_queue(Config.spasy)
-    # Config.timer.stop_timer("prep_queue")
 
     root_hash, seg_cnt = Config.packed_updates_queue[-1]
 

@@ -1,3 +1,5 @@
+import sys
+
 from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
@@ -18,11 +20,13 @@ geocode = "dpwhwt"
 experimentWaitTime = 65
 
 if __name__ == "__main__":
+    iterations = int(sys.argv[1])
+
     Setup.packet_segment_size = packet_segment_size
     Setup.wait_time = waitTime
 
-    # tree_sizes = [10,100,1000,10000]
-    tree_sizes = [50000]
+    tree_sizes = [10,100,1000,10000,50000]
+    # tree_sizes = [50000]
 
     for tree_size in tree_sizes:
         clear_results("/tmp/minindn")

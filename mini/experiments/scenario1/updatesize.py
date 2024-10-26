@@ -1,3 +1,5 @@
+import sys
+
 from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
@@ -5,7 +7,7 @@ from mini.experiments.util import make_topo, clear_results
 iterations = 1
 
 topo_file_base = "/spatialsync/mini/experiments/scenario1/topologies/latency-{}.conf"
-results_dir_base = "/spatialsync/mini/experiments/results/scenario1/queuesize-{}"
+results_dir_base = "/spatialsync/mini/experiments/results/scenario1/updatesize-{}"
 experiment_file = "scenario1-updatesize-{}"
 
 packet_segment_size = 8800
@@ -18,13 +20,16 @@ geocode = "dpwhwt"
 experimentWaitTime = 15
 
 if __name__ == "__main__":
+    iterations = int(sys.argv[1])
+
     Setup.packet_segment_size = packet_segment_size
     Setup.wait_time = waitTime
 
-    # queue_sizes = [10,25,50,100,1000]
-    queue_sizes = [500]
+    queue_sizes = [10,25,50,100,250]
+    # queue_sizes = [250]
 
     for queue_size in queue_sizes:
+        clear_results("/tmp/minindn")
         topo = make_topo(num_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(queue_size)
         actions = [

@@ -67,9 +67,9 @@ async def fetch_segments(name):
         data += bytes(segment)
 
     logging.info("Unserializing data")
-    Config.timer.start_timer(f"{Config.config['node_name']}_unserialize_data")
+    Config.timer.start_timer(f"unserialize_data")
     received_tree = pickle.loads(data)
-    Config.timer.stop_timer(f"{Config.config['node_name']}_unserialize_data")
+    Config.timer.stop_timer(f"unserialize_data")
     logging.info("Unserialized data")
 
     return current_seg, received_tree, data
