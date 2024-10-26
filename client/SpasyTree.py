@@ -210,9 +210,6 @@ class SpasyTree:
         # CASE 1: Trivial case - the data to be deleted isn't in the tree
         data_to_delete = data_to_delete.lower()
         delete_geocode = data_to_delete.split('/')[-1]
-        if not self.find_data(data_to_delete):
-            print(f"Sorry, but '{data_to_delete}' associated with the geocode '{delete_geocode}' is not in the tree.")
-            return False
 
         siblings = node.number_children()
         next_position = current_position + 1

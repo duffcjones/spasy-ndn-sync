@@ -303,13 +303,22 @@ class Spasy:
                                        Defaults to "", which occurs when the caller is 
                                        the one publishing the deletion. 
         """
-        if timestamp == "":
-            timestamp = time.time()
-        print(f'DELETE: {timestamp, delete_data}')
+        data_to_delete = delete_data.lower()
+        delete_geocode = delete_data.split('/')[-1]
 
-        ## ADD CONDITION
-        self._trees[geocode].delete(self._trees[geocode].root, delete_data, self._trees[geocode].root.length_geocode())
-        self._trees[geocode].add_to_recent_updates((str(timestamp), 'd', delete_data))
+        # if the data isn't in the tree, exit without doing anything; let the user know that nothing was deleted
+        if not self.trees[geocode].find_data(data_to_delete):
+            print(f"Sorry, but '{data_to_delete}' associated with the geocode '{delete_geocode}' is not in the tree.")
+            return 
+
+        else: 
+            if timestamp == "":
+                timestamp = time.time()
+            print(f'DELETE: {timestamp, delete_data}')
+
+            self._trees[geocode].delete(self._trees[geocode].root, delete_data, self._trees[geocode].root.length_geocode())
+            self._trees[geocode].add_to_recent_updates((str(timestamp), 'd', delete_data))
+
     
     ######### OTHER #########
     def is_newer_tree(self, tree_geocode: str, sync_tree_hash: str) -> bool:
@@ -396,30 +405,37 @@ if __name__ == '__main__':
     print(spasy.is_subscribed('dpwhwt'))
 
     spasy.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
+    spasy.add_data_to_tree('dpwhwt', '/some/test/data/to/add/dpwhwt4bzh')
     print(spasy.trees['dpwhwt'].root)
     print(spasy.gather_all_data_by_namespace('dpwhwt'))
-    new_tree = SpasyTree(9, 30, Node('dvqrcq'))
-    print(new_tree.root)
-    spasy.add_tree(new_tree)
-    spasy.add_data_to_tree('dvqrcq', '/some/new/data/dvqrcqbcdg')
-    print(spasy.trees)
-    print(spasy.trees['dvqrcq'].root.data)
-    start = time.time()
-    spasy.build_tree_from_file('dpwhwt', "spasy_tree.txt", 3, use_timestamps)
-    update_value = spasy.trees['dpwhwt'].recent_updates
-    end = time.time()
-    print(f'TOTAL: {end - start}')
-    print(spasy.trees['dpwhwt'].root)
-    new_tree = SpasyTree(9, 30, Node('dpwhwt'))
-    spasy.add_tree(new_tree)
-    print(f'AGAIN: {spasy.trees['dpwhwt'].root}')
-    print(f'THE HASH: {spasy.trees['dvqrcq'].root.hashcode}')
-    print(f'THE OTHER: {spasy.trees['dpwhwt'].root.hashcode}')
-    print(f'TREES: {spasy.trees}')
-    print(spasy.is_newer_tree('dpwhwt', spasy.trees['dvqrcq'].root.hashcode))
-    spasy.update_tree('dpwhwt', update_value)
-    pprint(f'RECENT UPDATES: {spasy.trees['dpwhwt'].recent_updates}')
-    print(update_value)
+    print(f'RECENT UPDATES: {spasy.trees['dpwhwt'].recent_updates}')
+    spasy.remove_data_from_tree('dpwhwt', '/some/test/data/dpwhwtbarq')
+    print(f'RECENT UPDATES AFTER DELETION: {spasy.trees['dpwhwt'].recent_updates}')
+    spasy.remove_data_from_tree('dpwhwt', '/some/test/data/to/add/dpwhwt4bzh')
+    spasy.remove_data_from_tree('dpwhwt', '/some/test/data/dpwhwtpqy1')
+    print(f'RECENT UPDATES WITH SUCCESSFUL DELETION: {spasy.trees['dpwhwt'].recent_updates}')
+    # new_tree = SpasyTree(9, 30, Node('dvqrcq'))
+    # print(new_tree.root)
+    # spasy.add_tree(new_tree)
+    # spasy.add_data_to_tree('dvqrcq', '/some/new/data/dvqrcqbcdg')
+    # print(spasy.trees)
+    # print(spasy.trees['dvqrcq'].root.data)
+    # start = time.time()
+    # spasy.build_tree_from_file('dpwhwt', "spasy_tree.txt", 3, use_timestamps)
+    # update_value = spasy.trees['dpwhwt'].recent_updates
+    # end = time.time()
+    # print(f'TOTAL: {end - start}')
+    # print(spasy.trees['dpwhwt'].root)
+    # new_tree = SpasyTree(9, 30, Node('dpwhwt'))
+    # spasy.add_tree(new_tree)
+    # print(f'AGAIN: {spasy.trees['dpwhwt'].root}')
+    # print(f'THE HASH: {spasy.trees['dvqrcq'].root.hashcode}')
+    # print(f'THE OTHER: {spasy.trees['dpwhwt'].root.hashcode}')
+    # print(f'TREES: {spasy.trees}')
+    # print(spasy.is_newer_tree('dpwhwt', spasy.trees['dvqrcq'].root.hashcode))
+    # spasy.update_tree('dpwhwt', update_value)
+    # pprint(f'RECENT UPDATES: {spasy.trees['dpwhwt'].recent_updates}')
+    # print(update_value)
     # print(spasy.is_newer_tree('dpwhwt', spasy.trees['dvqrcq'].root.hashcode))
     # spasy2 = Spasy('dpwhwt')
     # spasy2.build_tree_from_file('dpwhwt', "spasy_tree.txt", 10, use_timestamps)
