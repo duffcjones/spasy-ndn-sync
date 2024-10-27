@@ -17,7 +17,7 @@ bandwidth = 1000
 latency = 2
 queue_size = 50
 geocode = "dpwhwt"
-experimentWaitTime = 65
+experimentWaitTime = 90
 
 if __name__ == "__main__":
     iterations = int(sys.argv[1])
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     Setup.wait_time = waitTime
 
     #tree_sizes = [10,100,1000,10000,50000]
-    tree_sizes = [25000]
+    tree_sizes = [50000]
 
     for tree_size in tree_sizes:
         clear_results("/tmp/minindn")
