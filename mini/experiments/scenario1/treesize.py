@@ -17,7 +17,7 @@ bandwidth = 1000
 latency = 2
 queue_size = 50
 geocode = "dpwhwt"
-experimentWaitTime = 90
+experimentWaitTime = 115
 
 if __name__ == "__main__":
     iterations = int(sys.argv[1])
