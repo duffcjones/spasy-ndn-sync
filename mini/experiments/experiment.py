@@ -15,8 +15,7 @@ from mininet.log import setLogLevel, info, error, debug
 from mini.application.SpatialSyncApp import SpatialSyncApp
 from mini.minindn_play.server import PlayServer
 from mini.experiments.setup import Setup
-from mini.experiments.results import convert_results, convert_stats, analyse_stats
-from mini.experiments.results import analyse_results
+from mini.experiments.results import convert_results, convert_stats, analyse_stats, analyse_results
 
 # Change logging level to INFO to see output for debugging
 log_level = logging.WARN
@@ -58,6 +57,7 @@ def run_app(ndn, host, setups):
     AppManager(ndn, [host], SpatialSyncApp,
                config_file=setups[host.name].setup_config(),
                actions_file=setups[host.name].setup_actions())
+
 
 def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait):
     Setup.setup_dir = setup_dir

@@ -11,6 +11,7 @@ results_dir_base = "/spatialsync/mini/experiments/results/scenario2/latency-{}"
 experiment_name = "scenario2-latency-{}"
 
 packet_segment_size = 8800
+batch_size = 100
 waitTime = 5
 num_nodes = 5
 bandwidth = 1000
@@ -23,6 +24,7 @@ if __name__ == "__main__":
     iterations = int(sys.argv[1])
 
     Setup.packet_segment_size = packet_segment_size
+    Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
     actions = [

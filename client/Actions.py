@@ -9,6 +9,8 @@ from Util import pack_data
 from Spasy import Spasy
 from Callbacks import on_direct_root_hash_interest, on_direct_geocode_interest
 from Interests import fetch_segments
+from Interests import fetch_segments_batch
+
 
 # TODO Add wait time through function decorator
 
@@ -71,20 +73,26 @@ async def join(opts):
 
     Config.timer.start_timer(f"join_update")
     name = Config.config["direct_geocode_prefix"] + f"/{opts[0]}"
-    num_seg, received_tree, data = await fetch_segments(name)
+
+    batch_size = int(Config.config["batch_size"])
+    if batch_size > 0:
+        num_seg, received_tree, data = await fetch_segments_batch(name,batch_size)
+    else:
+        num_seg, received_tree, data = await fetch_segments(name)
+
     new_tree = received_tree.trees[Config.geocode]
     Config.spasy.add_tree(new_tree)
     Config.timer.stop_timer(f"join_update")
 
     Config.timer.start_timer(f"calculate_size")
-    #logging.info(f"Receieved tree for geocode {opts[0]} with size {asizeof.asizeof(Config.spasy)}")
+    logging.info(f"Receieved tree for geocode {opts[0]} with size {asizeof.asizeof(Config.spasy)}")
     Config.timer.stop_timer(f"calculate_size")
     logging.info(f"Root of tree is {Config.spasy.trees[Config.geocode].root.hashcode}")
 
     # Size of full tree uncompressed received through join request
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_size", f"{asizeof.asizeof(received_tree)}")
+    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_size", f"{asizeof.asizeof(received_tree)}")
     # Size of full tree compressed received through join request
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_received_compressed_tree_size", f"{asizeof.asizeof(data)}")
+    Config.stats.record_stat(f"{Config.config["node_name"]}_received_compressed_tree_size", f"{asizeof.asizeof(data)}")
 
     await asyncio.sleep(int(opts[-1]))
     return

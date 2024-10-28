@@ -18,6 +18,7 @@ class Setup:
     output_dir = "/tmp/minindn/"
     packet_segment_size = 8800
     packet_segment_size_overhead = 128 + 88
+    batch_size = 0
     log_level = logging.INFO
     wait_time = 1
     init_time = 2
@@ -73,6 +74,7 @@ class Setup:
             "base_path": self.base_path,
             "wait_time": self.wait_time,
             "packet_segment_size": self.packet_segment_size - self.packet_segment_size_overhead,
+            "batch_size": self.batch_size,
             "log_level": self.log_level,
             "init_time": self.init_time,
             "word_list_path": self.word_list_path

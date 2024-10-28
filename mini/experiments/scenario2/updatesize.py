@@ -7,10 +7,11 @@ from mini.experiments.util import make_topo, clear_results
 iterations = 1
 
 topo_file_base = "/spatialsync/mini/experiments/scenario2/topologies/latency-{}.conf"
-results_dir_base = "/spatialsync/mini/experiments/results/scenario2/queuesize-{}"
+results_dir_base = "/spatialsync/mini/experiments/results/scenario2/updatesize-{}"
 experiment_file = "scenario2-updatesize-{}"
 
 packet_segment_size = 8800
+batch_size = 100
 waitTime = 1
 num_nodes = 5
 bandwidth = 1000
@@ -23,10 +24,11 @@ if __name__ == "__main__":
     iterations = int(sys.argv[1])
 
     Setup.packet_segment_size = packet_segment_size
+    Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    queue_sizes = [10,25,50,100,250]
-    # queue_sizes = [250]
+    # queue_sizes = [10,25,50,100,250]
+    queue_sizes = [200]
 
     for queue_size in queue_sizes:
         clear_results("/tmp/minindn")

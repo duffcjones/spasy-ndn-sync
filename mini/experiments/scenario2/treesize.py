@@ -11,6 +11,7 @@ results_dir_base = "/spatialsync/mini/experiments/results/scenario2/treesize-{}"
 experiment_file = "scenario2-treesize-{}"
 
 packet_segment_size = 8800
+batch_size = 100
 waitTime = 1
 num_nodes = 5
 bandwidth = 1000
@@ -23,6 +24,7 @@ if __name__ == "__main__":
     iterations = int(sys.argv[1])
 
     Setup.packet_segment_size = packet_segment_size
+    Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
     tree_sizes = [10,100,1000,10000,50000]
