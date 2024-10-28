@@ -2,7 +2,7 @@
 
 cd /spatialsync
 
-cmd="sudo python3 -m mini.experiments.scenario${1}.${2} ${3}"
+cmd="sudo python3 -m mini.experiments.scenario${1}.${2} ${3} ${4} ${5}"
 
 eval "$cmd"
 

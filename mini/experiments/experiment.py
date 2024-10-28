@@ -2,6 +2,7 @@ import os
 import logging
 import time
 from datetime import datetime
+import argparse
 
 from minindn.minindn import Minindn
 from minindn.util import MiniNDNCLI
@@ -19,7 +20,7 @@ from mini.experiments.results import convert_results, convert_stats, analyse_sta
 
 # Change logging level to INFO to see output for debugging
 # log_level = logging.WARN
-log_level = logging.INFO
+# log_level = logging.INFO
 
 setup_dir = "/spatialsync/setup/"
 output_dir = "/tmp/minindn/"
@@ -35,17 +36,23 @@ initialization_path = "/init"
 word_list_path = "/spatialsync/mini/experiments/spasy_tree.txt"
 
 
-def run_experiments(topo, iterations, results_dir, experiment_name, actions, time_to_wait):
+def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('iterations')
+    parser.add_argument('-g', '--gui', action='store_true')
+    parser.add_argument('-i', '--info', action='store_true')
+    args = parser.parse_args()
+
     results_dir = results_dir + f"/{datetime.now().strftime('%d-%m-%Y-%H-%M-%S')}"
 
     os.makedirs(results_dir, exist_ok=True)
     print(f"Logging experiments to {results_dir}")
-    print(f"Running {iterations} iterations")
-    for i in range(iterations):
+    print(f"Running {args.iterations} iterations")
+    for i in range(int(args.iterations)):
         results_path = results_dir + f"/{experiment_name}-results-{i}.csv"
         stats_path = results_dir + f"/{experiment_name}-stats-{i}.csv"
         print(f"Running experiment iteration {i}")
-        run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait)
+        run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, args.gui, args.info, parser)
 
     analysis_path = results_dir + f"/{experiment_name}-analysis.csv"
     print(f"Running analysis to {analysis_path}")
@@ -59,9 +66,14 @@ def run_app(ndn, host, setups):
                actions_file=setups[host.name].setup_actions())
 
 
-def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait):
+def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, use_gui, log_level, parser):
     Setup.setup_dir = setup_dir
-    Setup.log_level = log_level
+    if log_level:
+        print("Logging enabled")
+        Setup.log_level = logging.INFO
+    else:
+        print("Logging disabled")
+        Setup.log_level = logging.WARN
     Setup.output_dir = output_dir
     Setup.init_time = init_time
 
@@ -93,7 +105,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
     setups = {}
 
     # ndn = Minindn(topoFile=topo)
-    ndn = Minindn(topo=topo)
+    ndn = Minindn(parser,topo=topo)
     ndn.start()
 
     AppManager(ndn, ndn.net.hosts, Nfd)
@@ -126,9 +138,9 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
     time.sleep(time_to_wait)
 
     # Uncomment to use either CLI or ndn Play (won't work on vm if you can't port forward 8008 and 8765)
-    # MiniNDNCLI(ndn.net)
-    #PlayServer(ndn.net).start()
-
+    if use_gui:
+        MiniNDNCLI(ndn.net)
+        # PlayServer(ndn.net).start()
     ndn.stop()
 
     convert_results(ndn.net.hosts, results_dir, results_path, output_dir)
