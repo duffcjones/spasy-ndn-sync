@@ -27,8 +27,8 @@ if __name__ == "__main__":
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    queue_sizes = [10,25,50,100,250]
-    # queue_sizes = [250]
+    #queue_sizes = [10,25,50,100,250]
+    queue_sizes = [50, 100]
 
     for queue_size in queue_sizes:
         clear_results("/tmp/minindn")
