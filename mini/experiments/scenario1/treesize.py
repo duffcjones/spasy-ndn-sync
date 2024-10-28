@@ -7,7 +7,7 @@ results_dir_base = "/spatialsync/mini/experiments/results/scenario1/treesize-{}"
 experiment_file = "scenario1-treesize-{}"
 
 packet_segment_size = 8800
-batch_size = 50
+batch_size = 100
 waitTime = 1
 num_nodes = 3
 bandwidth = 1000
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     Setup.wait_time = waitTime
 
     # tree_sizes = [10,100,1000,10000,50000]
-    tree_sizes = [50000]
+    tree_sizes = [25000]
 
     for tree_size in tree_sizes:
         clear_results("/tmp/minindn")
