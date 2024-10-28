@@ -63,17 +63,16 @@ async def receive_hash(root_hash, seg_cnt):
 
     Config.timer.start_timer(f"receive_updates")
     received_updates, data = await send_root_request(name, seg_cnt)
-    # await send_root_request(name, seg_cnt)
     Config.timer.stop_timer(f"receive_updates")
 
-    # Config.timer.start_timer(f"update_tree")
-    # Config.spasy.update_tree(Config.geocode, received_updates)
-    # Config.timer.stop_timer(f"update_tree")
-    #
-    # Config.timer.stop_global_timer("sync_update")
-    # logging.info("Stopping sync_update timer")
-    #
-    # logging.info(f"Received new tree updates with resulting hash {root_hash} of size {asizeof.asizeof(received_updates)}")
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_uncompressed", asizeof.asizeof(received_updates))
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_compressed", asizeof.asizeof(data))
+    Config.timer.start_timer(f"update_tree")
+    Config.spasy.update_tree(Config.geocode, received_updates)
+    Config.timer.stop_timer(f"update_tree")
+
+    Config.timer.stop_global_timer("sync_update")
+    logging.info("Stopping sync_update timer")
+
+    logging.info(f"Received new tree updates with resulting hash {root_hash} of size {asizeof.asizeof(received_updates)}")
+    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_uncompressed", asizeof.asizeof(received_updates))
+    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_compressed", asizeof.asizeof(data))
     return

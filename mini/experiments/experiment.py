@@ -18,8 +18,8 @@ from mini.experiments.setup import Setup
 from mini.experiments.results import convert_results, convert_stats, analyse_stats, analyse_results
 
 # Change logging level to INFO to see output for debugging
-log_level = logging.WARN
-# log_level = logging.INFO
+# log_level = logging.WARN
+log_level = logging.INFO
 
 setup_dir = "/spatialsync/setup/"
 output_dir = "/tmp/minindn/"
@@ -127,7 +127,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
 
     # Uncomment to use either CLI or ndn Play (won't work on vm if you can't port forward 8008 and 8765)
     # MiniNDNCLI(ndn.net)
-    # PlayServer(ndn.net).start()
+    PlayServer(ndn.net).start()
 
     ndn.stop()
 
