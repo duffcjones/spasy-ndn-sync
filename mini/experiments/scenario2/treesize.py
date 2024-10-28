@@ -27,8 +27,8 @@ if __name__ == "__main__":
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    tree_sizes = [10,100,1000,10000,50000]
-    # tree_sizes = [50000]
+    #tree_sizes = [10,100,1000,10000,50000]
+    tree_sizes = [25000]
 
     for tree_size in tree_sizes:
         clear_results("/tmp/minindn")
