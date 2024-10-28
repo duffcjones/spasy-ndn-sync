@@ -11,7 +11,7 @@ results_dir_base = "/spatialsync/mini/experiments/results/scenario2/treesize-{}"
 experiment_file = "scenario2-treesize-{}"
 
 packet_segment_size = 8800
-batch_size = 100
+batch_size = 75
 waitTime = 1
 num_nodes = 5
 bandwidth = 1000
