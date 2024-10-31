@@ -21,8 +21,8 @@ if __name__ == "__main__":
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    num_nodes = [3,5,10,15,19]
-    # num_nodes = [15]
+    #num_nodes = [3,5,10,15,19]
+    num_nodes = [10]
 
     for num_node in num_nodes:
         clear_results("/tmp/minindn")
