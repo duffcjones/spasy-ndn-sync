@@ -14,7 +14,7 @@ class SpasyTree:
     Assumes the use of Geohash.
     """
 
-    def __init__(self, max_depth: int, max_queue: int=30, node: Node = None) -> None:
+    def __init__(self, max_depth: int, max_queue: int=30, node: Node=None) -> None:
         """
         Args:
             node (Node, optional): a node object representing the tree's root. 
@@ -377,16 +377,16 @@ if __name__ == '__main__':
     print('\nTesting SpasyTree...\n')
 
 
-    # # diagram example
-    # paper_tree = SpasyTree(9, Node('dpwhwt'))
-    # print(f'To begin: {paper_tree.root}')
-    # paper_tree.insert('/bob/net/1/dpwhwtbr2v')
-    # print(f'\nAfter Bob: {paper_tree.root}')
-    # bob_hash = paper_tree.root.hashcode
-    # paper_tree.insert('/alice/ball/0/dpwhwtsh00')
-    # print(f'\nAfter Alice: {paper_tree.root}')
-    # print(f'\nAfter Bob hash: {bob_hash}')
-    # print(f'\nAfter Alice hash: {paper_tree.root.hashcode}')
+    # diagram example
+    paper_tree = SpasyTree(9, 30, Node('dpwhwt'))
+    print(f'To begin: {paper_tree.root}')
+    paper_tree.insert('/bob/net/_v1/dpwhwtbr2v')
+    print(f'\nAfter Bob: {paper_tree.root}')
+    bob_hash = paper_tree.root.hashcode
+    paper_tree.insert('/alice/ball/_v0/dpwhwtmpz0')
+    print(f'\nAfter Alice: {paper_tree.root}')
+    print(f'\nAfter Bob hash: {bob_hash}')
+    print(f'\nAfter Alice hash: {paper_tree.root.hashcode}')
 
     
     # print(paper_tree.root)
