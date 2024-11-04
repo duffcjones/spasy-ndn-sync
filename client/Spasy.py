@@ -392,8 +392,26 @@ class Spasy:
         """
         return self._trees[geocode].find_data_by_geocode(self._trees[geocode].root)
     
-    def is_subscribed(self, subscription_to_check: str):
-        return subscription_to_check in self._trees
+    def is_subscribed(self, named_data: str) -> bool:
+        """_summary_
+
+        Args:
+            named_data (str): the hierarchical name contained in the Notification Interest
+
+        Returns:
+            bool: True, if the user subscribes to the tree;
+                  False, otherwise.
+        """
+        # NOTE: a check would be required at a higher level to ensure this was a SPASY string to begin with
+        # i.e., does the Notification Interest belong to SPASY? 
+        # this is unnecessary for testing the algorithm
+        geocode = named_data.split('/')[-1] # assumes the geocode is the final element
+        root_geohash = geocode[0:6] # get the Level-6 geohash from the string
+        if root_geohash in self._trees:
+            return True
+        else:
+            print('That named item does not belong to any tree that is subscribed to.')
+            return False
     
 # testing
 if __name__ == '__main__':
@@ -403,20 +421,21 @@ if __name__ == '__main__':
     spasy = Spasy('dpwhwt')
     spasy2 = Spasy('dpwhwt')
     print(spasy.trees)
-    print(spasy.is_subscribed('dpwhwt'))
+    name_to_add = 'alice/ball/_v0/dpwhwtmpz0'
+    print(spasy.is_subscribed(name_to_add))
 
     
-    spasy.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 25000, use_timestamps)
-    start25 = time.time()
-    spasy.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
-    end25 = time.time()
-    print(f'Time 25,000: {end25 - start25}')
+    # spasy.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 25000, use_timestamps)
+    # start25 = time.time()
+    # spasy.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
+    # end25 = time.time()
+    # print(f'Time 25,000: {end25 - start25}')
 
-    spasy2.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 10000, use_timestamps)
-    start10 = time.time()
-    spasy2.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
-    end10 = time.time()
-    print(f'Time 10,000: {end10 - start10}') 
+    # spasy2.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 10000, use_timestamps)
+    # start10 = time.time()
+    # spasy2.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
+    # end10 = time.time()
+    # print(f'Time 10,000: {end10 - start10}') 
     # spasy.add_data_to_tree('dpwhwt', '/some/test/data/to/add/dpwhwt4bzh')
     # print(spasy.trees['dpwhwt'].root)
     # print(spasy.gather_all_data_by_namespace('dpwhwt'))
