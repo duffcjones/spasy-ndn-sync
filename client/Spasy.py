@@ -438,7 +438,7 @@ if __name__ == '__main__':
     spasy = Spasy('dpwhwt')
     spasy2 = Spasy('dpwhwt')
     print(spasy.trees)
-    name_to_add = 'alice/ball/_v0/dpwhwtmpz0'
+    name_to_add = '/alice/ball/_v0/dpwhwtmpz0'
     print(spasy.is_subscribed(name_to_add))
     spasy.add_data_to_tree('dpwhwt', name_to_add)
     print(spasy.trees['dpwhwt'].root)
@@ -463,6 +463,9 @@ if __name__ == '__main__':
             print('The item was inserted, so the named data may be requested.')
         else:
             print('There was a deletion, so there is no named data to request.')
+
+    spasy.trees['dpwhwt'].delete(spasy.trees['dpwhwt'].root,'/alice/ball/_v0/dpwhwtmpz0', spasy.trees['dpwhwt'].root.length_geocode())
+    print(spasy.trees['dpwhwt'].root)
 
 
         
