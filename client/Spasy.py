@@ -392,11 +392,28 @@ class Spasy:
         """
         return self._trees[geocode].find_data_by_geocode(self._trees[geocode].root)
     
-    def is_subscribed(self, named_data: str) -> bool:
-        """_summary_
+    def can_request_item(self, action: str) -> bool:
+        """
+        Determine whether a Notification Interest is and insertion or deletion.
 
         Args:
-            named_data (str): the hierarchical name contained in the Notification Interest
+            named_data (str): the hierarchical name contained in a Notification Interest.
+
+        Returns:
+            bool: True, if there was an insertion to the tree.
+                  False, if there was a deletion from the tree. 
+        """
+        if action == 'i':
+            return True
+
+        return False
+    
+    def is_subscribed(self, named_data: str) -> bool:
+        """
+        Check if the named item being received belongs to a subscribed tree.
+
+        Args:
+            named_data (str): the hierarchical name contained in a Notification Interest.
 
         Returns:
             bool: True, if the user subscribes to the tree;
@@ -426,6 +443,30 @@ if __name__ == '__main__':
     spasy.add_data_to_tree('dpwhwt', name_to_add)
     print(spasy.trees['dpwhwt'].root)
     print(spasy.trees['dpwhwt'].root.hashcode)
+    notification_interest = '/browser/alice/ball/_v0/dpwhwtmpz0/i/76fbf9c47...'
+
+    notification_interest_split = notification_interest.split('/')
+
+    # separate all of the elements of the Notification Interest
+    application = notification_interest_split[1]
+    named_data = '/' + '/'.join(notification_interest_split[2:-2])
+    action = notification_interest_split[-2]
+    hashcode = notification_interest_split[-1]
+
+    print(f'APPLICATION: {application}')
+    print(f'NAMED DATA: {named_data}')
+    print(f'ACTION: {action}')
+    print(f'HASH: {hashcode}')
+    if spasy.is_subscribed(named_data):
+        print('This tree is subscribed to.')
+        if spasy.can_request_item(action):
+            print('The item was inserted, so the named data may be requested.')
+        else:
+            print('There was a deletion, so there is no named data to request.')
+
+
+        
+
 
     
     # spasy.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 25000, use_timestamps)
