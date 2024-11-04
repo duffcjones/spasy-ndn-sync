@@ -423,6 +423,9 @@ if __name__ == '__main__':
     print(spasy.trees)
     name_to_add = 'alice/ball/_v0/dpwhwtmpz0'
     print(spasy.is_subscribed(name_to_add))
+    spasy.add_data_to_tree('dpwhwt', name_to_add)
+    print(spasy.trees['dpwhwt'].root)
+    print(spasy.trees['dpwhwt'].root.hashcode)
 
     
     # spasy.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 25000, use_timestamps)
