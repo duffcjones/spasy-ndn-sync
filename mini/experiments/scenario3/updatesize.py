@@ -15,10 +15,10 @@ bandwidth = 1000
 latency = 2
 tree_size = 10000
 geocode = "dpwhwt"
-request_asset = "False"
+request_asset = "True"
 experimentWaitTime = 15
 
-asset_path = "/spatialsync/mini/experiments/resources/baseball_01.bin"
+asset_path = "/spatialsync/mini/experiments/resources/beach_ball.glb"
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size

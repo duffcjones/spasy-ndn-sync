@@ -15,7 +15,7 @@ bandwidth = 1000
 latency = 2
 queue_size = 50
 geocode = "dpwhwt"
-request_asset = "False"
+request_asset = "True"
 experimentWaitTime = 65
 
 asset_path = "/spatialsync/mini/experiments/resources/beach_ball.glb"

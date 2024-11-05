@@ -14,8 +14,9 @@ latency = 2
 tree_size = 10000
 queue_size = 50
 geocode = "dpwhwt"
-request_asset = "False"
+request_asset = "True"
 experimentWaitTime = 15
+num_mec_nodes = 1
 
 asset_path = "/spatialsync/mini/experiments/resources/beach_ball.glb"
 
@@ -29,7 +30,7 @@ if __name__ == "__main__":
 
     for num_node in num_nodes:
         clear_results("/tmp/minindn")
-        num_mec_nodes = num_node // 10
+        #num_mec_nodes = num_node // 10
         topo = make_topo(num_node, num_mec_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(num_node)
         actions = [
