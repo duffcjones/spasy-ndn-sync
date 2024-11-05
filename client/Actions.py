@@ -62,7 +62,8 @@ async def add(opts):
 
     logging.info("Starting sync_update timer")
     Config.timer.start_global_timer("sync_update")
-    Config.timer.start_global_timer("sync_update_data")
+    if Config.config["request_asset"] == "True":
+        Config.timer.start_global_timer("sync_update_data")
 
     Config.timer.start_timer("add_data")
     Config.spasy.add_data_to_tree(Config.geocode, str(opts[0]))
