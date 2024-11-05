@@ -17,15 +17,15 @@ geocode = "dpwhwt"
 request_asset = "False"
 experimentWaitTime = 15
 
-asset_path = "/spatialsync/mini/experiments/resources/baseball_01.bin"
+asset_path = "/spatialsync/mini/experiments/resources/beach_ball.glb"
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    #num_nodes = [3,5,10,15,19]
-    num_nodes = [10]
+    num_nodes = [3,5,10]
+    #num_nodes = [15, 19]
 
     for num_node in num_nodes:
         clear_results("/tmp/minindn")

@@ -18,7 +18,7 @@ geocode = "dpwhwt"
 request_asset = "True"
 experimentWaitTime = 20
 
-asset_path = "/spatialsync/mini/experiments/resources/baseball_01.bin"
+asset_path = "/spatialsync/mini/experiments/resources/beach_ball.glb"
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
@@ -32,8 +32,8 @@ if __name__ == "__main__":
         ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 10"]
     ]
 
-    # latencies = [2,3,5,10,15]
-    latencies = [2]
+    latencies = [2,3,5,10,15]
+    #latencies = [2]
 
     for latency in latencies:
         clear_results("/tmp/minindn")
