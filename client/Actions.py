@@ -69,32 +69,10 @@ async def add(opts):
     Config.spasy.add_data_to_tree(Config.geocode, str(opts[0]))
     Config.timer.stop_timer("add_data")
 
-    asset_route = Config.config["direct_asset_prefix"] + opts[0]
-    logging.info(f"Packing asset with name {asset_route}")
+    task = asyncio.create_task(prep_queue(opts[0]))
+    task = asyncio.create_task(prep_asset(opts[0], opts[1]))
+    task = asyncio.create_task(update(opts[0]))
 
-    with open(opts[1], 'rb') as f:
-        data = f.read()
-        # logging.info(f"Size {os.path.getsize(data)}")
-        seg_cnt = (len(data) + Config.config["packet_segment_size"]- 1) // Config.config["packet_segment_size"]
-        packets = [Config.app.prepare_data(Name.normalize(asset_route) + [Component.from_segment(i)],
-                                    data[i*Config.config["packet_segment_size"]:(i+1)*Config.config["packet_segment_size"]],
-                                    freshness_period=10000,
-                                    final_block_id=Component.from_segment(seg_cnt - 1))
-                   for i in range(seg_cnt)]
-    logging.info(f'Created {seg_cnt} chunks under name {Name.to_str(asset_route)}')
-    Config.stats.record_stat(f"num_packets_asset", f"{seg_cnt}")
-
-
-    Config.packed_assets_dict[opts[0]] = (packets, seg_cnt)
-
-    Config.timer.start_timer("register_asset_route")
-    await Config.app.register(asset_route, on_direct_asset_interest)
-    Config.timer.stop_timer("register_asset_route")
-    logging.info(f"Registered route for {asset_route}")
-
-    await prep_queue(opts[0])
-
-    await update(opts[0])
 
     await asyncio.sleep(int(opts[-1]))
     return
@@ -202,6 +180,34 @@ async def prep_queue(asset_name):
     Config.stats.record_stat(f"num_packets_queue", f"{seg_cnt}")
 
     # await asyncio.sleep(int(opts[-1]))
+    return
+
+async def prep_asset(asset_name, asset_path):
+    Config.timer.start_timer("prep_asset")
+    asset_route = Config.config["direct_asset_prefix"] + asset_name
+    logging.info(f"Packing asset with name {asset_route}")
+
+    with open(asset_path, 'rb') as f:
+        data = f.read()
+        # logging.info(f"Size {os.path.getsize(data)}")
+        seg_cnt = (len(data) + Config.config["packet_segment_size"]- 1) // Config.config["packet_segment_size"]
+        packets = [Config.app.prepare_data(Name.normalize(asset_route) + [Component.from_segment(i)],
+                                    data[i*Config.config["packet_segment_size"]:(i+1)*Config.config["packet_segment_size"]],
+                                    freshness_period=10000,
+                                    final_block_id=Component.from_segment(seg_cnt - 1))
+                   for i in range(seg_cnt)]
+    logging.info(f'Created {seg_cnt} chunks under name {Name.to_str(asset_route)}')
+    Config.stats.record_stat(f"num_packets_asset", f"{seg_cnt}")
+
+
+    Config.packed_assets_dict[asset_name] = (packets, seg_cnt)
+    Config.timer.stop_timer("prep_asset")
+
+    Config.timer.start_timer("register_asset_route")
+    await Config.app.register(asset_route, on_direct_asset_interest)
+    Config.timer.stop_timer("register_asset_route")
+    logging.info(f"Registered route for {asset_route}")
+
     return
 
 
