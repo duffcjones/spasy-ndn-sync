@@ -2,9 +2,9 @@ from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
 
-topo_file_base = "/spatialsync/mini/experiments/scenario1/topologies/nodes-{}.conf"
-results_dir_base = "/spatialsync/mini/experiments/results/scenario2/nodes-{}"
-experiment_name = "scenario2-node-{}"
+topo_file_base = "/spatialsync/mini/experiments/scenario3/topologies/nodes-{}.conf"
+results_dir_base = "/spatialsync/mini/experiments/results/scenario3/nodes-{}"
+experiment_name = "scenario3-node-{}"
 
 packet_segment_size = 8800
 batch_size = 100

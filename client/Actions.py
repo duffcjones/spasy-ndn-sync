@@ -2,12 +2,15 @@ import logging
 import asyncio
 from pympler import asizeof
 from random import seed
+import os
+
+from ndn.encoding import Name, Component
 
 import Config
 from Interests import send_init_interests, send_sync_request
 from Util import pack_data
 from Spasy import Spasy
-from Callbacks import on_direct_root_hash_interest, on_direct_geocode_interest
+from Callbacks import on_direct_root_hash_interest, on_direct_geocode_interest, on_direct_asset_interest
 from Interests import fetch_segments
 from Interests import fetch_segments_batch
 
@@ -55,14 +58,42 @@ async def register_route(opts):
 
 
 async def add(opts):
-    logging.info(f"Action: Add data {opts[0]}")
+    logging.info(f"Action: Add data {opts[0]} at path {opts[1]}")
 
     logging.info("Starting sync_update timer")
     Config.timer.start_global_timer("sync_update")
+    Config.timer.start_global_timer("sync_update_data")
 
     Config.timer.start_timer("add_data")
     Config.spasy.add_data_to_tree(Config.geocode, str(opts[0]))
     Config.timer.stop_timer("add_data")
+
+    asset_route = Config.config["direct_asset_prefix"] + opts[0]
+    logging.info(f"Packing asset with name {asset_route}")
+
+    with open(opts[1], 'rb') as f:
+        data = f.read()
+        # logging.info(f"Size {os.path.getsize(data)}")
+        seg_cnt = (len(data) + Config.config["packet_segment_size"]- 1) // Config.config["packet_segment_size"]
+        packets = [Config.app.prepare_data(Name.normalize(asset_route) + [Component.from_segment(i)],
+                                    data[i*Config.config["packet_segment_size"]:(i+1)*Config.config["packet_segment_size"]],
+                                    freshness_period=10000,
+                                    final_block_id=Component.from_segment(seg_cnt - 1))
+                   for i in range(seg_cnt)]
+    logging.info(f'Created {seg_cnt} chunks under name {Name.to_str(asset_route)}')
+    Config.stats.record_stat(f"num_packets_asset", f"{seg_cnt}")
+
+
+    Config.packed_assets_dict[opts[0]] = (packets, seg_cnt)
+
+    Config.timer.start_timer("register_asset_route")
+    await Config.app.register(asset_route, on_direct_asset_interest)
+    Config.timer.stop_timer("register_asset_route")
+    logging.info(f"Registered route for {asset_route}")
+
+    await prep_queue(opts[0])
+
+    await update(opts[0])
 
     await asyncio.sleep(int(opts[-1]))
     return
@@ -101,15 +132,15 @@ async def join(opts):
 async def update(opts):
     logging.info(f"Action: Update")
 
-    root_hash, seg_cnt = Config.packed_updates_queue[-1]
+    root_hash, seg_cnt, asset_name = Config.packed_updates_queue[-1]
 
     sync_requests = []
     Config.timer.start_global_timer(f"notification_interest")
     for route in Config.config["multi_cast_routes"]:
-        sync_requests.append(send_sync_request(route, root_hash, seg_cnt))
+        sync_requests.append(send_sync_request(route, root_hash, asset_name, seg_cnt))
     await asyncio.gather(*sync_requests)
 
-    await asyncio.sleep(int(opts[-1]))
+    # await asyncio.sleep(int(opts[-1]))
     return
 
 
@@ -142,8 +173,8 @@ async def prep_tree(opts):
     return
 
 
-async def prep_queue(opts):
-    logging.info(f"Packing queue with hashcode {Config.spasy.trees[Config.geocode].root.hashcode}")
+async def prep_queue(asset_name):
+    logging.info(f"Packing queue with hashcode {Config.spasy.trees[Config.geocode].root.hashcode} with asset {asset_name}")
 
     Config.timer.start_timer(f"prep_queue")
 
@@ -152,8 +183,8 @@ async def prep_queue(opts):
     # logging.info(Config.spasy.trees[Config.geocode].recent_updates)
     packets, seg_cnt, serialized_data = pack_data(Config.spasy.trees[Config.geocode].recent_updates, root_hash_route)
 
-    Config.packed_updates_dict[Config.spasy.trees[Config.geocode].root.hashcode] = (packets, seg_cnt)
-    Config.packed_updates_queue.append((Config.spasy.trees[Config.geocode].root.hashcode, seg_cnt))
+    Config.packed_updates_dict[Config.spasy.trees[Config.geocode].root.hashcode] = (packets, seg_cnt, asset_name)
+    Config.packed_updates_queue.append((Config.spasy.trees[Config.geocode].root.hashcode, seg_cnt, asset_name))
 
     Config.timer.start_timer("register_root_hash_route")
     await Config.app.register(root_hash_route, on_direct_root_hash_interest)
@@ -169,7 +200,7 @@ async def prep_queue(opts):
     # Number of packets
     Config.stats.record_stat(f"num_packets_queue", f"{seg_cnt}")
 
-    await asyncio.sleep(int(opts[-1]))
+    # await asyncio.sleep(int(opts[-1]))
     return
 
 
@@ -180,7 +211,7 @@ actions = {
     "JOIN": join,
     "UPDATE": update,
     "WAIT": wait,
-    "PREP_QUEUE": prep_queue,
+    # "PREP_QUEUE": prep_queue,
     "PREP_TREE": prep_tree,
     "REGISTER_ROUTE": register_route,
 }

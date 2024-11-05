@@ -21,6 +21,8 @@ packed_updates_queue = deque()
 
 packed_tree_geocode = None
 
+packed_assets_dict = {}
+
 timer = None
 stats = None
 

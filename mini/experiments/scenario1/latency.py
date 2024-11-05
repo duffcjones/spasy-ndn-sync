@@ -10,6 +10,7 @@ packet_segment_size = 8800
 batch_size = 0
 waitTime = 1
 num_nodes = 3
+num_mec_nodes = 1
 bandwidth = 1000
 tree_size = 10000
 queue_size = 50
@@ -32,6 +33,6 @@ if __name__ == "__main__":
 
     for latency in latencies:
         clear_results("/tmp/minindn")
-        topo = make_topo(num_nodes, latency, bandwidth)
+        topo = make_topo(num_nodes, num_mec_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(latency)
         run_experiments(topo, results_dir, experiment_name.format(latency), actions, experimentWaitTime)

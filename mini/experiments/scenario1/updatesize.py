@@ -10,6 +10,7 @@ packet_segment_size = 8800
 batch_size = 0
 waitTime = 1
 num_nodes = 3
+num_mec_nodes = 1
 bandwidth = 1000
 latency = 2
 tree_size = 10000
@@ -26,7 +27,7 @@ if __name__ == "__main__":
 
     for queue_size in queue_sizes:
         clear_results("/tmp/minindn")
-        topo = make_topo(num_nodes, latency, bandwidth)
+        topo = make_topo(num_nodes, num_mec_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(queue_size)
         actions = [
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", f"REGISTER_ROUTE {geocode}", "PREP_TREE 0", "WAIT 5"],

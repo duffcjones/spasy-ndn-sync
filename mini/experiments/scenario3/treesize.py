@@ -2,9 +2,9 @@ from mini.experiments.setup import Setup
 from mini.experiments.experiment import run_experiments
 from mini.experiments.util import make_topo, clear_results
 
-topo_file_base = "/spatialsync/mini/experiments/scenario2/topologies/latency-{}.conf"
-results_dir_base = "/spatialsync/mini/experiments/results/scenario2/treesize-{}"
-experiment_file = "scenario2-treesize-{}"
+topo_file_base = "/spatialsync/mini/experiments/scenario3/topologies/latency-{}.conf"
+results_dir_base = "/spatialsync/mini/experiments/results/scenario3/treesize-{}"
+experiment_file = "scenario3-treesize-{}"
 
 packet_segment_size = 8800
 batch_size = 75

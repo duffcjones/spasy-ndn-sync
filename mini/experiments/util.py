@@ -12,11 +12,12 @@ def make_topo(num_nodes,num_mec_nodes,latency,bandwidth):
     for i in range(num_mec_nodes):
         print(f"Added mec_node h{i}")
         mec_node = topo.addHost(f"h{i}")
-        if mec_nodes:
+        if len(mec_nodes) > 1:
             topo.addLink(mec_node,mec_nodes[-1], delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
         mec_nodes.append(mec_node)
 
-    topo.addLink(mec_nodes[0],mec_nodes[-1], delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
+    if len(mec_nodes) > 1:
+        topo.addLink(mec_nodes[0],mec_nodes[-1], delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
 
     for i in range(num_nodes):
         node_name = f"h{i + num_mec_nodes}"

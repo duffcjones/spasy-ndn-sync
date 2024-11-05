@@ -21,7 +21,6 @@ if __name__ == "__main__":
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-# 20 + 5 works
     # num_nodes = [3,5,10,15,19]
     num_nodes = [100]
     num_mec_nodes = 25
@@ -29,7 +28,6 @@ if __name__ == "__main__":
     for num_node in num_nodes:
         clear_results("/tmp/minindn")
         topo = make_topo(num_node, num_mec_nodes, latency, bandwidth)
-        # topo = "/spatialsync/mini/experiments/scenario1/topologies/nodes-20.conf"
         results_dir = results_dir_base.format(num_node)
         actions = [
             [f"INIT {geocode} {tree_size} {queue_size} 0", f"REGISTER_ROUTE {geocode}", "PREP_TREE 0", "WAIT 10"],

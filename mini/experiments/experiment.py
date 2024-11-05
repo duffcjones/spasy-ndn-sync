@@ -31,6 +31,7 @@ nFaces = 1
 base_path = "/spasy"
 direct_root_hash_path = "/direct/root"
 direct_geocode_path = "/direct/geocode"
+direct_asset_path = "/direct/asset"
 multi_path = "/multi"
 initialization_path = "/init"
 word_list_path = "/spatialsync/mini/experiments/spasy_tree.txt"
@@ -80,6 +81,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
     Setup.base_path = base_path
     Setup.direct_root_hash_path = direct_root_hash_path
     Setup.direct_geocode_path = direct_geocode_path
+    Setup.direct_asset_path = direct_asset_path
     Setup.multi_path = multi_path
     Setup.initialization_path = initialization_path
     Setup.word_list_path = word_list_path
@@ -139,8 +141,8 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
 
     # Uncomment to use either CLI or ndn Play (won't work on vm if you can't port forward 8008 and 8765)
     if use_gui:
-        # MiniNDNCLI(ndn.net)
-        PlayServer(ndn.net).start()
+        MiniNDNCLI(ndn.net)
+        # PlayServer(ndn.net).start()
     ndn.stop()
 
     convert_results(ndn.net.hosts, results_dir, results_path, output_dir)

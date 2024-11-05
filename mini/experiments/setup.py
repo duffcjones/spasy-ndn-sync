@@ -8,6 +8,7 @@ class Setup:
     base_path = "/spasy"
     direct_root_hash_path = "/direct/root"
     direct_geocode_path = "/direct/geocode"
+    direct_asset_path = "/direct/asset"
     multi_path = "/multi"
     initialization_path = "/init"
 
@@ -23,6 +24,7 @@ class Setup:
     wait_time = 1
     init_time = 2
     word_list_path = "/spatialsync/mini/experiments/spasy_tree.txt"
+    request_asset = True
 
     action_list = deque()
 
@@ -44,6 +46,7 @@ class Setup:
     def init_global_prefixes(cls):
         cls.direct_root_hash_prefix = cls.base_path + cls.direct_root_hash_path
         cls.direct_geocode_prefix = cls.base_path + cls.direct_geocode_path
+        cls.direct_asset_prefix = cls.base_path + cls.direct_asset_path
 
     def add_prefixes(self):
         self.node_prefix = self.base_path + f"/{self.node_name}"
@@ -71,13 +74,15 @@ class Setup:
             "initialization_path": self.initialization_path,
             "direct_root_hash_path": self.direct_root_hash_path,
             "direct_geocode_path": self.direct_geocode_path,
+            "direct_asset_prefix": self.direct_asset_prefix,
             "base_path": self.base_path,
             "wait_time": self.wait_time,
             "packet_segment_size": self.packet_segment_size - self.packet_segment_size_overhead,
             "batch_size": self.batch_size,
             "log_level": self.log_level,
             "init_time": self.init_time,
-            "word_list_path": self.word_list_path
+            "word_list_path": self.word_list_path,
+            "request_asset": self.request_asset,
         }
         self.config_file = join(self.setup_dir, f'{self.node_name}config.json')
         with open(self.config_file, mode="w") as setup_file:
