@@ -448,6 +448,7 @@ if __name__ == '__main__':
     notification_interest_split = notification_interest.split('/')
 
     # separate all of the elements of the Notification Interest
+    start_test = time.time()
     application = notification_interest_split[1]
     named_data = '/' + '/'.join(notification_interest_split[2:-2])
     action = notification_interest_split[-2]
@@ -463,9 +464,12 @@ if __name__ == '__main__':
             print('The item was inserted, so the named data may be requested.')
         else:
             print('There was a deletion, so there is no named data to request.')
+    
+    end_test = time.time()
+    print(f'TIME: {end_test - start_test}')
 
-    spasy.trees['dpwhwt'].delete(spasy.trees['dpwhwt'].root,'/alice/ball/_v0/dpwhwtmpz0', spasy.trees['dpwhwt'].root.length_geocode())
-    print(spasy.trees['dpwhwt'].root)
+    # spasy.trees['dpwhwt'].delete(spasy.trees['dpwhwt'].root,'/alice/ball/_v0/dpwhwtmpz0', spasy.trees['dpwhwt'].root.length_geocode())
+    # print(spasy.trees['dpwhwt'].root)
 
 
         
