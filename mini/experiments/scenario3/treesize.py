@@ -26,8 +26,8 @@ if __name__ == "__main__":
     Setup.wait_time = waitTime
     Setup.request_asset = request_asset
 
-    # tree_sizes = [100, 1000, 5000, 10000, 15000]
-    tree_sizes = [20000]
+    tree_sizes = [100, 1000, 5000, 10000, 15000]
+    #tree_sizes = [25000]
 
     for tree_size in tree_sizes:
         clear_results("/tmp/minindn")
