@@ -25,7 +25,7 @@ if __name__ == "__main__":
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    num_nodes = [3,5,10]
+    num_nodes = [3]
     #num_nodes = [15, 19]
 
     for num_node in num_nodes:
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         results_dir = results_dir_base.format(num_node)
         actions = [
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"],
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /alice/ball/_v0/dpwhwtmpz0 {asset_path} 0", "UPDATE 0", "WAIT 5"],
+            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", f"ADD /alice/ball/_v0/dpwhwtmpz0 {asset_path} 0", "UPDATE 0", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
         ]
         run_experiments(topo, results_dir, experiment_name.format(num_node), actions, experimentWaitTime)

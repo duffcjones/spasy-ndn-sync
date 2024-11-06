@@ -73,7 +73,6 @@ async def add(opts):
     task = asyncio.create_task(prep_asset(opts[0], opts[1]))
     task = asyncio.create_task(update(opts[0]))
 
-
     await asyncio.sleep(int(opts[-1]))
     return
 
