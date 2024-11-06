@@ -35,7 +35,7 @@ if __name__ == "__main__":
         results_dir = results_dir_base.format(num_node)
         actions = [
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"],
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "ADD /alice/ball/_v0/dpwhwtmpz0 {asset_path} 0", "UPDATE 0", "WAIT 5"],
+            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", f"ADD /alice/ball/_v0/dpwhwtmpz0 {asset_path} 0", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
         ]
         run_experiments(topo, results_dir, experiment_name.format(num_node), actions, experimentWaitTime)

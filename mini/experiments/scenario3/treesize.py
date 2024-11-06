@@ -25,8 +25,8 @@ if __name__ == "__main__":
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    tree_sizes = [100, 1000, 5000, 10000, 15000]
-    #tree_sizes = [20000, 25000]
+    # tree_sizes = [100, 1000, 5000, 10000, 15000]
+    tree_sizes = [20000]
 
     for tree_size in tree_sizes:
         clear_results("/tmp/minindn")
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         results_dir = results_dir_base.format(tree_size)
         actions = [
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 30"],
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", f"ADD /alice/ball/_v0/dpwhwtmpz0 {asset_path} 0", "UPDATE 0", "WAIT 30"],
+            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", f"ADD /alice/ball/_v0/dpwhwtmpz0 {asset_path} 0", "WAIT 30"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 30"]
         ]
         run_experiments(topo, results_dir, experiment_file.format(tree_size), actions, experimentWaitTime)
