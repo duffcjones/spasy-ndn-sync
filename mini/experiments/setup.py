@@ -24,7 +24,7 @@ class Setup:
     wait_time = 1
     init_time = 2
     word_list_path = "/spatialsync/mini/experiments/spasy_tree.txt"
-    request_asset = True
+    request_asset = "True"
 
     action_list = deque()
 

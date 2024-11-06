@@ -24,6 +24,7 @@ if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
+    Setup.request_asset = request_asset
 
     #num_nodes = [3]
     num_nodes = [5, 10, 15, 19]
