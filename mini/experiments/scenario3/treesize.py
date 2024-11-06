@@ -9,7 +9,7 @@ experiment_file = "scenario3-treesize-{}"
 packet_segment_size = 8800
 batch_size = 75
 waitTime = 1
-num_nodes = 5
+num_nodes = 2
 num_mec_nodes = 1
 bandwidth = 1000
 latency = 2
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     Setup.wait_time = waitTime
     Setup.request_asset = request_asset
 
-    tree_sizes = [100, 1000, 5000, 10000, 15000]
+    tree_sizes = [100, 1000, 5000, 10000, 15000, 20000, 25000]
     #tree_sizes = [25000]
 
     for tree_size in tree_sizes:

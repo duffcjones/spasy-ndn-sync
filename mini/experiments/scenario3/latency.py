@@ -9,7 +9,7 @@ experiment_name = "scenario3-latency-{}"
 packet_segment_size = 8800
 batch_size = 100
 waitTime = 5
-num_nodes = 5
+num_nodes = 2
 num_mec_nodes = 1
 bandwidth = 1000
 tree_size = 10000
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 10"]
     ]
 
-    latencies = [3,5,10,15]
+    latencies = [2,3,5,10,15]
     #latencies = [2]
 
     for latency in latencies:
