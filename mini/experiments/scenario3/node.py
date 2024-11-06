@@ -27,7 +27,7 @@ if __name__ == "__main__":
     Setup.request_asset = request_asset
 
     #num_nodes = [3]
-    num_nodes = [3, 4, 9, 14, 18]
+    num_nodes = [2, 4, 9, 14, 18]
 
     for num_node in num_nodes:
         clear_results("/tmp/minindn")
