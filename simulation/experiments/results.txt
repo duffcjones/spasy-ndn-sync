@@ -1,0 +1,30 @@
+scenario 1
+hx is the node on which the measurement is made
+hx_init_interest = time to send and receive interest to other nodes (not important)
+hx_join_update = time from when interest is sent for a geocode to when node has obtained tree and is usable
+hx_prep_tree = time to serialize and create packets from tree
+hx_unserialize_data = time to unserialize received tree
+
+hx_initial_tree_size_uncompressed = initial size of tree (uncompressed)
+hx_initial_updates_size_uncompressed = initial size of update queue (uncompressed)
+num_packets_tree = number of packet segments for tree
+
+scenario 2
+hx is the node on which the measurement is made
+hx_init_interest = time to send and receive interest to other nodes (not important)
+sync_update = time from right before object is added to tree to right after update is reflected in tree in other nodes
+sync_request = time from when multicast interest is expressed to other nodes to when interest is received by other nodes
+hx_receive_updates = time from when interest is made for update queue to right after update queue is received
+hx_prep_queue = time to serialize and create packets from recent updates queue
+hx_calculate_size = unused
+notification_interest = time from right before a sync notification is sent to when it is received
+hx_update_tree = time to add received updates to tree
+hx_prep_tree = time to serialize and make packets from update queue
+hx_register_root_hash_route = time to register route to receive interests for a new root hash created from an update to the tree
+
+hx_initial_tree_size_uncompressed = initial size of tree (uncompressed)
+hx_initial_updates_size_uncompressed = initial size of update queue (uncompressed)
+num_packets_queue = number of packet segments for update queue
+num_packets_queue = number of packet segments for queue
+hx_received_tree_update_uncompressed = size of update queue received after uncompression
+hx_received_tree_update_compressed = size of update queue received before uncompression

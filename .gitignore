@@ -402,7 +402,6 @@ $RECYCLE.BIN/
 
 # Setup files
 setup
-results
 
 # Vagrant
 .vagrant
