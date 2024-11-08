@@ -16,8 +16,6 @@ class Spasy:
     """
 
     def __init__(self, geocode: str, max_updates: int=50) -> None:
-        
-        #self._tree = SpasyTree(9, Node(geocode))
         self._trees = {str(geocode): SpasyTree(9, max_updates, Node(geocode))}
         self._subscribed_trees = [geocode]
 
@@ -47,14 +45,11 @@ class Spasy:
         for i in range(size):
             
             name = self._generate_name(seed_value) + self._generate_geocode(seed_value, tree_geocode)
-            #print(f'Name being inserted: {name}')
             self._tree.insert(name)
             insert_info = (time.time(), 'i', name)
             self._add_to_recent_updates(insert_info)
             seed_value += 1000 # increment the seed to make sure it doesn't generate the same string and geocode
                                # multiple times for the same tree
-            #print(f'\n######### RECENT UPDATES #########\n')
-            #pprint(self._recent_updates)
 
     def build_tree_from_file(self, geocode: str, filename: str, size: int, timestamp: bool=False) -> None:
         """
@@ -72,7 +67,6 @@ class Spasy:
             with open(filename, 'r') as file:
                 count = 0
                 while count <= size:
-                    #print(f'GEOCODE: {geocode}')
                     self.add_data_to_tree(geocode, file.readline().strip())
                     count += 1
 
@@ -81,16 +75,11 @@ class Spasy:
                 count = 0
                 while count <= size:
                     line = file.readline().strip().split(',')
-                    # print(f'LINE: {line}')
-                    #print(f'GEOCODE: {geocode}') 
                     # if the line is empty, we've reached the end of the file
                     if line == ['']:
                         break
-                    #split_line = line.split(',')
                     named_data = line[0]
                     time_added = line[1]
-                    #print(f'Named data: {named_data}')
-                    #print(f'Timestamp: {time_added}')
                     self.add_data_to_tree(geocode, named_data, time_added)
                     count += 1
 
@@ -208,13 +197,11 @@ class Spasy:
         valid_characters = '0123456789bcdefghjkmnpqrstuvwxyz'
 
         max_geocode_length = self.tree.max_depth
-        # print(max_geocode_length)
         while len(insert_geocode) <= max_geocode_length:
             seed(seed_increment)
             insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
             seed_increment += 100
 
-        # print(f'THE GENERATED GEOCODE: {insert_geocode}')
         return insert_geocode
 
     
@@ -260,7 +247,6 @@ class Spasy:
 
         # find differences
         set_difference = update_set.difference(current_set)
-        # print(f'SET DIFF: {set_difference}')
         
         # handle differences if there are any
         if set_difference:
@@ -285,10 +271,8 @@ class Spasy:
                                        Defaults to "", which occurs when the caller 
                                        is the data's publisher.
         """
-        #print(f'DATA BEING ADDED: {data_to_add}')
         if timestamp == "":
             timestamp = str(time.time())
-        #print(f'ADD DATA GEOCODE: {geocode}')
         self._trees[geocode].insert(data_to_add)
         self.trees[geocode].add_to_recent_updates((timestamp, 'i', data_to_add))
 
@@ -334,14 +318,10 @@ class Spasy:
                   True otherwise.
         """
         if self._trees[tree_geocode].root.hashcode == sync_tree_hash:
-            print(f'The tree is already up-to-date.')
+            # The tree is already up-to-date
             return False
-        # # THIS DOES NOT APPLY TO THE CURRENT VERSION, AS OLD HASHES AREN'T KEPT
-        # elif sync_tree_hash in self._tree._recent_changes:
-        #     print(f'That is an older version of the tree.')
-        #     return False
         else:
-            print(f'This is a newer version of the tree. Send an Interest packet.')
+            # This is a newer version of the tree. Send an Interest packet.
             return True
 
     def search(self, data_to_find: str) -> bool:

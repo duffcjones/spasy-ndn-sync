@@ -5,8 +5,6 @@ import logging
 import pickle
 import asyncio
 
-from pympler.asizeof import asizeof
-
 import Config
 
 async def send_interest(name, ttl=5000):

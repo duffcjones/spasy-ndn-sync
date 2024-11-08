@@ -5,7 +5,6 @@ from typing import Optional
 import logging
 import asyncio
 from pympler import asizeof
-import os
 
 import Config
 from Interests import send_root_request, send_asset_request
@@ -65,11 +64,6 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
     root_hash = partitions[-3]
     geocode = partitions[-2]
     seg_cnt = partitions[-1]
-
-    # if Config.spasy.is_newer_tree(Config.geocode, root_hash):
-    #     asyncio.create_task(receive_hash(root_hash, seg_cnt))
-    # else:
-    #     logging.info(f"Old tree with hash {root_hash} received")
 
     logging.info(f"Checking asset name {asset_name}")
     if Config.spasy.is_subscribed(asset_name):

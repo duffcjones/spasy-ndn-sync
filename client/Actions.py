@@ -30,7 +30,6 @@ async def setup(opts):
 async def init(opts):
     logging.info(f'Action: Init with geocode {opts[0]}')
     Config.spasy = Spasy(opts[0], int(opts[2]))
-    #Config.spasy.max_number_recent_updates = int(opts[2])
     Config.spasy.build_tree_from_file(opts[0], Config.config["word_list_path"], int(opts[1]), True)
     Config.geocode = opts[0]
     logging.info(f"Tree created for geocode {opts[0]} with root hashcode {Config.spasy.trees[opts[0]].root.hashcode} with update queue of size {Config.spasy.trees[opts[0]].max_number_recent_updates}")
@@ -118,7 +117,6 @@ async def update(opts):
         sync_requests.append(send_sync_request(route, root_hash, asset_name, seg_cnt))
     await asyncio.gather(*sync_requests)
 
-    # await asyncio.sleep(int(opts[-1]))
     return
 
 
@@ -140,10 +138,6 @@ async def prep_tree(opts):
 
     Config.timer.stop_timer(f"prep_tree")
 
-    #Size of single tree packet
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_tree_packet_size", f"{asizeof.asizeof(packets[0])}")
-    # Size of all packets of full tree (after compression)
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_tree_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
     # Number of packets
     Config.stats.record_stat(f"num_packets_tree", f"{seg_cnt}")
 
@@ -158,7 +152,6 @@ async def prep_queue(asset_name):
 
     # Pack recent updates
     root_hash_route = Config.config["direct_root_hash_prefix"] + f"/{Config.spasy.trees[Config.geocode].root.hashcode}"
-    # logging.info(Config.spasy.trees[Config.geocode].recent_updates)
     packets, seg_cnt, serialized_data = pack_data(Config.spasy.trees[Config.geocode].recent_updates, root_hash_route)
 
     Config.packed_updates_dict[Config.spasy.trees[Config.geocode].root.hashcode] = (packets, seg_cnt, asset_name)
@@ -171,14 +164,9 @@ async def prep_queue(asset_name):
 
     Config.timer.stop_timer("prep_queue")
 
-    # Size of single update packet
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_update_packet_size", f"{asizeof.asizeof(packets[0])}")
-    # Size of all packets of update list after compression
-    # Config.stats.record_stat(f"{Config.config["node_name"]}_compressed_updates_size", f"{sum([asizeof.asizeof(packet) for packet in packets])}")
     # Number of packets
     Config.stats.record_stat(f"num_packets_queue", f"{seg_cnt}")
 
-    # await asyncio.sleep(int(opts[-1]))
     return
 
 async def prep_asset(asset_name, asset_path):
@@ -188,7 +176,6 @@ async def prep_asset(asset_name, asset_path):
 
     with open(asset_path, 'rb') as f:
         data = f.read()
-        # logging.info(f"Size {os.path.getsize(data)}")
         seg_cnt = (len(data) + Config.config["packet_segment_size"]- 1) // Config.config["packet_segment_size"]
         packets = [Config.app.prepare_data(Name.normalize(asset_route) + [Component.from_segment(i)],
                                     data[i*Config.config["packet_segment_size"]:(i+1)*Config.config["packet_segment_size"]],
@@ -217,7 +204,6 @@ actions = {
     "JOIN": join,
     "UPDATE": update,
     "WAIT": wait,
-    # "PREP_QUEUE": prep_queue,
     "PREP_TREE": prep_tree,
     "REGISTER_ROUTE": register_route,
 }

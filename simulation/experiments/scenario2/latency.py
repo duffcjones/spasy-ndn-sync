@@ -39,5 +39,4 @@ if __name__ == "__main__":
         clear_results("/tmp/minindn")
         topo = make_topo(num_nodes, num_mec_nodes, latency, bandwidth)
         results_dir = results_dir_base.format(latency)
-        # run_experiments(topo_file_base.format(latency), iterations, results_dir, experiment_name.format(latency), actions, experimentWaitTime)
         run_experiments(topo, results_dir, experiment_name.format(latency), actions, experimentWaitTime)
