@@ -97,7 +97,7 @@ async def join(opts):
     return
 
 
-async def update(opts):
+async def update():
     logging.info(f"Action: Update")
 
     root_hash, seg_cnt, asset_name = Config.packed_updates_queue[-1]
@@ -195,7 +195,6 @@ actions = {
     "INIT": init,
     "ADD": add,
     "JOIN": join,
-    "UPDATE": update,
     "WAIT": wait,
     "SERVE_TREE": serve_tree,
 }

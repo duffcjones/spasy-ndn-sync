@@ -21,12 +21,11 @@ class Setup:
     packet_segment_size_overhead = 128 + 88
     batch_size = 0
     log_level = logging.INFO
-    wait_time = 1
     init_time = 2
     word_list_path = "/spatialsync/simulation/resources/spasy_tree.txt"
     request_asset = True
     max_packets = 100000
-    build_tree_method = "random"
+    build_tree_method = "tree"
     use_timestamp = True
 
     action_list = deque()
@@ -79,7 +78,6 @@ class Setup:
             "direct_geocode_path": self.direct_geocode_path,
             "direct_asset_prefix": self.direct_asset_prefix,
             "base_path": self.base_path,
-            "wait_time": self.wait_time,
             "packet_segment_size": self.packet_segment_size - self.packet_segment_size_overhead,
             "batch_size": self.batch_size,
             "log_level": self.log_level,

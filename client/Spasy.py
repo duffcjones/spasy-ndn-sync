@@ -124,13 +124,13 @@ class Spasy:
             name_list.append(name + insert_geocode)
         
         if timestamp:
-            with open('spasy_tree.txt', 'w') as file2:
+            with open('/spatialsync/simulation/resources/spasy_tree.txt', 'w') as file2:
                 for entry in name_list:
                     time_added = str(time.time())
                     string_to_add = entry + ',' + time_added + '\n'
                     file2.write(entry + ',' + time_added + '\n')
         else:
-            with open('spasy_tree.txt', 'w') as file2:
+            with open('/spatialsync/simulation/resources/spasy_tree.txt', 'w') as file2:
                 for entry in name_list:
                     file2.write(entry)
             

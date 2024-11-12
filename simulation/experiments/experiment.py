@@ -36,8 +36,10 @@ word_list_path = "/spatialsync/simulation/resources/spasy_tree.txt"
 def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
     parser = argparse.ArgumentParser()
     parser.add_argument('iterations')
-    parser.add_argument('-g', '--gui', action='store_true')
-    parser.add_argument('-i', '--info', action='store_true')
+    parser.add_argument('-c', '--cli', action='store_true', dest='use_cli')
+    parser.add_argument('-g', '--gui', action='store_true', dest='use_gui')
+    parser.add_argument('-i', '--info', action='store_true', dest='log_info')
+    parser.add_argument('-t', '--topo', dest='topo_file')
     args = parser.parse_args()
 
     results_dir = results_dir + f"/{datetime.now().strftime('%d-%m-%Y-%H-%M-%S')}"
@@ -49,7 +51,7 @@ def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
         results_path = results_dir + f"/{experiment_name}-results-{i}.csv"
         stats_path = results_dir + f"/{experiment_name}-stats-{i}.csv"
         print(f"Running experiment iteration {i}")
-        run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, args.gui, args.info, parser)
+        run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, parser, args)
 
     analysis_path = results_dir + f"/{experiment_name}-analysis.csv"
     print(f"Running analysis to {analysis_path}")
@@ -63,9 +65,9 @@ def run_app(ndn, host, setups):
                actions_file=setups[host.name].setup_actions())
 
 
-def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, use_gui, log_level, parser):
+def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, parser, args):
     Setup.setup_dir = setup_dir
-    if log_level:
+    if args.log_info:
         print("Logging enabled")
         Setup.log_level = logging.INFO
     else:
@@ -102,8 +104,11 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
 
     setups = {}
 
-    # ndn = Minindn(parser,topoFile=topo)
-    ndn = Minindn(parser,topo=topo)
+    if args.topo_file:
+        ndn = Minindn(parser,topoFile=args.topofile)
+    else:
+        ndn = Minindn(parser,topo=topo)
+
     ndn.start()
 
     AppManager(ndn, ndn.net.hosts, Nfd)
@@ -135,10 +140,12 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
 
     time.sleep(time_to_wait)
 
-    # Uncomment to use either CLI or ndn Play (won't work on vm if you can't port forward 8008 and 8765)
-    if use_gui:
-        # MiniNDNCLI(ndn.net)
+    # Use either CLI or NDN Play (won't work on vm if you can't port forward 8008 and 8765)
+    if args.use_gui:
         PlayServer(ndn.net).start()
+    elif args.use_cli:
+        MiniNDNCLI(ndn.net)
+
     ndn.stop()
 
     convert_results(ndn.net.hosts, results_dir, results_path, output_dir)
