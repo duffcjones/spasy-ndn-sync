@@ -57,7 +57,7 @@ async def fetch_segments(name):
     if meta_info.final_block_id != Component.from_segment(0):
         seg_requests = []
         current_seg = 1
-        while current_seg < 100000:
+        while current_seg < Config.config["max_packets"]:
             logging.info(f"Requesting segment {current_seg} of tree with root {name}")
             seg_requests.append(send_interest(Name.normalize(name) + [Component.from_segment(current_seg)]))
             if meta_info.final_block_id == Component.from_segment(current_seg):
@@ -83,7 +83,7 @@ async def fetch_segments_concurrent(name, seg_cnt):
 
     segments = []
     root_requests = []
-    for current_seg in range(int(seg_cnt)):
+    for current_seg in range(max(int(seg_cnt),Config.config["max_packets"])):
         logging.info(f"Requesting segment {current_seg} of tree with root {name}")
         root_requests.append(send_interest(Name.normalize(name) + [Component.from_segment(current_seg)]))
     segments.extend(await asyncio.gather(*root_requests))
@@ -100,7 +100,7 @@ async def fetch_segments_sequential(name):
     logging.info(f"Sending interests for tree with root {name}")
     data = b''
     current_seg = 0
-    while current_seg < 100000:
+    while current_seg < Config.config["max_packets"]:
         logging.info(f"Requesting segment {current_seg} of tree with root {name}")
         data_name, meta_info, seg = await send_interest(Name.normalize(name) + [Component.from_segment(current_seg)])
         data += bytes(seg)
@@ -121,7 +121,7 @@ async def fetch_segments_batch(name, batch_size):
     if meta_info.final_block_id != Component.from_segment(0):
         current_seg = 1
         batch = 0
-        while current_seg < 100000:
+        while current_seg < Config.config["max_packets"]:
             seg_requests = []
             logging.info(f"Requesting batch {batch} of tree with root {name}")
             for i in range(current_seg, current_seg + batch_size):
@@ -151,6 +151,7 @@ async def fetch_segments_batch(name, batch_size):
 async def fetch_segments_batch_asset(name, batch_size):
     segments = []
     current_seg = 0
+    num_seg = 0
     logging.info(f"Sending initial interest for tree with root {name}")
     data_name, meta_info, seg = await send_interest(Name.normalize(name) + [Component.from_segment(current_seg)])
     segments.append((data_name, meta_info, seg))
@@ -158,15 +159,16 @@ async def fetch_segments_batch_asset(name, batch_size):
     if meta_info.final_block_id != Component.from_segment(0):
         current_seg = 1
         batch = 0
-        while current_seg < 100000:
+        while num_seg < Config.config["max_packets"]:
             seg_requests = []
             logging.info(f"Requesting batch {batch} of tree with root {name}")
             for i in range(current_seg, current_seg + batch_size):
                 logging.info(f"Requesting segment {current_seg} of tree with root {name}")
                 seg_requests.append(send_interest(Name.normalize(name) + [Component.from_segment(current_seg)]))
-                if meta_info.final_block_id == Component.from_segment(current_seg):
+                if meta_info.final_block_id == Component.from_segment(current_seg) or num_seg > Config.config["max_packets"]:
                     break
                 current_seg += 1
+                num_seg += 1
             segments.extend(await asyncio.gather(*seg_requests))
             if meta_info.final_block_id == Component.from_segment(current_seg):
                 break

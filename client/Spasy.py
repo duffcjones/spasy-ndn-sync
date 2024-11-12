@@ -2,6 +2,7 @@ from SpasyTree import *
 from pympler import asizeof
 from random import randint, seed
 from pprint import pprint
+import time
 
 class Spasy:
     """
@@ -31,31 +32,26 @@ class Spasy:
         return self._subscribed_trees
 
 
-    def build_tree(self, size: int=0) -> None:
+    def build_tree(self, geocode: str, size: int=0, timestamp: bool=False) -> None:
         """Insert elements into the tree to automate the building of trees.
 
         Args:
+            geocode (str): the geocode of the tree
             size (int, optional): the number of names to insert in the tree. 
                                   Defaults to 0.
+            timestamp (bool, optional): the timestamp of the tree. Defaults to False.
         """
-        # get the string value of the root's geocode
-        tree_geocode = ''.join(self._tree.root.geocode)
         # generate a name with a geocode and insert it in the tree
-        seed_value = 0 # we want the tree to always be the same for experiments
         for i in range(size):
-            
-            name = self._generate_name(seed_value) + self._generate_geocode(seed_value, tree_geocode)
-            self._tree.insert(name)
-            insert_info = (time.time(), 'i', name)
-            self._add_to_recent_updates(insert_info)
-            seed_value += 1000 # increment the seed to make sure it doesn't generate the same string and geocode
-                               # multiple times for the same tree
+            name = self._generate_name() + self._generate_geocode(geocode)
+            self.add_data_to_tree(geocode,name,str(time.time()))
 
     def build_tree_from_file(self, geocode: str, filename: str, size: int, timestamp: bool=False) -> None:
         """
         Build a tree from a file that contains names and, optionally, timestamps.
 
         Args:
+            geocode (str): the geocode of the tree
             filename (str): the name of the file that stores the names to be added to the tree.
             size (int): the size of the tree once built.
             timestamp (bool, optional): True, if there is a timestamp associated with the named data 
@@ -95,7 +91,7 @@ class Spasy:
                               Defaults to False.
         """
         word_list = []
-        with open('client/words.txt') as file:
+        with open('/spatialsync/simulation/resources/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 
@@ -139,7 +135,7 @@ class Spasy:
                     file2.write(entry)
             
 
-    def _generate_name(self, seed_value: int, max_length: int=10) -> str:
+    def _generate_name(self, max_length: int=10) -> str:
         """
         Generates a randomized string of named data from a list of common English words. 
         This is a helper method for building randomized trees.
@@ -156,9 +152,8 @@ class Spasy:
             str: the named_data string.
         """
         # read the list of common English-language words into a list
-        seed(seed_value)
         word_list = []
-        with open('/spatialsync/client/words.txt') as file:
+        with open('/spatialsync/simulation/resources/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 
@@ -179,28 +174,23 @@ class Spasy:
 
         return name
 
-    def _generate_geocode(self, seed_value: int, geocode: str) -> str:
+    def _generate_geocode(self, geocode: str) -> str:
         """
         Generates a geocode for inserting named data in a tree.
         This is a helper method for building randomized trees. 
 
         Args:
-            seed_value (int): a random number seed to ensure the generated trees are always
-                              the same (for experimental purposes.)
             geocode (str): the Level 6 geocode that serves as the tree's root.
 
         Returns:
             str: the geocode which will be appended to the name.
         """
-        seed_increment = seed_value
         insert_geocode = geocode
         valid_characters = '0123456789bcdefghjkmnpqrstuvwxyz'
 
-        max_geocode_length = self.tree.max_depth
+        max_geocode_length = self.trees[geocode].max_depth
         while len(insert_geocode) <= max_geocode_length:
-            seed(seed_increment)
             insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
-            seed_increment += 100
 
         return insert_geocode
 

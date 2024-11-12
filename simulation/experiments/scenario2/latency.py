@@ -33,7 +33,7 @@ if __name__ == "__main__":
     ]
 
     # latencies = [2,3,5,10,15]
-    latencies = [15]
+    latencies = [2]
 
     for latency in latencies:
         clear_results("/tmp/minindn")

@@ -24,7 +24,10 @@ class Setup:
     wait_time = 1
     init_time = 2
     word_list_path = "/spatialsync/simulation/resources/spasy_tree.txt"
-    request_asset = "True"
+    request_asset = True
+    max_packets = 100000
+    build_tree_method = "random"
+    use_timestamp = True
 
     action_list = deque()
 
@@ -83,6 +86,9 @@ class Setup:
             "init_time": self.init_time,
             "word_list_path": self.word_list_path,
             "request_asset": self.request_asset,
+            "max_packets": self.max_packets,
+            "build_tree_method": self.build_tree_method,
+            "use_timestamp": self.use_timestamp,
         }
         self.config_file = join(self.setup_dir, f'{self.node_name}config.json')
         with open(self.config_file, mode="w") as setup_file:

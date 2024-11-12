@@ -1,6 +1,4 @@
 from Node import *
-from collections import deque
-import time
 from heapq import heappush, heappushpop, heapify
 
 
@@ -550,6 +548,3 @@ if __name__ == '__main__':
     # print(geohash_tree.find_data_by_namespace(geohash_tree.root))
     # print(f'\n######### THE TREE #########\n')
     # print(geohash_tree.root)
-
-
-

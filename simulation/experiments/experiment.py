@@ -137,8 +137,8 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
 
     # Uncomment to use either CLI or ndn Play (won't work on vm if you can't port forward 8008 and 8765)
     if use_gui:
-        MiniNDNCLI(ndn.net)
-        # PlayServer(ndn.net).start()
+        # MiniNDNCLI(ndn.net)
+        PlayServer(ndn.net).start()
     ndn.stop()
 
     convert_results(ndn.net.hosts, results_dir, results_path, output_dir)

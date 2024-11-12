@@ -74,7 +74,7 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
             if Config.spasy.can_request_item(action):
                 logging.info('The item was inserted, so the named data may be requested.')
                 asyncio.create_task(receive_hash(root_hash, seg_cnt))
-                if Config.config["request_asset"] == "True":
+                if Config.config["request_asset"]:
                     asyncio.create_task(receive_asset(asset_name))
             else:
                 logging.info('There was a deletion, so there is no named data to request.')
