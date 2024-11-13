@@ -61,7 +61,7 @@ async def add(opts):
     task = asyncio.create_task(prep_queue(opts[0]))
     if Config.config["request_asset"]:
         task = asyncio.create_task(prep_asset(opts[0], opts[1]))
-    task = asyncio.create_task(update(opts[0]))
+    task = asyncio.create_task(update())
 
     await asyncio.sleep(int(opts[-1]))
     return
@@ -75,10 +75,11 @@ async def join(opts):
 
     batch_size = int(Config.config["batch_size"])
     if batch_size > 0:
-        num_seg, received_tree, data = await fetch_segments_batch(name,batch_size)
+        data, num_seg = await fetch_segments_batch(name,batch_size)
     else:
-        num_seg, received_tree, data = await fetch_segments(name)
+        data, num_seg = await fetch_segments(name)
 
+    received_tree = pickle.loads(data)
     new_tree = received_tree.trees[Config.geocode]
     Config.spasy.add_tree(new_tree)
     Config.timer.stop_timer(f"join_update")
@@ -177,7 +178,6 @@ async def prep_asset(asset_name, asset_path):
     packets, seg_cnt = pack_data(data, asset_route)
     logging.info(f'Created {seg_cnt} chunks under name {Name.to_str(asset_route)}')
     Config.stats.record_stat(f"num_packets_asset", f"{seg_cnt}")
-
 
     Config.packed_assets_dict[asset_name] = (packets, seg_cnt)
     Config.timer.stop_timer("prep_asset")

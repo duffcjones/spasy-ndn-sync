@@ -1,5 +1,4 @@
 from SpasyTree import *
-from pympler import asizeof
 from random import randint, seed
 from pprint import pprint
 import time

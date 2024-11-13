@@ -90,25 +90,26 @@ async def receive_hash(root_hash, seg_cnt):
     name = Config.config["direct_root_hash_prefix"] + f"/{root_hash}"
 
     Config.timer.start_timer(f"receive_updates")
-    received_updates, data = await send_root_request(name, seg_cnt)
+    received_update, num_seg, data = await send_root_request(name, seg_cnt)
     Config.timer.stop_timer(f"receive_updates")
 
     Config.timer.start_timer(f"update_tree")
-    Config.spasy.update_tree(Config.geocode, received_updates)
+    Config.spasy.update_tree(Config.geocode, received_update)
     Config.timer.stop_timer(f"update_tree")
 
     Config.timer.stop_global_timer("sync_update")
     logging.info("Stopping sync_update timer")
 
-    logging.info(f"Received new tree updates with resulting hash {root_hash} of size {asizeof.asizeof(received_updates)}")
-    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_uncompressed", asizeof.asizeof(received_updates))
+    logging.info(f"Received new tree updates with resulting hash {root_hash} of size {asizeof.asizeof(received_update)}")
+    Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_uncompressed", asizeof.asizeof(received_update))
     Config.stats.record_stat(f"{Config.config["node_name"]}_received_tree_update_compressed", asizeof.asizeof(data))
     return
+
 
 async def receive_asset(asset_name):
     name = Config.config["direct_asset_prefix"] + f"/{asset_name}"
 
-    current_seg, data = await send_asset_request(name)
+    received_asset, num_seg = await send_asset_request(name)
     Config.timer.stop_global_timer("sync_update_data")
     logging.info(f"Received asset {asset_name}")
 

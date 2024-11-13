@@ -403,7 +403,4 @@ $RECYCLE.BIN/
 # Setup files
 setup
 
-# Vagrant
-.vagrant
-
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,python,c++,visualstudiocode,pycharm
