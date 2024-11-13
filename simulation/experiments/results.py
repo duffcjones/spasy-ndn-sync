@@ -14,12 +14,11 @@ def convert_results(hosts, results_dir, results_path, output_dir):
 
     for node_dir in node_dirs:
         if node_dir.name in host_names:
-            output_path = node_dir.path + f'/log/results'
+            output_path = os.path.join(node_dir.path, f'log/results')
             with open(output_path, 'r') as output_file:
                 while line := output_file.readline():
                     timer_values = line.split()
                     if len(timer_values) < 2:
-                        print(line)
                         raise Exception("Missing result")
                     timer_name = timer_values[0]
                     if timer_values[1] == 'none':
@@ -39,14 +38,14 @@ def convert_results(hosts, results_dir, results_path, output_dir):
 
 
 def analyse_results(results_dir, analysis_file):
-    with open(f"{results_dir}/" + get_template_file(results_dir,f"\/*-results-0.csv"),"r") as file:
+    with open(os.path.join(results_dir, get_template_file(results_dir, f"\/*-results-0.csv")), "r") as file:
         reader = csv.reader(file)
         results = {rows[0]: rows[-1] for rows in reader}
     results_dict = {k:[] for k in list(results.keys())}
 
     for file in os.listdir(results_dir):
         if file.split('-')[-2] == "results":
-            with open(results_dir + f"/{file}", 'r') as results_file:
+            with open(os.path.join(results_dir, file), 'r') as results_file:
                 reader = csv.reader(results_file)
                 results = {rows[0]: rows[-1] for rows in reader}
                 for key in results.keys():
@@ -86,7 +85,7 @@ def convert_stats(hosts, results_dir, stats_path, output_dir):
 
     for node_dir in node_dirs:
         if node_dir.name in host_names:
-            output_path = node_dir.path + f'/log/stats'
+            output_path = os.path.join(node_dir.path, "log/stats")
             with open(output_path, 'r') as output_file:
                 while line := output_file.readline():
                     stat = line.split()
@@ -100,14 +99,14 @@ def convert_stats(hosts, results_dir, stats_path, output_dir):
 
 
 def analyse_stats(results_dir, analysis_file):
-    with open(f"{results_dir}/" + get_template_file(results_dir,f"\/*-stats-0.csv"),"r") as file:
+    with open(os.path.join(results_dir, get_template_file(results_dir,f"\/*-stats-0.csv")),"r") as file:
         reader = csv.reader(file)
         stats = {rows[0]: rows[-1] for rows in reader}
     stats_dict = {k:[] for k in list(stats.keys())}
 
     for file in os.listdir(results_dir):
         if file.split('-')[-2] == "stats":
-            with open(results_dir + f"/{file}", 'r') as stats_file:
+            with open(os.path.join(results_dir, file), 'r') as stats_file:
                 reader = csv.reader(stats_file)
                 stats = {rows[0]: rows[-1] for rows in reader}
                 for key in stats.keys():

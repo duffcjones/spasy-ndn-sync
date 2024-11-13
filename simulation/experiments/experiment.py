@@ -17,21 +17,11 @@ from application.SpatialSyncApp import SpatialSyncApp
 from minindn_play.server import PlayServer
 from experiments.setup import Setup
 from experiments.results import convert_results, convert_stats, analyse_stats, analyse_results
+from experiments.util import clear_results
 
-setup_dir = "/spatialsync/setup/"
-output_dir = "/tmp/minindn/"
-
-init_time = 1
 nFaces = 1
-
-base_path = "/spasy"
-direct_root_hash_path = "/direct/root"
-direct_geocode_path = "/direct/geocode"
-direct_asset_path = "/direct/asset"
-multi_path = "/multi"
-initialization_path = "/init"
-word_list_path = "/spatialsync/simulation/resources/spasy_tree.txt"
-
+minindn_path = "/tmp/minindn"
+results_root_dir = "results"
 
 def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
     parser = argparse.ArgumentParser()
@@ -42,21 +32,23 @@ def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
     parser.add_argument('-t', '--topo', dest='topo_file')
     args = parser.parse_args()
 
-    results_dir = results_dir + f"/{datetime.now().strftime('%d-%m-%Y-%H-%M-%S')}"
+    clear_results(minindn_path)
 
-    os.makedirs(results_dir, exist_ok=True)
-    print(f"Logging experiments to {results_dir}")
+    results_dir_path = os.path.join(os.getcwd(), results_root_dir, results_dir, datetime.now().strftime('%d-%m-%Y-%H-%M-%S'))
+    os.makedirs(results_dir_path, exist_ok=True)
+
+    print(f"Logging experiments to {results_dir_path}")
     print(f"Running {args.iterations} iterations")
     for i in range(int(args.iterations)):
-        results_path = results_dir + f"/{experiment_name}-results-{i}.csv"
-        stats_path = results_dir + f"/{experiment_name}-stats-{i}.csv"
+        results_path = os.path.join(results_dir_path, f"{experiment_name}-results-{i}.csv")
+        stats_path = os.path.join(results_dir_path, f"{experiment_name}-stats-{i}.csv")
         print(f"Running experiment iteration {i}")
-        run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, parser, args)
+        run_experiment(topo, results_dir_path, results_path, stats_path, actions, time_to_wait, parser, args)
 
-    analysis_path = results_dir + f"/{experiment_name}-analysis.csv"
+    analysis_path = os.path.join(results_dir_path, f"{experiment_name}-analysis.csv")
     print(f"Running analysis to {analysis_path}")
-    analyse_results(results_dir, analysis_path)
-    analyse_stats(results_dir, analysis_path)
+    analyse_results(results_dir_path, analysis_path)
+    analyse_stats(results_dir_path, analysis_path)
 
 
 def run_app(ndn, host, setups):
@@ -66,23 +58,12 @@ def run_app(ndn, host, setups):
 
 
 def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, parser, args):
-    Setup.setup_dir = setup_dir
     if args.log_info:
         print("Logging enabled")
         Setup.log_level = logging.INFO
     else:
         print("Logging disabled")
         Setup.log_level = logging.WARN
-    Setup.output_dir = output_dir
-    Setup.init_time = init_time
-
-    Setup.base_path = base_path
-    Setup.direct_root_hash_path = direct_root_hash_path
-    Setup.direct_geocode_path = direct_geocode_path
-    Setup.direct_asset_path = direct_asset_path
-    Setup.multi_path = multi_path
-    Setup.initialization_path = initialization_path
-    Setup.word_list_path = word_list_path
 
     Setup.init_global_prefixes()
 
@@ -148,6 +129,6 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
 
     ndn.stop()
 
-    convert_results(ndn.net.hosts, results_dir, results_path, output_dir)
-    convert_stats(ndn.net.hosts, results_dir, stats_path, output_dir)
+    convert_results(ndn.net.hosts, results_dir, results_path, Setup.output_dir)
+    convert_stats(ndn.net.hosts, results_dir, stats_path, Setup.output_dir)
     Setup.reset()

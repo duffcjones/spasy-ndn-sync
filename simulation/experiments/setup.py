@@ -1,3 +1,4 @@
+import os
 from collections import deque
 from os.path import join
 import json
@@ -15,14 +16,14 @@ class Setup:
     direct_root_hash_prefix = ""
     direct_gecode_prefix = ""
 
-    setup_dir = "/spatialsync/setup/"
+    setup_dir = os.path.join(os.getcwd(),"setup")
     output_dir = "/tmp/minindn/"
     packet_segment_size = 8800
     packet_segment_size_overhead = 128 + 88
     batch_size = 0
     log_level = logging.INFO
     init_time = 2
-    word_list_path = "/spatialsync/simulation/resources/spasy_tree.txt"
+    word_list_path = os.path.join(os.getcwd(),"resources/spasy_tree.txt")
     request_asset = True
     max_packets = 100000
     build_tree_method = "tree"
@@ -41,8 +42,8 @@ class Setup:
         self.actions = []
         self.multi_cast_routes = []
 
-        self.timer_output_path = self.output_dir + f"{self.node_name}/log/results"
-        self.stats_output_path = self.output_dir + f"{self.node_name}/log/stats"
+        self.timer_output_path = os.path.join(self.output_dir, f"{self.node_name}/log/results")
+        self.stats_output_path = os.path.join(self.output_dir, f"{self.node_name}/log/stats")
 
     @classmethod
     def init_global_prefixes(cls):

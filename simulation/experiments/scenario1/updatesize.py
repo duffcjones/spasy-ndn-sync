@@ -2,8 +2,7 @@ from experiments.setup import Setup
 from experiments.experiment import run_experiments
 from experiments.util import make_topo, clear_results
 
-topo_file_base = "/spatialsync/simulation/experiments/scenario1/topologies/latency-{}.conf"
-results_dir_base = "/spatialsync/simulation/experiments/results/scenario1/updatesize-{}"
+results_dir = "scenario1/updatesize-{}"
 experiment_file = "scenario1-updatesize-{}"
 
 packet_segment_size = 8800
@@ -22,17 +21,14 @@ if __name__ == "__main__":
     Setup.batch_size = batch_size
     Setup.wait_time = waitTime
 
-    #queue_sizes = [10,25,50,100,250]
-    queue_sizes = [50, 100]
+    queue_sizes = [10,25,50,100,250]
 
     for queue_size in queue_sizes:
-        clear_results("/tmp/minindn")
         topo = make_topo(num_nodes, num_mec_nodes, latency, bandwidth)
-        results_dir = results_dir_base.format(queue_size)
         actions = [
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", f"REGISTER_ROUTE {geocode}", "PREP_TREE 0", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", f"REGISTER_ROUTE {geocode}", "PREP_TREE 0", "WAIT 5"],
             ["SETUP 2",f"INIT {geocode} 1 1 5", f"JOIN {geocode} 0", "WAIT 5"]
         ]
 
-        run_experiments(topo, results_dir, experiment_file.format(queue_size), actions, experimentWaitTime)
+        run_experiments(topo, results_dir.format(queue_size), experiment_file.format(queue_size), actions, experimentWaitTime)

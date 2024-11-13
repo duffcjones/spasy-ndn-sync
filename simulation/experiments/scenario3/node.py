@@ -1,9 +1,10 @@
+import os
+
 from experiments.setup import Setup
 from experiments.experiment import run_experiments
 from experiments.util import make_topo, clear_results
 
-topo_file_base = "/spatialsync/simulation/experiments/scenario3/topologies/nodes-{}.conf"
-results_dir_base = "/spatialsync/simulation/experiments/results/scenario3/nodes-{}"
+results_dir = "scenario3/nodes-{}"
 experiment_name = "scenario3-node-{}"
 
 packet_segment_size = 8800
@@ -18,7 +19,7 @@ request_asset = "True"
 experimentWaitTime = 15
 num_mec_nodes = 1
 
-asset_path = "/spatialsync/simulation/resources/beach_ball.glb"
+asset_path = os.path.join(os.getcwd(),"resources/beach_ball.glb")
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
@@ -26,17 +27,13 @@ if __name__ == "__main__":
     Setup.wait_time = waitTime
     Setup.request_asset = request_asset
 
-    num_nodes = [18]
-    #num_nodes = [2, 4, 9, 14, 18]
+    num_nodes = [2, 4, 9, 14, 18]
 
     for num_node in num_nodes:
-        clear_results("/tmp/minindn")
-        #num_mec_nodes = num_node // 10
         topo = make_topo(num_node, num_mec_nodes, latency, bandwidth)
-        results_dir = results_dir_base.format(num_node)
         actions = [
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", f"ADD /alice/ball/_v0/dpwhwtmpz0 {asset_path} 0", "WAIT 5"],
             ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 5"]
         ]
-        run_experiments(topo, results_dir, experiment_name.format(num_node), actions, experimentWaitTime)
+        run_experiments(topo, results_dir.format(num_node), experiment_name.format(num_node), actions, experimentWaitTime)

@@ -1,9 +1,10 @@
+import os
+
 from experiments.setup import Setup
 from experiments.experiment import run_experiments
 from experiments.util import make_topo, clear_results
 
-topo_file_base = "/spatialsync/simulation/experiments/scenario3/topologies/latency-{}.conf"
-results_dir_base = "/spatialsync/simulation/experiments/results/scenario3/latency-{}"
+results_dir = "scenario3/latency-{}"
 experiment_name = "scenario3-latency-{}"
 
 packet_segment_size = 8800
@@ -18,7 +19,7 @@ geocode = "dpwhwt"
 request_asset = True
 experimentWaitTime = 20
 
-asset_path = "/spatialsync/simulation/resources/baseball.glb"
+asset_path = os.path.join(os.getcwd(),"resources/beach_ball.glb")
 
 if __name__ == "__main__":
     Setup.packet_segment_size = packet_segment_size
@@ -32,11 +33,9 @@ if __name__ == "__main__":
         ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 10"]
     ]
 
-    # latencies = [2,3,5,10,15]
-    latencies = [2]
+    latencies = [2,3,5,10,15]
+    # latencies = [2]
 
     for latency in latencies:
-        clear_results("/tmp/minindn")
         topo = make_topo(num_nodes, num_mec_nodes, latency, bandwidth)
-        results_dir = results_dir_base.format(latency)
-        run_experiments(topo, results_dir, experiment_name.format(latency), actions, experimentWaitTime)
+        run_experiments(topo, results_dir.format(latency), experiment_name.format(latency), actions, experimentWaitTime)
