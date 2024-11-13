@@ -220,7 +220,7 @@ class Spasy:
         """
         self._tree = replacement_tree
 
-    def update_tree(self, geocode: str, recent_changes: list) -> None:
+    def update_tree(self, geocode: str, recent_changes: list) -> bool | int:
         """
         Uses a priority queue that stores recent changes to another user's SpasyTree to 
         update the current user's SpasyTree. When done, the Merkle hash of the current
@@ -229,6 +229,12 @@ class Spasy:
         Args:
             geocode (str): the geocode of the tree that requires an update.
             recent_changes (list): the priority queue that stores the recent changes.
+
+        Returns:
+            bool | int: True, if an update is needed; 
+                        False, if the two trees have the same list of recent changes
+                        -1, if there is no overlap, in which case the tree is outdated and
+                            a new tree should be requested
         """
         # convert recent changes to a set in order to do set difference
         current_set = set(self.trees[geocode].recent_updates)
@@ -236,7 +242,14 @@ class Spasy:
 
         # find differences
         set_difference = update_set.difference(current_set)
+        set_intersection = update_set.intersection(current_set)
+        print(f'SET INTERSECTION: {set_intersection}')
+        print(f'SET DIFF: {set_difference}')
         
+        # if there is no intersection, then the list is out-of-date, and a new tree should be requested
+        if not set_intersection:
+            return - 1
+
         # handle differences if there are any
         if set_difference:
             for element in set_difference:
@@ -246,8 +259,10 @@ class Spasy:
                     self.add_data_to_tree(geocode, data, timestamp)
                 elif element[1] == 'd':
                     self.remove_data_from_tree(geocode, data, timestamp)
-
-        # check that the hashes match 
+            return True
+        
+        return False
+        
 
     def add_data_to_tree(self, geocode: str, data_to_add: str, timestamp: str="") -> None:
         """
@@ -403,62 +418,60 @@ class Spasy:
 if __name__ == '__main__':
     print(f'\nTesting SPASY...\n')
 
-    use_timestamps = True
+    # use_timestamps = True
     spasy = Spasy('dpwhwt')
     spasy2 = Spasy('dpwhwt')
-    print(spasy.trees)
-    name_to_add = '/alice/ball/_v0/dpwhwtmpz0'
-    print(spasy.is_subscribed(name_to_add))
-    spasy.add_data_to_tree('dpwhwt', name_to_add)
-    print(spasy.trees['dpwhwt'].root)
-    print(spasy.trees['dpwhwt'].root.hashcode)
-    notification_interest = '/browser/alice/ball/_v0/dpwhwtmpz0/i/76fbf9c47...'
+    use_timestamps = True
+    # print(spasy.trees)
+    # name_to_add = '/alice/ball/_v0/dpwhwtmpz0'
+    # print(spasy.is_subscribed(name_to_add))
+    # spasy.add_data_to_tree('dpwhwt', name_to_add)
+    # print(spasy.trees['dpwhwt'].root)
+    # print(spasy.trees['dpwhwt'].root.hashcode)
+    # notification_interest = '/browser/alice/ball/_v0/dpwhwtmpz0/i/76fbf9c47...'
 
-    notification_interest_split = notification_interest.split('/')
+    # notification_interest_split = notification_interest.split('/')
 
-    # separate all of the elements of the Notification Interest
-    start_test = time.time()
-    application = notification_interest_split[1]
-    named_data = '/' + '/'.join(notification_interest_split[2:-2])
-    action = notification_interest_split[-2]
-    hashcode = notification_interest_split[-1]
+    # # separate all of the elements of the Notification Interest
+    # start_test = time.time()
+    # application = notification_interest_split[1]
+    # named_data = '/' + '/'.join(notification_interest_split[2:-2])
+    # action = notification_interest_split[-2]
+    # hashcode = notification_interest_split[-1]
 
-    print(f'APPLICATION: {application}')
-    print(f'NAMED DATA: {named_data}')
-    print(f'ACTION: {action}')
-    print(f'HASH: {hashcode}')
-    if spasy.is_subscribed(named_data):
-        print('This tree is subscribed to.')
-        if spasy.can_request_item(action):
-            print('The item was inserted, so the named data may be requested.')
-        else:
-            print('There was a deletion, so there is no named data to request.')
+    # print(f'APPLICATION: {application}')
+    # print(f'NAMED DATA: {named_data}')
+    # print(f'ACTION: {action}')
+    # print(f'HASH: {hashcode}')
+    # if spasy.is_subscribed(named_data):
+    #     print('This tree is subscribed to.')
+    #     if spasy.can_request_item(action):
+    #         print('The item was inserted, so the named data may be requested.')
+    #     else:
+    #         print('There was a deletion, so there is no named data to request.')
     
-    end_test = time.time()
-    print(f'TIME: {end_test - start_test}')
+    # end_test = time.time()
+    # print(f'TIME: {end_test - start_test}')
 
     # spasy.trees['dpwhwt'].delete(spasy.trees['dpwhwt'].root,'/alice/ball/_v0/dpwhwtmpz0', spasy.trees['dpwhwt'].root.length_geocode())
     # print(spasy.trees['dpwhwt'].root)
 
 
-        
+    spasy.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 1000, use_timestamps)
+    #spasy.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
 
-
-    
-    # spasy.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 25000, use_timestamps)
-    # start25 = time.time()
-    # spasy.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
-    # end25 = time.time()
-    # print(f'Time 25,000: {end25 - start25}')
-
-    # spasy2.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 10000, use_timestamps)
+    spasy2.build_tree_from_file('dpwhwt', 'spasy_tree.txt', 1000, use_timestamps)
     # start10 = time.time()
-    # spasy2.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
+    #spasy2.add_data_to_tree('dpwhwt', '/some/test/data/dpwhwtmpz0')
+
+    print(spasy2.update_tree('dpwhwt', spasy.trees['dpwhwt'].recent_updates))
+    print(spasy2.trees['dpwhwt'].recent_updates[1])
+    print(spasy.trees['dpwhwt'].recent_updates[1])
     # end10 = time.time()
     # print(f'Time 10,000: {end10 - start10}') 
     # spasy.add_data_to_tree('dpwhwt', '/some/test/data/to/add/dpwhwt4bzh')
-    # print(spasy.trees['dpwhwt'].root)
-    # print(spasy.gather_all_data_by_namespace('dpwhwt'))
+    #print(spasy.trees['dpwhwt'].root)
+    #print(spasy.gather_all_data_by_namespace('dpwhwt'))
     # print(f'RECENT UPDATES: {spasy.trees['dpwhwt'].recent_updates}')
     # spasy.remove_data_from_tree('dpwhwt', '/some/test/data/dpwhwtbarq')
     # print(f'RECENT UPDATES AFTER DELETION: {spasy.trees['dpwhwt'].recent_updates}')
