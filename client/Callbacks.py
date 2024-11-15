@@ -1,13 +1,14 @@
-from ndn.encoding import Name, InterestParam, BinaryStr, FormalName, MetaInfo
-from ndn.encoding import Name, Component
-
-from typing import Optional
 import logging
 import asyncio
 from pympler import asizeof
+from typing import Optional
+
+from ndn.encoding import Name, InterestParam, BinaryStr, FormalName, MetaInfo
+from ndn.encoding import Name, Component
 
 import Config
 from Interests import send_root_request, send_asset_request
+
 
 def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
     logging.info(f"Received direct root hash interest {Name.to_str(name)}")
@@ -34,16 +35,19 @@ def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param
     logging.info(f"Returned response for direct geocode interest for {Name.to_str(name)}")
     return
 
-def on_direct_asset_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
-    logging.info(f"Received direct asset interest for {"/".join(Name.to_str(name).split("/")[4:-1])}")
 
-    packets, seg_cnt = Config.packed_assets_dict["/" + "/".join(Name.to_str(name).split("/")[4:-1])]
+def on_direct_asset_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+    asset_name = "/".join(Name.to_str(name).split("/")[4:-1])
+    logging.info(f"Received direct asset interest for {asset_name}")
+
+    packets, seg_cnt = Config.packed_assets_dict[f"/{asset_name}"]
     seg_no = Component.to_number(name[-1])
 
     if seg_no < seg_cnt:
         Config.app.put_raw_packet(packets[Component.to_number(name[-1])])
 
-    logging.info(f"Returned response for direct asset interest for {Name.to_str(name).split("/")[3:-2]}")
+    logging.info(f"Returned response for direct asset interest for {asset_name}")
+    return
 
 
 def on_init_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
@@ -67,15 +71,14 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
 
     logging.info(f"Checking asset name {asset_name}")
     if Config.spasy.is_subscribed(asset_name):
-        logging.info('This tree is subscribed to.')
         logging.info(f"Checking hash {root_hash}")
         if Config.spasy.is_newer_tree(geocode, root_hash):
             logging.info(f"Checking action {action}")
             if Config.spasy.can_request_item(action):
-                logging.info('The item was inserted, so the named data may be requested.')
-                asyncio.create_task(receive_hash(root_hash, seg_cnt))
+                logging.info('Requesting data')
+                asyncio.create_task(update_tree(root_hash, seg_cnt))
                 if Config.config["request_asset"]:
-                    asyncio.create_task(receive_asset(asset_name))
+                    asyncio.create_task(request_asset(asset_name))
             else:
                 logging.info('There was a deletion, so there is no named data to request.')
         else:
@@ -86,7 +89,7 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
     return
 
 
-async def receive_hash(root_hash, seg_cnt):
+async def update_tree(root_hash, seg_cnt):
     name = Config.config["direct_root_hash_prefix"] + f"/{root_hash}"
 
     Config.timer.start_timer(f"receive_updates")
@@ -106,7 +109,7 @@ async def receive_hash(root_hash, seg_cnt):
     return
 
 
-async def receive_asset(asset_name):
+async def request_asset(asset_name):
     name = Config.config["direct_asset_prefix"] + f"/{asset_name}"
 
     received_asset, num_seg = await send_asset_request(name)

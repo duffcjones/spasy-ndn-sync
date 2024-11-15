@@ -23,6 +23,7 @@ nfaces = 1
 minindn_path = "/tmp/minindn"
 results_root_dir = "results"
 
+
 def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
     parser = ArgumentParser()
     parser.add_argument('iterations')
@@ -35,8 +36,15 @@ def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
     clear_results(minindn_path)
     results_dir_path = path.join(getcwd(), results_root_dir, results_dir, datetime.now().strftime('%d-%m-%Y-%H-%M-%S'))
     makedirs(results_dir_path, exist_ok=True)
-
     print(f"Logging experiments to {results_dir_path}")
+
+    if args.log_info:
+        print("Logging enabled")
+        Setup.log_level = logging.INFO
+    else:
+        print("Logging disabled")
+        Setup.log_level = logging.WARN
+
     print(f"Running {args.iterations} iterations")
     for i in range(int(args.iterations)):
         results_path = path.join(results_dir_path, f"{experiment_name}-results-{i}.csv")
@@ -45,32 +53,23 @@ def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
         run_experiment(topo, results_dir_path, results_path, stats_path, actions, time_to_wait, parser, args)
 
     analysis_path = path.join(results_dir_path, f"{experiment_name}-analysis.csv")
-    print(f"Running analysis to {analysis_path}")
+    print(f"Outputting analysis to {analysis_path}")
     analyse_results(results_dir_path, analysis_path)
     analyse_stats(results_dir_path, analysis_path)
 
 
 def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, parser, args):
-    if args.log_info:
-        print("Logging enabled")
-        Setup.log_level = logging.INFO
-    else:
-        print("Logging disabled")
-        Setup.log_level = logging.WARN
-
     Setup.init_global_prefixes()
-
-    for action in actions:
-        Setup.add_actions(action)
+    Setup.add_actions(actions)
 
     try:
         with scandir(Setup.setup_dir) as entries:
             for entry in entries:
                 if entry.is_file():
                     unlink(entry.path)
-        print("All files deleted successfully.")
+        print("All files deleted successfully")
     except OSError:
-        print("Error occurred while deleting files.")
+        print("Error occurred while deleting setup files")
 
     setLogLevel("info")
     Minindn.cleanUp()
@@ -87,7 +86,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
 
     grh = NdnRoutingHelper(ndn.net)
     setups = {}
-    for i, host in enumerate(ndn.net.hosts):
+    for host in ndn.net.hosts:
         setup = Setup(host.name)
         setup.add_prefixes()
         setups[host.name] = setup
@@ -102,7 +101,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
             dest_setup = setups[dest.name]
             if dest.name != host.name:
                 host_setup.add_route(dest_setup.node_prefix)
-        info("Static route additions successful for node {}\n".format(host.name))
+        info(f"List of nodes added for node {host.name}\n")
 
     for host in ndn.net.hosts:
         AppManager(ndn, [host], SpatialSyncApp,
@@ -110,7 +109,7 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
                    actions_file=setups[host.name].setup_actions())
     sleep(time_to_wait)
 
-    # Use either CLI or NDN Play (won't work on vm if you can't port forward 8008 and 8765)
+    # Use either CLI or NDN Play (NDN Play won't work on vm if you can't port forward 8008 and 8765)
     if args.use_gui:
         PlayServer(ndn.net).start()
     elif args.use_cli:

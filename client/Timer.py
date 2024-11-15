@@ -1,7 +1,7 @@
 import logging
 import time
-from collections import defaultdict
 import Config
+from collections import defaultdict
 
 
 class Timer:

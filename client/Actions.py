@@ -12,10 +12,10 @@ from Util import pack_data
 from Spasy import Spasy
 from Callbacks import on_direct_root_hash_interest, on_direct_geocode_interest, on_direct_asset_interest
 
-# TODO Add wait time through function decorator
 
 async def setup(opts):
     logging.info("Initializing interests")
+
     Config.timer.start_timer(f"init_interests")
     await send_init_interests()
     Config.timer.stop_timer(f"init_interests")
@@ -26,13 +26,15 @@ async def setup(opts):
 
 async def init(opts):
     logging.info(f'Action: Init with geocode {opts[0]}')
+
     Config.spasy = Spasy(opts[0], int(opts[2]))
     if Config.config["build_tree_method"] == "file":
         Config.spasy.build_tree_from_file(opts[0], Config.config["word_list_path"], int(opts[1]), Config.config["use_timestamp"])
     elif Config.config["build_tree_method"] == "random":
-        Config.spasy.build_tree(opts[0],int(opts[1]), Config.config["use_timestamp"])
+        Config.spasy.build_tree(opts[0], int(opts[1]), Config.config["use_timestamp"])
         # Reset seeding for nonce generation
         seed()
+
     Config.geocode = opts[0]
     logging.info(f"Tree created for geocode {opts[0]} with root hashcode {Config.spasy.trees[opts[0]].root.hashcode} with update queue of size {Config.spasy.trees[opts[0]].max_number_recent_updates}")
     logging.info(f"Number of assets: {opts[1]}\n Size: {asizeof.asizeof(Config.spasy.trees[opts[0]])} bytes")
@@ -75,18 +77,15 @@ async def join(opts):
 
     batch_size = int(Config.config["batch_size"])
     if batch_size > 0:
-        data, num_seg = await fetch_segments_batch(name,batch_size)
+        data, num_seg = await fetch_segments_batch(name, batch_size)
     else:
         data, num_seg = await fetch_segments(name)
 
     received_tree = pickle.loads(data)
-    new_tree = received_tree.trees[Config.geocode]
-    Config.spasy.add_tree(new_tree)
+    Config.spasy.add_tree(received_tree)
     Config.timer.stop_timer(f"join_update")
 
-    Config.timer.start_timer(f"calculate_size")
     logging.info(f"Receieved tree for geocode {opts[0]} with size {asizeof.asizeof(Config.spasy)}")
-    Config.timer.stop_timer(f"calculate_size")
     logging.info(f"Root of tree is {Config.spasy.trees[Config.geocode].root.hashcode}")
 
     # Size of full tree uncompressed received through join request
@@ -99,8 +98,7 @@ async def join(opts):
 
 
 async def update():
-    logging.info(f"Action: Update")
-
+    logging.info("Sending notification interests")
     root_hash, seg_cnt, asset_name = Config.packed_updates_queue[-1]
 
     sync_requests = []
@@ -119,20 +117,17 @@ async def wait(opts):
 
 
 async def serve_tree(opts):
-    logging.info(f"Packing tree with hashcode {Config.spasy.trees[Config.geocode].root.hashcode}")
+    logging.info(f"Action: Serving tree with geocode {opts[0]}")
 
     Config.timer.start_timer(f"prep_tree")
-
     geocode_route = Config.config["direct_geocode_prefix"] + f"/{Config.geocode}"
     logging.info(f"Packing tree with geocode {Config.geocode}")
-    serialized_data = pickle.dumps(Config.spasy)
+    serialized_data = pickle.dumps(Config.spasy.trees[Config.geocode])
     packets, seg_cnt = pack_data(serialized_data, geocode_route)
     Config.packed_tree_geocode = (packets, seg_cnt)
 
-    geocode_route = Config.config["direct_geocode_prefix"] + f"/{Config.geocode}"
     await Config.app.register(geocode_route, on_direct_geocode_interest)
     logging.info(f"Registered route for {geocode_route}")
-
     Config.timer.stop_timer(f"prep_tree")
 
     # Number of packets
@@ -173,8 +168,8 @@ async def prep_asset(asset_name, asset_path):
     asset_route = Config.config["direct_asset_prefix"] + asset_name
     logging.info(f"Packing asset with name {asset_route}")
 
-    with open(asset_path, 'rb') as f:
-        data = f.read()
+    with open(asset_path, 'rb') as asset_file:
+        data = asset_file.read()
     packets, seg_cnt = pack_data(data, asset_route)
     logging.info(f'Created {seg_cnt} chunks under name {Name.to_str(asset_route)}')
     Config.stats.record_stat(f"num_packets_asset", f"{seg_cnt}")

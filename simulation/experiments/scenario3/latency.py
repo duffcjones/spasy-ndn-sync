@@ -30,8 +30,8 @@ if __name__ == "__main__":
         ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 5", "WAIT 10"]
     ]
 
-    latencies = [2, 3, 5, 10, 15]
-    # latencies = [2]
+    # latencies = [2, 3, 5, 10, 15]
+    latencies = [2]
 
     for latency in latencies:
         topo = make_topo(num_nodes, num_mec_nodes, latency, bandwidth)

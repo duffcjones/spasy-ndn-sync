@@ -1,6 +1,5 @@
-import os
 from collections import deque
-from os.path import join
+from os import path, getcwd
 import json
 import logging
 
@@ -16,18 +15,19 @@ class Setup:
     direct_root_hash_prefix = ""
     direct_gecode_prefix = ""
 
-    setup_dir = os.path.join(os.getcwd(),"setup")
+    setup_dir = path.join(getcwd(),"setup")
     output_dir = "/tmp/minindn/"
     packet_segment_size = 8800
-    packet_segment_size_overhead = 128 + 88
+    packet_segment_size_overhead = 216
     batch_size = 0
     log_level = logging.INFO
     init_time = 2
-    word_list_path = os.path.join(os.getcwd(),"resources/spasy_tree.txt")
+    word_list_path = path.join(getcwd(), "resources", "spasy_tree.txt")
     request_asset = True
     max_packets = 100000
     build_tree_method = "tree"
     use_timestamp = True
+    use_keychain_digest = True
 
     action_list = deque()
 
@@ -42,8 +42,8 @@ class Setup:
         self.actions = []
         self.multi_cast_routes = []
 
-        self.timer_output_path = os.path.join(self.output_dir, f"{self.node_name}/log/results")
-        self.stats_output_path = os.path.join(self.output_dir, f"{self.node_name}/log/stats")
+        self.timer_output_path = path.join(self.output_dir, self.node_name, "log", "results")
+        self.stats_output_path = path.join(self.output_dir, self.node_name, "log", "stats")
 
     @classmethod
     def init_global_prefixes(cls):
@@ -58,7 +58,8 @@ class Setup:
 
     @classmethod
     def add_actions(cls, actions):
-        cls.action_list.append(actions)
+        for action in actions:
+            cls.action_list.append(action)
 
     def add_route(self, node_prefix):
         self.multi_cast_routes.append(node_prefix)
@@ -88,8 +89,9 @@ class Setup:
             "max_packets": self.max_packets,
             "build_tree_method": self.build_tree_method,
             "use_timestamp": self.use_timestamp,
+            "use_keychain_digest": self.use_keychain_digest
         }
-        self.config_file = join(self.setup_dir, f'{self.node_name}config.json')
+        self.config_file = path.join(self.setup_dir, f'{self.node_name}config.json')
         with open(self.config_file, mode="w") as setup_file:
             json.dump(setup_data, setup_file)
         return self.config_file
@@ -100,7 +102,7 @@ class Setup:
         else:
             self.actions = self.action_list[0]
 
-        self.actions_file = join(self.setup_dir, f'{self.node_name}actions.txt')
+        self.actions_file = path.join(self.setup_dir, f'{self.node_name}actions.txt')
         with open(self.actions_file, mode="w") as actions_file:
             for action in self.actions:
                 actions_file.write(f"{action}\n")

@@ -1,5 +1,6 @@
 import logging
 
+
 class Stats:
     def __init__(self, output_path):
         self.output_path = output_path

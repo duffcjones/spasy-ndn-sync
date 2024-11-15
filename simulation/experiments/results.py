@@ -30,10 +30,10 @@ def convert_results(hosts, results_dir, results_path, output_dir):
                         else:
                             timers[timer_name] = [timer_values[1]] + timers[timer_name]
 
-    with open(results_path,'x', newline='') as results_file:
+    with open(results_path, 'x', newline='') as results_file:
         csv_writer = csv.DictWriter(results_file, fieldnames=['name', 'start', 'end', 'time'])
         csv_writer.writeheader()
-        for name,values in timers.items():
+        for name, values in timers.items():
             csv_writer.writerow({'name': name,'start': values[0],'end': values[1:],'time': ",".join([str((float(i) - float(values[0])) / 1000000) for i in values[1:]])})
 
 
@@ -67,12 +67,12 @@ def analyse_results(results_dir, analysis_file):
         else:
             stats[key].append(values[0])
 
-    with open(analysis_file,'x', newline='') as analysis:
+    with open(analysis_file, 'x', newline='') as analysis:
         csv_writer = csv.DictWriter(analysis, fieldnames=['name', 'mean', 'median', 'stdev', 'variance', 'min', 'max','quantiles', 'value'])
         csv_writer.writeheader()
-        for name,values in stats.items():
+        for name, values in stats.items():
             if len(values) > 1:
-                csv_writer.writerow({'name': name,'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3], 'min': values[4], 'max': values[5], 'quantiles': values[6]})
+                csv_writer.writerow({'name': name, 'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3], 'min': values[4], 'max': values[5], 'quantiles': values[6]})
             else:
                 csv_writer.writerow({'name': name, 'value': values[0]})
 
@@ -125,10 +125,10 @@ def analyse_stats(results_dir, analysis_file):
         else:
             stats[key].append(values[0])
 
-    with open(analysis_file,'a', newline='') as analysis:
+    with open(analysis_file, 'a', newline='') as analysis:
         csv_writer = csv.DictWriter(analysis, fieldnames=['name', 'mean', 'median', 'stdev', 'variance', 'value'])
         csv_writer.writeheader()
-        for name,values in stats.items():
+        for name, values in stats.items():
             if len(values) > 1:
                 csv_writer.writerow({'name': name,'mean': values[0], 'median': values[1], 'stdev': values[2], 'variance': values[3]})
             else:

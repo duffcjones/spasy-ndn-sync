@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
         actions = []
         for i in range(num_mec_nodes):
-            actions.append([f"INIT {geocode} {tree_size} {queue_size} 0", f"REGISTER_ROUTE {geocode}", "PREP_TREE 0", "WAIT 10"])
+            actions.append([f"INIT {geocode} {tree_size} {queue_size} 0", f"SERVE_TREE {geocode} 0", "WAIT 10"])
         actions += [
             [f"INIT {geocode} 1 1 10", f"JOIN {geocode} 0", "WAIT 10"],
             [f"INIT {geocode} 1 1 10", "WAIT 10"],

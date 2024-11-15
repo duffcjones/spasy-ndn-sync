@@ -24,8 +24,8 @@ if __name__ == "__main__":
     for queue_size in queue_sizes:
         topo = make_topo(num_nodes, num_mec_nodes, latency, bandwidth)
         actions = [
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", f"REGISTER_ROUTE {geocode}", "PREP_TREE 0", "WAIT 5"],
-            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", f"REGISTER_ROUTE {geocode}", "PREP_TREE 0", "WAIT 5"],
+            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", f"SERVE_TREE {geocode} 0", "WAIT 5"],
+            ["SETUP 2", f"INIT {geocode} {tree_size} {queue_size} 0", f"SERVE_TREE {geocode} 0", "WAIT 5"],
             ["SETUP 2",f"INIT {geocode} 1 1 5", f"JOIN {geocode} 0", "WAIT 5"]
         ]
 

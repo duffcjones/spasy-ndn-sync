@@ -2,7 +2,7 @@ from mininet.topo import Topo
 from pathlib import Path
 from collections import deque
 
-def make_topo(num_nodes,num_mec_nodes,latency,bandwidth):
+def make_topo(num_nodes, num_mec_nodes, latency, bandwidth):
     print(f"Making topology with {num_nodes} nodes, {num_mec_nodes} mec nodes and {latency}ms latency with bandwidth {bandwidth}")
     topo = Topo()
 
@@ -13,11 +13,11 @@ def make_topo(num_nodes,num_mec_nodes,latency,bandwidth):
         print(f"Added mec_node h{i}")
         mec_node = topo.addHost(f"h{i}")
         if len(mec_nodes) > 1:
-            topo.addLink(mec_node,mec_nodes[-1], delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
+            topo.addLink(mec_node, mec_nodes[-1], delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
         mec_nodes.append(mec_node)
 
     if len(mec_nodes) > 1:
-        topo.addLink(mec_nodes[0],mec_nodes[-1], delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
+        topo.addLink(mec_nodes[0], mec_nodes[-1], delay=f"{latency}ms", bw=bandwidth, loss=0, max_queue_size=1000)
 
     for i in range(num_nodes):
         node_name = f"h{i + num_mec_nodes}"

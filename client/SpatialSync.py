@@ -4,6 +4,7 @@ import asyncio
 
 import Config
 from Callbacks import on_multi_interest, on_init_interest
+from Actions import actions
 import Actions
 
 async def main():

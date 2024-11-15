@@ -9,7 +9,6 @@ Vagrant.configure("2") do |config|
         vb.name = "spatial-sync-minindn"
     config.vm.synced_folder ".", "/spatialsync/simulation"
     config.vm.synced_folder "../client", "/spatialsync/client"
-    config.vm.synced_folder "../setup", "/spatialsync/setup"
     config.ssh.password = "vagrant"
     config.vm.network "forwarded_port", guest: 8008, host: 8008
     config.vm.network "forwarded_port", guest: 8765, host: 8765
