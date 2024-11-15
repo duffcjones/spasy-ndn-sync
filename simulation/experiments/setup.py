@@ -2,6 +2,7 @@ from collections import deque
 from os import path, getcwd
 import json
 import logging
+from typing import List
 
 
 class Setup:
@@ -31,7 +32,7 @@ class Setup:
 
     action_list = deque()
 
-    def __init__(self, node_name):
+    def __init__(self, node_name: str) -> None:
         self.node_name = node_name
         self.node_prefix = ""
         self.multi_prefix = ""
@@ -46,25 +47,42 @@ class Setup:
         self.stats_output_path = path.join(self.output_dir, self.node_name, "log", "stats")
 
     @classmethod
-    def init_global_prefixes(cls):
+    def init_global_prefixes(cls) -> None:
         cls.direct_root_hash_prefix = cls.base_path + cls.direct_root_hash_path
         cls.direct_geocode_prefix = cls.base_path + cls.direct_geocode_path
         cls.direct_asset_prefix = cls.base_path + cls.direct_asset_path
+
+    @classmethod
+    def add_actions(cls, actions: [[List[List[str]]]]) -> None:
+        for action in actions:
+            cls.action_list.append(action)
+
+    @classmethod
+    def reset(cls) -> None:
+        cls.action_list = deque()
 
     def add_prefixes(self):
         self.node_prefix = self.base_path + f"/{self.node_name}"
         self.multi_prefix = self.node_prefix + self.multi_path
         self.initialization_prefix = self.node_prefix + self.initialization_path
 
-    @classmethod
-    def add_actions(cls, actions):
-        for action in actions:
-            cls.action_list.append(action)
-
-    def add_route(self, node_prefix):
+    def add_route(self, node_prefix: str) -> None:
         self.multi_cast_routes.append(node_prefix)
 
-    def setup_config(self):
+    def setup_actions(self) -> str:
+        if len(self.action_list) > 1:
+            self.actions = self.action_list.popleft()
+        else:
+            self.actions = self.action_list[0]
+
+        self.actions_file = path.join(self.setup_dir, f'{self.node_name}actions.txt')
+        with open(self.actions_file, mode="w") as actions_file:
+            for action in self.actions:
+                actions_file.write(f"{action}\n")
+
+        return self.actions_file
+
+    def setup_config(self) -> str:
         setup_data = {
             "node_name": self.node_name,
             "timer_output_path": self.timer_output_path,
@@ -91,24 +109,8 @@ class Setup:
             "use_timestamp": self.use_timestamp,
             "use_keychain_digest": self.use_keychain_digest
         }
+
         self.config_file = path.join(self.setup_dir, f'{self.node_name}config.json')
         with open(self.config_file, mode="w") as setup_file:
             json.dump(setup_data, setup_file)
         return self.config_file
-
-    def setup_actions(self):
-        if len(self.action_list) > 1:
-            self.actions = self.action_list.popleft()
-        else:
-            self.actions = self.action_list[0]
-
-        self.actions_file = path.join(self.setup_dir, f'{self.node_name}actions.txt')
-        with open(self.actions_file, mode="w") as actions_file:
-            for action in self.actions:
-                actions_file.write(f"{action}\n")
-
-        return self.actions_file
-
-    @classmethod
-    def reset(cls):
-        cls.action_list = deque()

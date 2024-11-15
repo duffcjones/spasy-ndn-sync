@@ -1,8 +1,9 @@
 from mininet.topo import Topo
 from pathlib import Path
 from collections import deque
+from typing import Union
 
-def make_topo(num_nodes, num_mec_nodes, latency, bandwidth):
+def make_topo(num_nodes: int, num_mec_nodes: int, latency: int, bandwidth: int) -> Topo:
     print(f"Making topology with {num_nodes} nodes, {num_mec_nodes} mec nodes and {latency}ms latency with bandwidth {bandwidth}")
     topo = Topo()
 
@@ -36,7 +37,8 @@ def make_topo(num_nodes, num_mec_nodes, latency, bandwidth):
 
     return topo
 
-def clear_results(directory):
+
+def clear_results(directory: Union[Path, str]) -> None:
     directory = Path(directory)
     if directory.is_dir():
         for item in directory.iterdir():

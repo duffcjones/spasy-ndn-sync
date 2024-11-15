@@ -6,7 +6,7 @@ import re
 import numpy as np
 
 
-def convert_results(hosts, results_dir, results_path, output_dir):
+def convert_results(hosts: list, results_dir: str, results_path: str, output_dir: str) -> None:
     print(f"Logging results to {results_path}")
     host_names = [host.name for host in hosts]
     node_dirs = os.scandir(output_dir)
@@ -36,8 +36,10 @@ def convert_results(hosts, results_dir, results_path, output_dir):
         for name, values in timers.items():
             csv_writer.writerow({'name': name,'start': values[0],'end': values[1:],'time': ",".join([str((float(i) - float(values[0])) / 1000000) for i in values[1:]])})
 
+    return
 
-def analyse_results(results_dir, analysis_file):
+
+def analyse_results(results_dir: str, analysis_file: str) -> None:
     with open(os.path.join(results_dir, get_template_file(results_dir, f"\/*-results-0.csv")), "r") as file:
         reader = csv.reader(file)
         results = {rows[0]: rows[-1] for rows in reader}
@@ -76,8 +78,10 @@ def analyse_results(results_dir, analysis_file):
             else:
                 csv_writer.writerow({'name': name, 'value': values[0]})
 
+    return
 
-def convert_stats(hosts, results_dir, stats_path, output_dir):
+
+def convert_stats(hosts: list, results_dir: str, stats_path: str, output_dir: str) -> None:
     print(f"Logging stats to {stats_path}")
     host_names = [host.name for host in hosts]
     node_dirs = os.scandir(output_dir)
@@ -97,8 +101,10 @@ def convert_stats(hosts, results_dir, stats_path, output_dir):
         for name,value in stats.items():
             csv_writer.writerow({'name': name,'size': value})
 
+    return
 
-def analyse_stats(results_dir, analysis_file):
+
+def analyse_stats(results_dir: str, analysis_file: str) -> None:
     with open(os.path.join(results_dir, get_template_file(results_dir,f"\/*-stats-0.csv")),"r") as file:
         reader = csv.reader(file)
         stats = {rows[0]: rows[-1] for rows in reader}
@@ -134,8 +140,10 @@ def analyse_stats(results_dir, analysis_file):
             else:
                 csv_writer.writerow({'name': name, 'value': values[0]})
 
+    return
 
-def get_template_file(folder,pattern):
+
+def get_template_file(folder: str, pattern: str) -> str:
     files = os.listdir(folder)
     r = re.compile(pattern)
     files = [file for file in files if r.search(file)]

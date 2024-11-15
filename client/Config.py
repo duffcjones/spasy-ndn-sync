@@ -24,7 +24,7 @@ timer = None
 stats = None
 
 
-def setup(config_file, actions_file):
+def setup(config_file: str, actions_file: str) -> list[str]:
     global config
     with open(config_file, mode="r") as file:
         config = json.load(file)

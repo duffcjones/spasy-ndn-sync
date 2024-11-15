@@ -2,14 +2,14 @@ import logging
 
 
 class Stats:
-    def __init__(self, output_path):
+    def __init__(self, output_path: str) -> None:
         self.output_path = output_path
         self.stats = {}
 
-    def record_stat(self, stat_name, stat_value):
+    def record_stat(self, stat_name: str, stat_value: int) -> None:
         self.stats[stat_name] = stat_value
 
-    def dump(self):
+    def dump(self) -> None:
         logging.info(f"Dumping {len(self.stats.items())} states to {self.output_path}")
 
         with open(self.output_path, "w") as stats_file:

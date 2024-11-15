@@ -12,8 +12,9 @@ from Util import pack_data
 from Spasy import Spasy
 from Callbacks import on_direct_root_hash_interest, on_direct_geocode_interest, on_direct_asset_interest
 
+type Options = list[str]
 
-async def setup(opts):
+async def setup(opts: Options) -> None:
     logging.info("Initializing interests")
 
     Config.timer.start_timer(f"init_interests")
@@ -24,7 +25,7 @@ async def setup(opts):
     return
 
 
-async def init(opts):
+async def init(opts: Options) -> None:
     logging.info(f'Action: Init with geocode {opts[0]}')
 
     Config.spasy = Spasy(opts[0], int(opts[2]))
@@ -48,7 +49,7 @@ async def init(opts):
     return
 
 
-async def add(opts):
+async def add(opts: Options) -> None:
     logging.info(f"Action: Add data {opts[0]} at path {opts[1]}")
 
     logging.info("Starting sync_update timer")
@@ -69,7 +70,7 @@ async def add(opts):
     return
 
 
-async def join(opts):
+async def join(opts: Options) -> None:
     logging.info(f"Action: Join geocode {opts[0]}")
 
     Config.timer.start_timer(f"join_update")
@@ -97,7 +98,7 @@ async def join(opts):
     return
 
 
-async def update():
+async def update() -> None:
     logging.info("Sending notification interests")
     root_hash, seg_cnt, asset_name = Config.packed_updates_queue[-1]
 
@@ -110,13 +111,13 @@ async def update():
     return
 
 
-async def wait(opts):
+async def wait(opts: Options) -> None:
     logging.info("Action: Waiting")
     await asyncio.sleep(int(opts[0]))
     return
 
 
-async def serve_tree(opts):
+async def serve_tree(opts: Options) -> None:
     logging.info(f"Action: Serving tree with geocode {opts[0]}")
 
     Config.timer.start_timer(f"prep_tree")
@@ -137,7 +138,7 @@ async def serve_tree(opts):
     return
 
 
-async def prep_queue(asset_name):
+async def prep_queue(asset_name: str) -> None:
     logging.info(f"Packing queue with hashcode {Config.spasy.trees[Config.geocode].root.hashcode} with asset {asset_name}")
 
     Config.timer.start_timer(f"prep_queue")
@@ -163,7 +164,7 @@ async def prep_queue(asset_name):
     return
 
 
-async def prep_asset(asset_name, asset_path):
+async def prep_asset(asset_name: str, asset_path: str) -> None:
     Config.timer.start_timer("prep_asset")
     asset_route = Config.config["direct_asset_prefix"] + asset_name
     logging.info(f"Packing asset with name {asset_route}")

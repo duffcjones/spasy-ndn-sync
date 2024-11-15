@@ -2,7 +2,8 @@ from os import path, unlink, getcwd, makedirs, scandir
 import logging
 from time import sleep
 from datetime import datetime
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
+from typing import List
 
 from minindn.minindn import Minindn
 from minindn.util import MiniNDNCLI
@@ -12,6 +13,7 @@ from minindn.helpers.ndn_routing_helper import NdnRoutingHelper
 from minindn.apps.app_manager import AppManager
 
 from mininet.log import setLogLevel, info, error, debug
+from mininet.topo import Topo
 
 from application.SpatialSyncApp import SpatialSyncApp
 from minindn_play.server import PlayServer
@@ -19,12 +21,13 @@ from experiments.setup import Setup
 from experiments.results import convert_results, convert_stats, analyse_stats, analyse_results
 from experiments.util import clear_results
 
+
 nfaces = 1
 minindn_path = "/tmp/minindn"
 results_root_dir = "results"
 
 
-def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
+def run_experiments(topo: Topo, results_dir: str, experiment_name: str, actions: List[List[str]], time_to_wait: int) -> None:
     parser = ArgumentParser()
     parser.add_argument('iterations')
     parser.add_argument('-c', '--cli', action='store_true', dest='use_cli')
@@ -57,8 +60,11 @@ def run_experiments(topo, results_dir, experiment_name, actions, time_to_wait):
     analyse_results(results_dir_path, analysis_path)
     analyse_stats(results_dir_path, analysis_path)
 
+    return
 
-def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to_wait, parser, args):
+
+def run_experiment(topo: Topo, results_dir: str, results_path: str, stats_path: str, actions: List[List[str]],
+                   time_to_wait: int, parser: ArgumentParser, args: Namespace) -> None:
     Setup.init_global_prefixes()
     Setup.add_actions(actions)
 
@@ -119,3 +125,5 @@ def run_experiment(topo, results_dir, results_path, stats_path, actions, time_to
     convert_results(ndn.net.hosts, results_dir, results_path, Setup.output_dir)
     convert_stats(ndn.net.hosts, results_dir, stats_path, Setup.output_dir)
     Setup.reset()
+
+    return

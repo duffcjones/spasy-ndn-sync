@@ -10,7 +10,7 @@ import Config
 from Interests import send_root_request, send_asset_request
 
 
-def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
     logging.info(f"Received direct root hash interest {Name.to_str(name)}")
 
     packets, seg_cnt, asset_name = Config.packed_updates_dict[Name.to_str(name).split("/")[-2]]
@@ -23,7 +23,7 @@ def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_par
     return
 
 
-def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
     logging.info(f"Received direct geocode interest for {Name.to_str(name)}")
 
     packets, seg_cnt = Config.packed_tree_geocode
@@ -36,7 +36,7 @@ def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param
     return
 
 
-def on_direct_asset_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+def on_direct_asset_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
     asset_name = "/".join(Name.to_str(name).split("/")[4:-1])
     logging.info(f"Received direct asset interest for {asset_name}")
 
@@ -50,14 +50,14 @@ def on_direct_asset_interest(name: FormalName, param: InterestParam, app_param: 
     return
 
 
-def on_init_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+def on_init_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
     logging.info(f"Init interest received for {Name.to_str(name)}")
     Config.app.put_data(name, content="received".encode(), freshness_period=1000)
     logging.info(f"Returned response for init interest received for {Name.to_str(name)}")
     return
 
 
-def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]):
+def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
     Config.timer.stop_global_timer("notification_interest")
     logging.info(f"Multi Interest received for {Name.to_str(name)}")
 
@@ -89,7 +89,7 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
     return
 
 
-async def update_tree(root_hash, seg_cnt):
+async def update_tree(root_hash: str, seg_cnt: int) -> None:
     name = Config.config["direct_root_hash_prefix"] + f"/{root_hash}"
 
     Config.timer.start_timer(f"receive_updates")
@@ -109,7 +109,7 @@ async def update_tree(root_hash, seg_cnt):
     return
 
 
-async def request_asset(asset_name):
+async def request_asset(asset_name: str) -> None:
     name = Config.config["direct_asset_prefix"] + f"/{asset_name}"
 
     received_asset, num_seg = await send_asset_request(name)

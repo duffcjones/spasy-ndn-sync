@@ -3,11 +3,11 @@ import argparse
 import asyncio
 
 import Config
-from Callbacks import on_multi_interest, on_init_interest
-from Actions import actions
 import Actions
+from Callbacks import on_multi_interest, on_init_interest
 
-async def main():
+
+async def main() -> None:
     await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
     logging.info(f"Registered prefix {Config.config["initialization_prefix"]}")
 

@@ -1,11 +1,12 @@
 import logging
 
 from ndn.encoding import Name, Component
+from ndn.encoding.tlv_type import VarBinaryStr
 
 import Config
 
 
-def pack_data(data, name):
+def pack_data(data: any, name: str) -> tuple[list[VarBinaryStr], int]:
     logging.info(f"Packing data under name {name}")
 
     seg_cnt = (len(data) + Config.config["packet_segment_size"] - 1) // Config.config["packet_segment_size"]
