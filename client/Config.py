@@ -25,6 +25,17 @@ stats = None
 
 
 def setup(config_file: str, actions_file: str) -> list[str]:
+    """
+    Setup global application objects
+
+    Args:
+        config_file: File containing configuration parameters
+        actions_file: File containing actions for current node
+
+    Returns:
+        List of actions to run on node
+    """
+
     global config
     with open(config_file, mode="r") as file:
         config = json.load(file)

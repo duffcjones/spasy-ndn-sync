@@ -14,7 +14,16 @@ from Callbacks import on_direct_root_hash_interest, on_direct_geocode_interest, 
 
 type Options = list[str]
 
+
 async def setup(opts: Options) -> None:
+    """
+    Initialize FIB tables by sending interests to all nodes (can sometimes improve results)
+
+    Args:
+        opts: Action options:
+                opts[-1] = wait time after action
+    """
+
     logging.info("Initializing interests")
 
     Config.timer.start_timer(f"init_interests")
@@ -26,6 +35,17 @@ async def setup(opts: Options) -> None:
 
 
 async def init(opts: Options) -> None:
+    """
+    Initialize SPASY
+
+    Args:
+        opts: Action options:
+                opts[0] = geocode to initialize tree with,
+                opts[1] = tree size,
+                opts[2] = queue size,
+                opts[-1] = wait time after action
+    """
+
     logging.info(f'Action: Init with geocode {opts[0]}')
 
     Config.spasy = Spasy(opts[0], int(opts[2]))
@@ -50,6 +70,16 @@ async def init(opts: Options) -> None:
 
 
 async def add(opts: Options) -> None:
+    """
+    Add asset to tree and start sync process to update other nodes
+
+    Args:
+        opts: Action options:
+                opts[0] = Name of new asset,
+                opts[1] = Location of asset on disk,
+                opts[-1] = wait time after action
+    """
+
     logging.info(f"Action: Add data {opts[0]} at path {opts[1]}")
 
     logging.info("Starting sync_update timer")
@@ -71,6 +101,15 @@ async def add(opts: Options) -> None:
 
 
 async def join(opts: Options) -> None:
+    """
+    Join a sync group using a geocode
+
+    Args:
+        opts: Action options:
+                opts[0] = Geocode of sync group to join,
+                opts[-1] = wait time after action
+    """
+
     logging.info(f"Action: Join geocode {opts[0]}")
 
     Config.timer.start_timer(f"join_update")
@@ -99,6 +138,10 @@ async def join(opts: Options) -> None:
 
 
 async def update() -> None:
+    """
+    Start sync process by sending sync notifications to other nodes. Root hash of current state of tree is used.
+    """
+
     logging.info("Sending notification interests")
     root_hash, seg_cnt, asset_name = Config.packed_updates_queue[-1]
 
@@ -112,12 +155,28 @@ async def update() -> None:
 
 
 async def wait(opts: Options) -> None:
+    """
+    Wait for specified time to allow other actions on this node or other nodes, interests will still be received and processed during waiting
+
+    Args:
+        opts: Action options:
+                opts[0] = wait time
+    """
+
     logging.info("Action: Waiting")
     await asyncio.sleep(int(opts[0]))
     return
 
 
 async def serve_tree(opts: Options) -> None:
+    """
+    Prepare signed packets for tree and register route to enable receiving interests for tree
+
+    Args:
+        opts: Action options:
+            opts[0] = geocode of tree to serve,
+            opts[-1] = wait time after action
+    """
     logging.info(f"Action: Serving tree with geocode {opts[0]}")
 
     Config.timer.start_timer(f"prep_tree")
@@ -139,6 +198,13 @@ async def serve_tree(opts: Options) -> None:
 
 
 async def prep_queue(asset_name: str) -> None:
+    """
+    Prepare signed packets for recent updates queue for tree and register route to enable receiving interests for queue. Used after making a change to the tree.
+
+    Args:
+        asset_name: Name of asset associated with change
+    """
+
     logging.info(f"Packing queue with hashcode {Config.spasy.trees[Config.geocode].root.hashcode} with asset {asset_name}")
 
     Config.timer.start_timer(f"prep_queue")
@@ -165,6 +231,14 @@ async def prep_queue(asset_name: str) -> None:
 
 
 async def prep_asset(asset_name: str, asset_path: str) -> None:
+    """
+    Prepare signed packets for an asset and register route to enable receiving interests for asset
+
+    Args:
+        asset_name: Name of asset
+        asset_path: Location of asset on disk
+    """
+
     Config.timer.start_timer("prep_asset")
     asset_route = Config.config["direct_asset_prefix"] + asset_name
     logging.info(f"Packing asset with name {asset_route}")

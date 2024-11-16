@@ -8,6 +8,10 @@ from Callbacks import on_multi_interest, on_init_interest
 
 
 async def main() -> None:
+    """
+    Run actions given to node and dump timing results and statistics once finished
+    """
+
     await Config.app.register(Config.config["initialization_prefix"], on_init_interest)
     logging.info(f"Registered prefix {Config.config["initialization_prefix"]}")
 

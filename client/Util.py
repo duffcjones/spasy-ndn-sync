@@ -7,6 +7,18 @@ import Config
 
 
 def pack_data(data: any, name: str) -> tuple[list[VarBinaryStr], int]:
+    """
+    Split given data (binary) into signed packets based on configured packet size
+
+    Args:
+        data: Binary data to pack
+        name: Name of content
+
+    Returns:
+        packets: List of packets making up given content
+        seg_cnt: Number of segments making up given content
+    """
+
     logging.info(f"Packing data under name {name}")
 
     seg_cnt = (len(data) + Config.config["packet_segment_size"] - 1) // Config.config["packet_segment_size"]

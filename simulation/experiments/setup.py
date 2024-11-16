@@ -32,7 +32,15 @@ class Setup:
 
     action_list = deque()
 
+
     def __init__(self, node_name: str) -> None:
+        """
+        Constructor for setup object (each node should have one setup object, associated by name)
+
+        Args:
+            node_name: Name of associated node
+        """
+
         self.node_name = node_name
         self.node_prefix = ""
         self.multi_prefix = ""
@@ -46,30 +54,67 @@ class Setup:
         self.timer_output_path = path.join(self.output_dir, self.node_name, "log", "results")
         self.stats_output_path = path.join(self.output_dir, self.node_name, "log", "stats")
 
+
     @classmethod
     def init_global_prefixes(cls) -> None:
+        """
+        Set naming prefixes shared by all nodes
+        """
+
         cls.direct_root_hash_prefix = cls.base_path + cls.direct_root_hash_path
         cls.direct_geocode_prefix = cls.base_path + cls.direct_geocode_path
         cls.direct_asset_prefix = cls.base_path + cls.direct_asset_path
 
+
     @classmethod
     def add_actions(cls, actions: [[List[List[str]]]]) -> None:
+        """
+        Add node actions to simulation
+
+        Args:
+            actions: List of node actions
+        """
+
         for action in actions:
             cls.action_list.append(action)
 
+
     @classmethod
     def reset(cls) -> None:
+        """
+        Reset setup for new simulation
+        """
         cls.action_list = deque()
 
+
     def add_prefixes(self):
+        """
+        Add name prefixes for a node
+        """
+
         self.node_prefix = self.base_path + f"/{self.node_name}"
         self.multi_prefix = self.node_prefix + self.multi_path
         self.initialization_prefix = self.node_prefix + self.initialization_path
 
+
     def add_route(self, node_prefix: str) -> None:
+        """
+        Add name prefixes for other nodes in the simulation (to allow for multicasting)
+
+        Args:
+            node_prefix: Name of other node
+        """
         self.multi_cast_routes.append(node_prefix)
 
+
     def setup_actions(self) -> str:
+        """
+        Distribute actions to simulation nodes (stored in txt files)
+
+        Returns:
+            Txt file path with actions for node
+        """
+
         if len(self.action_list) > 1:
             self.actions = self.action_list.popleft()
         else:
@@ -82,7 +127,15 @@ class Setup:
 
         return self.actions_file
 
+
     def setup_config(self) -> str:
+        """
+        Write config information to file for nodes to use during simulation
+
+        Returns:
+            Config file path for node
+        """
+
         setup_data = {
             "node_name": self.node_name,
             "timer_output_path": self.timer_output_path,

@@ -11,6 +11,15 @@ from Interests import send_root_request, send_asset_request
 
 
 def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
+    """
+    Callback function to handle an interest for a root hash, will respond with the signed packets with recent updates queue associated with the tree at the time of having the given root hash
+
+    Args:
+        name: Name requested
+        param: Interest parameters
+        app_param: Optional interest parameters
+    """
+
     logging.info(f"Received direct root hash interest {Name.to_str(name)}")
 
     packets, seg_cnt, asset_name = Config.packed_updates_dict[Name.to_str(name).split("/")[-2]]
@@ -24,6 +33,15 @@ def on_direct_root_hash_interest(name: FormalName, param: InterestParam, app_par
 
 
 def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
+    """
+    Callback function to handle an interest for the tree associated with the given geocode, will respond with the signed packets with the tree associated with the given geocode
+
+    Args:
+        name: Name requested
+        param: Interest parameters
+        app_param: Optional interest parameters
+    """
+
     logging.info(f"Received direct geocode interest for {Name.to_str(name)}")
 
     packets, seg_cnt = Config.packed_tree_geocode
@@ -37,6 +55,15 @@ def on_direct_geocode_interest(name: FormalName, param: InterestParam, app_param
 
 
 def on_direct_asset_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
+    """
+    Callback function to handle interest for an asset, will respond with signed packets responding to the desired asset
+
+    Args:
+        name: Name requested
+        param: Interest parameters
+        app_param: Optional interest parameters
+    """
+
     asset_name = "/".join(Name.to_str(name).split("/")[4:-1])
     logging.info(f"Received direct asset interest for {asset_name}")
 
@@ -51,6 +78,15 @@ def on_direct_asset_interest(name: FormalName, param: InterestParam, app_param: 
 
 
 def on_init_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
+    """
+    Callback function to handle test interest for setting up FIB tables, will respond with meaningless data packet
+
+    Args:
+        name: Name requested
+        param: Interest parameters
+        app_param: Optional interest parameters
+    """
+
     logging.info(f"Init interest received for {Name.to_str(name)}")
     Config.app.put_data(name, content="received".encode(), freshness_period=1000)
     logging.info(f"Returned response for init interest received for {Name.to_str(name)}")
@@ -58,6 +94,15 @@ def on_init_interest(name: FormalName, param: InterestParam, app_param: Optional
 
 
 def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optional[BinaryStr]) -> None:
+    """
+    Callback function to handle multicast interest, continues the sync protocol by checking if the tree needs to be updated and requesting the necessary data as needed.
+
+    Args:
+        name: Name requested
+        param: Interest parameters
+        app_param: Optional interest parameters
+    """
+
     Config.timer.stop_global_timer("notification_interest")
     logging.info(f"Multi Interest received for {Name.to_str(name)}")
 
@@ -90,6 +135,14 @@ def on_multi_interest(name: FormalName, param: InterestParam, app_param: Optiona
 
 
 async def update_tree(root_hash: str, seg_cnt: int) -> None:
+    """
+    Requests data to update tree, this includes recent update queue and/or asset if desired. The recent update queue will be applied to the tree.
+
+    Args:
+        root_hash: Root hash of tree at time of recent update queue state
+        seg_cnt: Number of packets received making up the recent update queue state
+    """
+
     name = Config.config["direct_root_hash_prefix"] + f"/{root_hash}"
 
     Config.timer.start_timer(f"receive_updates")
@@ -110,6 +163,13 @@ async def update_tree(root_hash: str, seg_cnt: int) -> None:
 
 
 async def request_asset(asset_name: str) -> None:
+    """
+    Request an asset by name
+
+    Args:
+        asset_name: Name of desired asset
+    """
+
     name = Config.config["direct_asset_prefix"] + f"/{asset_name}"
 
     received_asset, num_seg = await send_asset_request(name)

@@ -7,6 +7,19 @@ import numpy as np
 
 
 def convert_results(hosts: list, results_dir: str, results_path: str, output_dir: str) -> None:
+    """
+    Output results for a given iteration for the current scenario and experiment to csv
+
+    Args:
+        hosts: Minindn simulation host nodes
+        results_dir: Results directory for a specific scenario and experiment
+        results_path: File path to save results under
+        output_dir: Minindn simulation output directory
+
+    Returns:
+        Writes results to a csv file in the given results directory labelled with datetime (results for all iterations are written to this directory)
+    """
+
     print(f"Logging results to {results_path}")
     host_names = [host.name for host in hosts]
     node_dirs = os.scandir(output_dir)
@@ -40,6 +53,17 @@ def convert_results(hosts: list, results_dir: str, results_path: str, output_dir
 
 
 def analyse_results(results_dir: str, analysis_file: str) -> None:
+    """
+    Aggregate results for a given scenario and experiment and calculate statistics
+
+    Args:
+        results_dir: Results directory for a specific scenario and experiment
+        analysis_file: File path to save analysis under
+
+    Returns:
+        Writes analysis to a csv file in the given results directory (same directory as results files)
+    """
+
     with open(os.path.join(results_dir, get_template_file(results_dir, f"\/*-results-0.csv")), "r") as file:
         reader = csv.reader(file)
         results = {rows[0]: rows[-1] for rows in reader}
@@ -82,6 +106,19 @@ def analyse_results(results_dir: str, analysis_file: str) -> None:
 
 
 def convert_stats(hosts: list, results_dir: str, stats_path: str, output_dir: str) -> None:
+    """
+    Output results for a given iteration for the current scenario and experiment to csv
+
+    Args:
+        hosts: Minindn simulation host nodes
+        results_dir: Results directory for a specific scenario and experiment
+        stats_path: File path to save stats under
+        output_dir: Minindn simulation output directory
+
+    Returns:
+        Writes stats to a csv file in the given results directory (same directory as results files)
+    """
+
     print(f"Logging stats to {stats_path}")
     host_names = [host.name for host in hosts]
     node_dirs = os.scandir(output_dir)
@@ -105,6 +142,17 @@ def convert_stats(hosts: list, results_dir: str, stats_path: str, output_dir: st
 
 
 def analyse_stats(results_dir: str, analysis_file: str) -> None:
+    """
+    Aggregate individual iteration stats for a given scenario and experiment and calculate statistics
+
+    Args:
+        results_dir: Results directory for a specific scenario and experiment
+        analysis_file: File path to save analysis under
+
+    Returns:
+        Writes stats to a csv file in the given results directory (same directory as results files)
+    """
+
     with open(os.path.join(results_dir, get_template_file(results_dir,f"\/*-stats-0.csv")),"r") as file:
         reader = csv.reader(file)
         stats = {rows[0]: rows[-1] for rows in reader}
@@ -143,8 +191,19 @@ def analyse_stats(results_dir: str, analysis_file: str) -> None:
     return
 
 
-def get_template_file(folder: str, pattern: str) -> str:
-    files = os.listdir(folder)
+def get_template_file(dir_path: str, pattern: str) -> str:
+    """
+    Utility function to get files with a specific naming pattern
+    Args:
+        dir_path: Directory path to look in
+        pattern: Naming pattern to look for
+
+    Returns:
+        The first file found in the given directory matching the desired naming pattern
+
+    """
+
+    files = os.listdir(dir_path)
     r = re.compile(pattern)
     files = [file for file in files if r.search(file)]
     return files[0]

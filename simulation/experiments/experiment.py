@@ -19,7 +19,7 @@ from application.SpatialSyncApp import SpatialSyncApp
 from minindn_play.server import PlayServer
 from experiments.setup import Setup
 from experiments.results import convert_results, convert_stats, analyse_stats, analyse_results
-from experiments.util import clear_results
+from experiments.util import clear_directory
 
 
 nfaces = 1
@@ -28,6 +28,17 @@ results_root_dir = "results"
 
 
 def run_experiments(topo: Topo, results_dir: str, experiment_name: str, actions: List[List[str]], time_to_wait: int) -> None:
+    """
+    Runs all iterations for one scenario experiment
+
+    Args:
+        topo: Minindn topology
+        results_dir: Root directory path for all results
+        experiment_name: Name of current scenario and experiment
+        actions: List of actions for nodes to run
+        time_to_wait: Time to wait for simulation to complete (too short will cause experiment to fail)
+    """
+
     parser = ArgumentParser()
     parser.add_argument('iterations')
     parser.add_argument('-c', '--cli', action='store_true', dest='use_cli')
@@ -36,7 +47,7 @@ def run_experiments(topo: Topo, results_dir: str, experiment_name: str, actions:
     parser.add_argument('-t', '--topo', dest='topo_file')
     args = parser.parse_args()
 
-    clear_results(minindn_path)
+    clear_directory(minindn_path)
     results_dir_path = path.join(getcwd(), results_root_dir, results_dir, datetime.now().strftime('%d-%m-%Y-%H-%M-%S'))
     makedirs(results_dir_path, exist_ok=True)
     print(f"Logging experiments to {results_dir_path}")
@@ -65,6 +76,20 @@ def run_experiments(topo: Topo, results_dir: str, experiment_name: str, actions:
 
 def run_experiment(topo: Topo, results_dir: str, results_path: str, stats_path: str, actions: List[List[str]],
                    time_to_wait: int, parser: ArgumentParser, args: Namespace) -> None:
+    """
+    Runs simulation for single iteration of current scenario and experiment
+
+    Args:
+        topo: Minindn topology
+        results_dir: Root directory path for all results
+        results_path: Directory path for current iteration results
+        stats_path: Directory path for current iteration statistics
+        actions: List of actions for nodes to run
+        time_to_wait: Time to wait for simulation to complete
+        parser: Parser object for current python process
+        args: Parser arguments
+    """
+
     Setup.init_global_prefixes()
     Setup.add_actions(actions)
 
