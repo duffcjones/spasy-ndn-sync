@@ -193,7 +193,7 @@ def analyse_stats(results_dir: str, analysis_file: str) -> None:
 
 def get_template_file(dir_path: str, pattern: str) -> str:
     """
-    Utility function to get files with a specific naming pattern
+    Utility function to get files with a specific naming pattern (in regex).
     Args:
         dir_path: Directory path to look in
         pattern: Naming pattern to look for

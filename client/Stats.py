@@ -2,6 +2,11 @@ import logging
 
 
 class Stats:
+    """
+    Class for keeping statistics related results. Keeps a dictionary to store stats. Stored stats are output to file to
+    be processed after simulation.
+    """
+
     def __init__(self, output_path: str) -> None:
         """
         Constructor for stats class

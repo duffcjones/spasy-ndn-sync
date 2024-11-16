@@ -5,6 +5,11 @@ from collections import defaultdict
 
 
 class Timer:
+    """
+    Class for keeping timing results. Keeps timers that mark start and end times. Timers can be started and stopped on different
+    nodes as long as timer names are kept consistent. Times are recorded to txt file to be processed after simulation.
+    """
+
     def __init__(self, output_path: str) -> None:
         """
         Constructor for Timer class

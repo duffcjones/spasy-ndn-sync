@@ -18,7 +18,7 @@ async def main() -> None:
     await Config.app.register(Config.config["multi_prefix"], on_multi_interest)
     logging.info(f"Registered prefix {Config.config["multi_prefix"]}")
 
-    await asyncio.sleep(Config.config["init_time"])
+    await asyncio.sleep(1)
 
     for action_key in action_list:
         action_params = action_key.split(" ")

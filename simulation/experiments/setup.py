@@ -6,6 +6,48 @@ from typing import List
 
 
 class Setup:
+    """
+    Class for initializing and holding configuration parameters for simulation nodes. Each node should have a setup instance associated with it by name.
+    Configuration parameters and actions are output to separate files for each node in the defined setup folder.
+
+    Attributes:
+        base_path: Application prefix
+        direct_root_hash_path: Base prefix for update interests by root hash
+        direct_geocode_path: Base prefix for tree interests by geocode
+        direct_asset_path: Base prefix for asset interests
+        multi_path: Base prefix for multicast interests
+        initialization_path: Base prefix for initialization interests
+
+        setup_dir: Directory path that holds setup and action files
+        output_dir: Directory path that holds output files from nodes
+        packet_segment_size: Maximum packet segment size (bytes)
+        packet_segment_size_overhead: Size overhead from packet signing (bytes)
+        batch_size: Size of batches for requesting data segments
+        log_level: Logging level for nodes (INFO = detailed logging, WARN = No logging)
+        word_list_path: Path for word list to construct trees from
+        request_asset: True if assets should be requested along with updates, False if not
+        max_packets: Maximum number of segments to request for content
+        build_tree_method: Method used to build trees. file = build a static tree from file, random = build a random tree with names from a list,
+        use_timestamp: True if timestamps should be used when updating tree, False if not
+        use_keychain_digest: True if NDN app should use dummy keychain for packet signing (improves performance), False if not.
+                             If ndn-cxx was not patched during installation to use dummy keychain then dummy keychain must be used.
+        action_list: List of action lists to distribute among nodes
+
+        direct_root_hash_prefix: Prefix for update interests by root hash
+        direct_geocode_prefix: Prefix for tree interests by geocode
+
+        node_name: Name of node
+        node_prefix: Base prefix for node
+        multi_prefix: Prefix for receiving multicast interests
+        initialization_prefix: Prefix for receiving initialization interests
+        actions_file: Location of file containing actions for node
+        config_file: Location of configuration file for node
+        actions: List of actions for node
+        multi_cast_routes: Prefixes for other nodes for multicast interests
+        timer_output_path: File path for node timing results
+        stats_output_path: File path for node statistics
+    """
+
     base_path = "/spasy"
     direct_root_hash_path = "/direct/root"
     direct_geocode_path = "/direct/geocode"
@@ -13,24 +55,22 @@ class Setup:
     multi_path = "/multi"
     initialization_path = "/init"
 
-    direct_root_hash_prefix = ""
-    direct_gecode_prefix = ""
-
     setup_dir = path.join(getcwd(),"setup")
     output_dir = "/tmp/minindn/"
     packet_segment_size = 8800
     packet_segment_size_overhead = 216
     batch_size = 0
     log_level = logging.INFO
-    init_time = 2
     word_list_path = path.join(getcwd(), "resources", "spasy_tree.txt")
     request_asset = True
     max_packets = 100000
-    build_tree_method = "tree"
+    build_tree_method = "file"
     use_timestamp = True
     use_keychain_digest = True
-
     action_list = deque()
+
+    direct_root_hash_prefix = ""
+    direct_geocode_prefix = ""
 
 
     def __init__(self, node_name: str) -> None:
@@ -154,7 +194,6 @@ class Setup:
             "packet_segment_size": self.packet_segment_size - self.packet_segment_size_overhead,
             "batch_size": self.batch_size,
             "log_level": self.log_level,
-            "init_time": self.init_time,
             "word_list_path": self.word_list_path,
             "request_asset": self.request_asset,
             "max_packets": self.max_packets,
