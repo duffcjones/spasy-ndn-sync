@@ -1,0 +1,8 @@
+# Vagrant
+.vagrant/
+
+# Results
+results
+
+# Setup files
+setup
