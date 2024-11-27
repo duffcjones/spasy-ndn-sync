@@ -1,7 +1,7 @@
 from SpasyTree import *
-from pympler import asizeof
 from random import randint, seed
 from pprint import pprint
+import time
 
 class Spasy:
     """
@@ -15,9 +15,7 @@ class Spasy:
     at Geohash Level 10.
     """
 
-    def __init__(self, geocode: str, max_updates: int=10) -> None:
-        
-        #self._tree = SpasyTree(9, Node(geocode))
+    def __init__(self, geocode: str, max_updates: int=50) -> None:
         self._trees = {str(geocode): SpasyTree(9, max_updates, Node(geocode))}
         self._subscribed_trees = [geocode]
 
@@ -33,34 +31,26 @@ class Spasy:
         return self._subscribed_trees
 
 
-    def build_tree(self, size: int=0) -> None:
+    def build_tree(self, geocode: str, size: int=0, timestamp: bool=False) -> None:
         """Insert elements into the tree to automate the building of trees.
 
         Args:
+            geocode (str): the geocode of the tree
             size (int, optional): the number of names to insert in the tree. 
                                   Defaults to 0.
+            timestamp (bool, optional): the timestamp of the tree. Defaults to False.
         """
-        # get the string value of the root's geocode
-        tree_geocode = ''.join(self._tree.root.geocode)
         # generate a name with a geocode and insert it in the tree
-        seed_value = 0 # we want the tree to always be the same for experiments
         for i in range(size):
-            
-            name = self._generate_name(seed_value) + self._generate_geocode(seed_value, tree_geocode)
-            #print(f'Name being inserted: {name}')
-            self._tree.insert(name)
-            insert_info = (time.time(), 'i', name)
-            self._add_to_recent_updates(insert_info)
-            seed_value += 1000 # increment the seed to make sure it doesn't generate the same string and geocode
-                               # multiple times for the same tree
-            #print(f'\n######### RECENT UPDATES #########\n')
-            #pprint(self._recent_updates)
+            name = self._generate_name() + self._generate_geocode(geocode)
+            self.add_data_to_tree(geocode,name,str(time.time()))
 
     def build_tree_from_file(self, geocode: str, filename: str, size: int, timestamp: bool=False) -> None:
         """
         Build a tree from a file that contains names and, optionally, timestamps.
 
         Args:
+            geocode (str): the geocode of the tree
             filename (str): the name of the file that stores the names to be added to the tree.
             size (int): the size of the tree once built.
             timestamp (bool, optional): True, if there is a timestamp associated with the named data 
@@ -72,7 +62,6 @@ class Spasy:
             with open(filename, 'r') as file:
                 count = 0
                 while count <= size:
-                    #print(f'GEOCODE: {geocode}')
                     self.add_data_to_tree(geocode, file.readline().strip())
                     count += 1
 
@@ -81,16 +70,11 @@ class Spasy:
                 count = 0
                 while count <= size:
                     line = file.readline().strip().split(',')
-                    # print(f'LINE: {line}')
-                    #print(f'GEOCODE: {geocode}') 
                     # if the line is empty, we've reached the end of the file
                     if line == ['']:
                         break
-                    #split_line = line.split(',')
                     named_data = line[0]
                     time_added = line[1]
-                    #print(f'Named data: {named_data}')
-                    #print(f'Timestamp: {time_added}')
                     self.add_data_to_tree(geocode, named_data, time_added)
                     count += 1
 
@@ -106,7 +90,7 @@ class Spasy:
                               Defaults to False.
         """
         word_list = []
-        with open('client/words.txt') as file:
+        with open('/spatialsync/simulation/resources/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 
@@ -139,18 +123,18 @@ class Spasy:
             name_list.append(name + insert_geocode)
         
         if timestamp:
-            with open('spasy_tree.txt', 'w') as file2:
+            with open('/spatialsync/simulation/resources/spasy_tree.txt', 'w') as file2:
                 for entry in name_list:
                     time_added = str(time.time())
                     string_to_add = entry + ',' + time_added + '\n'
                     file2.write(entry + ',' + time_added + '\n')
         else:
-            with open('spasy_tree.txt', 'w') as file2:
+            with open('/spatialsync/simulation/resources/spasy_tree.txt', 'w') as file2:
                 for entry in name_list:
                     file2.write(entry)
             
 
-    def _generate_name(self, seed_value: int, max_length: int=10) -> str:
+    def _generate_name(self, max_length: int=10) -> str:
         """
         Generates a randomized string of named data from a list of common English words. 
         This is a helper method for building randomized trees.
@@ -167,9 +151,8 @@ class Spasy:
             str: the named_data string.
         """
         # read the list of common English-language words into a list
-        seed(seed_value)
         word_list = []
-        with open('/spatialsync/client/words.txt') as file:
+        with open('/spatialsync/simulation/resources/words.txt') as file:
             for word in file:
                 word_list.append(word.strip())
 
@@ -190,31 +173,24 @@ class Spasy:
 
         return name
 
-    def _generate_geocode(self, seed_value: int, geocode: str) -> str:
+    def _generate_geocode(self, geocode: str) -> str:
         """
         Generates a geocode for inserting named data in a tree.
         This is a helper method for building randomized trees. 
 
         Args:
-            seed_value (int): a random number seed to ensure the generated trees are always
-                              the same (for experimental purposes.)
             geocode (str): the Level 6 geocode that serves as the tree's root.
 
         Returns:
             str: the geocode which will be appended to the name.
         """
-        seed_increment = seed_value
         insert_geocode = geocode
         valid_characters = '0123456789bcdefghjkmnpqrstuvwxyz'
 
-        max_geocode_length = self.tree.max_depth
-        # print(max_geocode_length)
+        max_geocode_length = self.trees[geocode].max_depth
         while len(insert_geocode) <= max_geocode_length:
-            seed(seed_increment)
             insert_geocode = insert_geocode + valid_characters[randint(0, len(valid_characters) - 1)]
-            seed_increment += 100
 
-        # print(f'THE GENERATED GEOCODE: {insert_geocode}')
         return insert_geocode
 
     
@@ -299,10 +275,8 @@ class Spasy:
                                        Defaults to "", which occurs when the caller 
                                        is the data's publisher.
         """
-        #print(f'DATA BEING ADDED: {data_to_add}')
         if timestamp == "":
             timestamp = str(time.time())
-        #print(f'ADD DATA GEOCODE: {geocode}')
         self._trees[geocode].insert(data_to_add)
         self.trees[geocode].add_to_recent_updates((timestamp, 'i', data_to_add))
 
@@ -348,14 +322,10 @@ class Spasy:
                   True otherwise.
         """
         if self._trees[tree_geocode].root.hashcode == sync_tree_hash:
-            print(f'The tree is already up-to-date.')
+            # The tree is already up-to-date
             return False
-        # # THIS DOES NOT APPLY TO THE CURRENT VERSION, AS OLD HASHES AREN'T KEPT
-        # elif sync_tree_hash in self._tree._recent_changes:
-        #     print(f'That is an older version of the tree.')
-        #     return False
         else:
-            print(f'This is a newer version of the tree. Send an Interest packet.')
+            # This is a newer version of the tree. Send an Interest packet.
             return True
 
     def search(self, data_to_find: str) -> bool:

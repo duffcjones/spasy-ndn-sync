@@ -400,11 +400,4 @@ $RECYCLE.BIN/
 # Jetbrains IDE
 .idea
 
-# Setup files
-setup
-results
-
-# Vagrant
-.vagrant
-
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,python,c++,visualstudiocode,pycharm
