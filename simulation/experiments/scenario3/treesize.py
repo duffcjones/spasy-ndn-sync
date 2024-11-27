@@ -16,7 +16,7 @@ queue_size = 50
 batch_size = 75
 geocode = "dpwhwt"
 request_asset = True
-asset_path = path.join(getcwd(),"resources/beach_ball.glb")
+asset_path = path.join(getcwd(), "resources/beach_ball.glb")
 
 experiment_wait_time = 65
 

@@ -75,7 +75,7 @@ class Setup:
 
     def __init__(self, node_name: str) -> None:
         """
-        Constructor for setup object (each node should have one setup object, associated by name)
+        Constructor for setup object (each node should have one setup object, associated by name).
 
         Args:
             node_name: Name of associated node
@@ -109,7 +109,7 @@ class Setup:
     @classmethod
     def add_actions(cls, actions: [[List[List[str]]]]) -> None:
         """
-        Add node actions to simulation
+        Add node actions to simulation.
 
         Args:
             actions: List of node actions
@@ -129,7 +129,7 @@ class Setup:
 
     def add_prefixes(self):
         """
-        Add name prefixes for a node
+        Add name prefixes for a node.
         """
 
         self.node_prefix = self.base_path + f"/{self.node_name}"
@@ -149,7 +149,7 @@ class Setup:
 
     def setup_actions(self) -> str:
         """
-        Distribute actions to simulation nodes (stored in txt files)
+        Distribute actions to simulation nodes (stored in txt files).
 
         Returns:
             Txt file path with actions for node
@@ -170,7 +170,7 @@ class Setup:
 
     def setup_config(self) -> str:
         """
-        Write config information to file for nodes to use during simulation
+        Write config information to file for nodes to use during simulation.
 
         Returns:
             Config file path for node

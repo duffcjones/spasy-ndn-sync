@@ -1,4 +1,8 @@
+# Vagrant
 .vagrant/
 
-resources
+# Results
 results
+
+# Setup files
+setup

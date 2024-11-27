@@ -16,7 +16,7 @@ tree_size = 10000
 batch_size = 100
 geocode = "dpwhwt"
 request_asset = False
-asset_path = path.join(getcwd(),"resources/beach_ball.glb")
+asset_path = path.join(getcwd(), "resources/beach_ball.glb")
 
 experiment_wait_time = 15
 

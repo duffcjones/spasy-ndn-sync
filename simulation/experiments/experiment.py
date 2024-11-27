@@ -29,7 +29,7 @@ results_root_dir = "results"
 
 def run_experiments(topo: Topo, results_dir: str, experiment_name: str, actions: List[List[str]], time_to_wait: int) -> None:
     """
-    Runs all iterations for one scenario experiment
+    Runs all iterations for one scenario experiment.
 
     Args:
         topo: Minindn topology
@@ -77,7 +77,7 @@ def run_experiments(topo: Topo, results_dir: str, experiment_name: str, actions:
 def run_experiment(topo: Topo, results_dir: str, results_path: str, stats_path: str, actions: List[List[str]],
                    time_to_wait: int, parser: ArgumentParser, args: Namespace) -> None:
     """
-    Runs simulation for single iteration of current scenario and experiment
+    Runs simulation for single iteration of current scenario and experiment.
 
     Args:
         topo: Minindn topology

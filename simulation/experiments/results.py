@@ -8,7 +8,7 @@ import numpy as np
 
 def convert_results(hosts: list, results_dir: str, results_path: str, output_dir: str) -> None:
     """
-    Output results for a given iteration for the current scenario and experiment to csv
+    Output results for a given iteration for the current scenario and experiment to csv.
 
     Args:
         hosts: Minindn simulation host nodes
@@ -54,7 +54,7 @@ def convert_results(hosts: list, results_dir: str, results_path: str, output_dir
 
 def analyse_results(results_dir: str, analysis_file: str) -> None:
     """
-    Aggregate results for a given scenario and experiment and calculate statistics
+    Aggregate results for a given scenario and experiment and calculate statistics.
 
     Args:
         results_dir: Results directory for a specific scenario and experiment
@@ -107,7 +107,7 @@ def analyse_results(results_dir: str, analysis_file: str) -> None:
 
 def convert_stats(hosts: list, results_dir: str, stats_path: str, output_dir: str) -> None:
     """
-    Output results for a given iteration for the current scenario and experiment to csv
+    Output results for a given iteration for the current scenario and experiment to csv.
 
     Args:
         hosts: Minindn simulation host nodes
@@ -143,7 +143,7 @@ def convert_stats(hosts: list, results_dir: str, stats_path: str, output_dir: st
 
 def analyse_stats(results_dir: str, analysis_file: str) -> None:
     """
-    Aggregate individual iteration stats for a given scenario and experiment and calculate statistics
+    Aggregate individual iteration stats for a given scenario and experiment and calculate statistics.
 
     Args:
         results_dir: Results directory for a specific scenario and experiment

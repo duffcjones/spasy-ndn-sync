@@ -5,7 +5,8 @@ from typing import Union
 
 def make_topo(num_nodes: int, num_mec_nodes: int, latency: int, bandwidth: int) -> Topo:
     """
-    Make Minindn topology with given number of user nodes and MEC nodes. MEC nodes are connected in a ring topology and user nodes are evenly distributed as spokes on the MEC nodes
+    Make Minindn topology with given number of user nodes and MEC nodes. MEC nodes are connected in a ring topology and
+    user nodes are evenly distributed as spokes on the MEC nodes.
 
     Args:
         num_nodes: Number of user nodes (if over 20 total nodes, ideally should be at most 5 user nodes per MEC node)
@@ -14,7 +15,8 @@ def make_topo(num_nodes: int, num_mec_nodes: int, latency: int, bandwidth: int) 
         bandwidth: Bandwidth for all links (Mbps)
 
     Returns:
-        Minindn topology, the first x = num_mec_nodes nodes will be set as MEC nodes (i.e h0 -> hx) and the rest y = num_nodes will be user nodes (i.e hx -> hy)
+        Minindn topology, the first x = num_mec_nodes nodes will be set as MEC nodes (i.e h0 -> hx) and the rest
+        y = num_nodes will be user nodes (i.e hx -> hy)
     """
 
     print(f"Making topology with {num_nodes} nodes, {num_mec_nodes} mec nodes and {latency}ms latency with bandwidth {bandwidth}")
