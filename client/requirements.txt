@@ -16,5 +16,5 @@ pyinstaller==6.10.0
 pyinstaller-hooks-contrib==2024.8
 Pympler==1.1
 python-ndn==0.4.2
-setuptools==72.1.0
+setuptools==78.1.1
 yarl==1.9.4
